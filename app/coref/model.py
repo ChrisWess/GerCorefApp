@@ -1,0 +1,141 @@
+import itertools
+import logging
+import io
+
+import torch
+from transformers import BertTokenizer
+from transformers.models.bert import BasicTokenizer
+
+from app.coref.base import util
+from app.coref.base.preprocess import get_document
+from app.coref.base.tensorize import Tensorizer
+from app.coref.base.conll import output_conll
+from app.coref.base.incremental import IncrementalCorefModel
+
+
+logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s - %(message)s',
+                    datefmt='%m/%d/%Y %H:%M:%S',
+                    level=logging.INFO)
+logger = logging.getLogger()
+
+
+SENTENCE_ENDERS = "!.?"
+SUBSCRIPT = str.maketrans("0123456789", "₀₁₂₃₄₅₆₇₈₉")
+
+DOC_NAME = "<document_name>"
+
+MODEL_NAME = 'droc_incremental_no_segment_distance'
+WINDOW_SIZE = 384
+
+
+class ProdCorefModel:
+    def __init__(self, model_path, gpu_id=0, seed=None):
+        self.gpu_id = gpu_id
+        self.device = torch.device('cpu' if gpu_id is None else f'cuda:{gpu_id}')
+
+        self.seed = seed
+        if seed:
+            util.set_seed(seed)
+
+        self.config = util.initialize_config(MODEL_NAME, create_dirs=False)
+        self.model = IncrementalCorefModel(self.config, self.device)
+        self.model.to(self.device)
+        self.tensorizer = Tensorizer(self.config)
+        self.model.load_state_dict(torch.load(model_path, map_location=self.device))
+        logger.info(f'Loaded model from {model_path}')
+        self.model.eval()
+        self.basic_tokenizer = BasicTokenizer(do_lower_case=False)
+        self.tokenizer = BertTokenizer.from_pretrained(self.config['bert_tokenizer_name'])
+        self.tensorizer.long_doc_strategy = "keep"
+
+    def text_to_token_list(self, text):
+        words = self.basic_tokenizer.tokenize(text)
+        out = []
+        sentence = []
+        for word in words:
+            sentence.append(word)
+            if word in SENTENCE_ENDERS:
+                out.append(sentence)
+                sentence = []
+        if len(sentence) > 0:
+            out.append(sentence)
+        return out
+
+    def preprocess(self, data):
+        """
+        Transform raw input into model input data.
+        """
+        # Take the input data and make it inference ready
+        if isinstance(data, str):
+            data = self.text_to_token_list(data)
+        document = get_document('_', data, 'german', WINDOW_SIZE, self.tokenizer, 'nested_list')
+        _, example = self.tensorizer.tensorize_example(document, is_training=False)[0]
+        token_map = self.tensorizer.stored_info['subtoken_maps']['_']
+        # Remove gold
+        tensorized = [torch.tensor(e) for e in example[:7]]
+        return tensorized, token_map, data
+
+    @staticmethod
+    def postprocess(results, token_map, tokenized_sentences, output_mode):
+        # We only support a batch size of one!
+        span_starts, span_ends, mention_to_cluster_id, predicted_clusters = results
+        predicted_clusters_words = []
+        for cluster in predicted_clusters:
+            current_cluster = []
+            for pair in cluster:
+                current_cluster.append((token_map[pair[0]], token_map[pair[1]]))
+            predicted_clusters_words.append(current_cluster)
+        if output_mode == "raw":
+            words = list(itertools.chain.from_iterable(tokenized_sentences))
+            for cluster_id, cluster in enumerate(predicted_clusters):
+                for pair in cluster:
+                    words[pair[0]] = "[" + words[pair[0]]
+                    words[pair[1]] = words[pair[1]] + "]" + str(cluster_id).translate(SUBSCRIPT)
+            text = " ".join(words)
+            # Pitiful attempt of fixing what whitespace tokenization removed
+            # but its only meant for direct human usage, so it should be fine.
+            for sentence_ender in SENTENCE_ENDERS + ",":
+                text = text.replace(" " + sentence_ender, sentence_ender)
+            return [text]
+        elif output_mode == "conll":
+            lines = [f"#begin document {DOC_NAME}"]
+            for sentence_id, sentence in enumerate(tokenized_sentences, 1):
+                for word_id, token in enumerate(sentence, 1):
+                    line = ["memory_file", str(sentence_id), str(word_id), token] + ["-"] * 9
+                    lines.append("\t".join(line))
+                lines.append("\n")
+            lines.append("#end document")
+            input_file = io.StringIO(
+                "\n".join(lines)
+            )
+            output_file = io.StringIO("")
+            predictions = {
+                DOC_NAME: predicted_clusters
+            }
+            token_maps = {
+                DOC_NAME: token_map
+            }
+            output_conll(input_file, output_file, predictions, token_maps, False)
+            return output_file.getvalue()
+        else:
+            return predicted_clusters_words
+
+    def predict(self, data, output_mode='raw', **kwargs):
+        assert output_mode != "raw" or isinstance(data, str)
+        in_data, token_map, tokenized_sentences = self.preprocess(data)
+        marshalled_data = [d.to(self.device) for d in in_data]
+        with torch.no_grad():
+            results = self.model(*marshalled_data, **kwargs)
+        return self.postprocess(results, token_map, tokenized_sentences, output_mode)
+
+
+if __name__ == '__main__':
+    model = ProdCorefModel("base/model_saves/model_droc_incremental_no_segment_distance_May02_17-32-58_1800.bin")
+    res = model.predict("Die Organisation gab bekannt sie habe Spenden veruntreut. Außerdem haben sie betont dass sie mit schwerwiegenden Konsequenzen rechnen müssen.")
+    print(res)
+    res = model.predict([["Die", "Organisation", "gab", "bekannt", "sie", "habe", "Spenden", "veruntreut", "."],
+                         ["Außerdem", "haben", "sie", "betont", "dass", "sie", "mit", "schwerwiegenden", "Konsequenzen", "rechnen", "müssen", "."]],
+                        "conll")
+    print(res)
+    res = model.predict("Es war einmal eine Königstochter, die saß daheim und wusste nicht, was sie vor langer Weile anfangen sollte. Da stand sie auf, nahm eine goldene Kugel, womit sie schon oft gespielt hatte und ging hinaus in den Wald. Mitten in dem Wald aber war ein reiner, kühler Brunnen, dabei setzte sie sich nieder, warf die Kugel in die Höhe, fing sie wieder und das war ihr so ein Spielwerk. Es geschah aber, als die Kugel einmal recht hoch geflogen war und die Königstochter schon den Arm in die Höhe hielt und die Fingerchen streckte, um sie zu fangen, dass sie neben vorbei auf die Erde schlug und geradezu ins Wasser hinein rollte.")
+    print(res)
