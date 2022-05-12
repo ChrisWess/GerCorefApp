@@ -113,47 +113,49 @@ class ProdCorefModel:
             }
             output_conll(input_file, output_file, predictions, token_maps, False)
             return output_file.getvalue()
-        else:
-            if output_mode == "json":
-                # A lot of redundancy by the large amount of JSON keys
-                # TODO: optimize format, could make another output_mode="json_small" (perhaps like the following):
-                #   1) "tokens": list of all tokens
-                #   2) "clusters": like predicted_clusters_words (list:cluster_ids of list:mentions of list:mention_range)
-                cluster_member_ids = defaultdict(set)
-                predicted_clusters_words = []
-                for cluster_id, cluster in enumerate(predicted_clusters):
-                    current_cluster = []
-                    for pair in cluster:
-                        token_from = token_map[pair[0]]
-                        token_to = token_map[pair[1]]
-                        current_cluster.append((token_from, token_to))
-                        for i in range(token_from, token_to + 1):
-                            cluster_member_ids[cluster_id].add(i)
-                    predicted_clusters_words.append(current_cluster)
+        elif output_mode == "json":
+            # A lot of redundancy by the large amount of JSON keys
+            # TODO: optimize format, could make another output_mode="json_small" (perhaps like the following):
+            #   1) "tokens": list of all tokens
+            #   2) "clusters": like predicted_clusters_words (list:cluster_ids of list:mentions of list:mention_range)
+            cluster_member_ids = defaultdict(set)
+            predicted_clusters_words = []
+            for cluster_id, cluster in enumerate(predicted_clusters):
+                current_cluster = []
+                for pair in cluster:
+                    token_from = token_map[pair[0]]
+                    token_to = token_map[pair[1]]
+                    current_cluster.append((token_from, token_to))
+                    for i in range(token_from, token_to + 1):
+                        cluster_member_ids[cluster_id].add(i)
+                predicted_clusters_words.append(current_cluster)
 
-                total_word_id = 0
-                lines = []
-                for sentence_id, sentence in enumerate(tokenized_sentences):
-                    for word_id, token in enumerate(sentence):
-                        line = {'sentence': str(sentence_id + 1), 'word': str(word_id + 1), 'token': token}
-                        for cluster_id, tok_id_set in cluster_member_ids.items():
-                            if total_word_id in tok_id_set:
-                                line['cluster_id'] = cluster_id
-                                for mention_id, mention in enumerate(predicted_clusters_words[cluster_id]):
-                                    if mention[0] <= total_word_id <= mention[1]:
-                                        line['mention_id'] = mention_id
-                                break
-                        lines.append(line)
-                        total_word_id += 1
-                lines = {'output': lines}
-                return lines
+            total_word_id = 0
+            lines = []
+            for sentence_id, sentence in enumerate(tokenized_sentences):
+                for word_id, token in enumerate(sentence):
+                    line = {'sentence': str(sentence_id + 1), 'word': str(word_id + 1), 'token': token}
+                    for cluster_id, tok_id_set in cluster_member_ids.items():
+                        if total_word_id in tok_id_set:
+                            line['cluster_id'] = cluster_id
+                            for mention_id, mention in enumerate(predicted_clusters_words[cluster_id]):
+                                if mention[0] <= total_word_id <= mention[1]:
+                                    line['mention_id'] = mention_id
+                            break
+                    lines.append(line)
+                    total_word_id += 1
+            lines = {'output': lines}
+            return lines
+        else:
+            predicted_clusters_words = []
+            for cluster in predicted_clusters:
+                current_cluster = []
+                for pair in cluster:
+                    current_cluster.append((token_map[pair[0]], token_map[pair[1]]))
+                predicted_clusters_words.append(current_cluster)
+            if output_mode == "json_small":
+                return {'tokens': tokenized_sentences, 'clusters': predicted_clusters_words}
             else:
-                predicted_clusters_words = []
-                for cluster in predicted_clusters:
-                    current_cluster = []
-                    for pair in cluster:
-                        current_cluster.append((token_map[pair[0]], token_map[pair[1]]))
-                    predicted_clusters_words.append(current_cluster)
                 return predicted_clusters_words
 
     def predict(self, data, output_mode='raw', **kwargs):
