@@ -1,6 +1,7 @@
 import itertools
 import logging
 import io
+from collections import defaultdict
 
 import torch
 from transformers import BertTokenizer
@@ -79,13 +80,8 @@ class ProdCorefModel:
     def postprocess(results, token_map, tokenized_sentences, output_mode):
         # We only support a batch size of one!
         span_starts, span_ends, mention_to_cluster_id, predicted_clusters = results
-        predicted_clusters_words = []
-        for cluster in predicted_clusters:
-            current_cluster = []
-            for pair in cluster:
-                current_cluster.append((token_map[pair[0]], token_map[pair[1]]))
-            predicted_clusters_words.append(current_cluster)
         if output_mode == "raw":
+            # TODO: not outputting the correct coreferences, even tho model worked correctly
             words = list(itertools.chain.from_iterable(tokenized_sentences))
             for cluster_id, cluster in enumerate(predicted_clusters):
                 for pair in cluster:
@@ -118,7 +114,47 @@ class ProdCorefModel:
             output_conll(input_file, output_file, predictions, token_maps, False)
             return output_file.getvalue()
         else:
-            return predicted_clusters_words
+            if output_mode == "json":
+                # A lot of redundancy by the large amount of JSON keys
+                # TODO: optimize format, could make another output_mode="json_small" (perhaps like the following):
+                #   1) "tokens": list of all tokens
+                #   2) "clusters": like predicted_clusters_words (list:cluster_ids of list:mentions of list:mention_range)
+                cluster_member_ids = defaultdict(set)
+                predicted_clusters_words = []
+                for cluster_id, cluster in enumerate(predicted_clusters):
+                    current_cluster = []
+                    for pair in cluster:
+                        token_from = token_map[pair[0]]
+                        token_to = token_map[pair[1]]
+                        current_cluster.append((token_from, token_to))
+                        for i in range(token_from, token_to + 1):
+                            cluster_member_ids[cluster_id].add(i)
+                    predicted_clusters_words.append(current_cluster)
+
+                total_word_id = 0
+                lines = []
+                for sentence_id, sentence in enumerate(tokenized_sentences):
+                    for word_id, token in enumerate(sentence):
+                        line = {'sentence': str(sentence_id + 1), 'word': str(word_id + 1), 'token': token}
+                        for cluster_id, tok_id_set in cluster_member_ids.items():
+                            if total_word_id in tok_id_set:
+                                line['cluster_id'] = cluster_id
+                                for mention_id, mention in enumerate(predicted_clusters_words[cluster_id]):
+                                    if mention[0] <= total_word_id <= mention[1]:
+                                        line['mention_id'] = mention_id
+                                break
+                        lines.append(line)
+                        total_word_id += 1
+                lines = {'output': lines}
+                return lines
+            else:
+                predicted_clusters_words = []
+                for cluster in predicted_clusters:
+                    current_cluster = []
+                    for pair in cluster:
+                        current_cluster.append((token_map[pair[0]], token_map[pair[1]]))
+                    predicted_clusters_words.append(current_cluster)
+                return predicted_clusters_words
 
     def predict(self, data, output_mode='raw', **kwargs):
         assert output_mode != "raw" or isinstance(data, str)
@@ -129,13 +165,15 @@ class ProdCorefModel:
         return self.postprocess(results, token_map, tokenized_sentences, output_mode)
 
 
+model = ProdCorefModel("app/coref/base/model_saves/model_droc_incremental_no_segment_distance_May02_17-32-58_1800.bin")
+
+
 if __name__ == '__main__':
-    model = ProdCorefModel("base/model_saves/model_droc_incremental_no_segment_distance_May02_17-32-58_1800.bin")
-    res = model.predict("Die Organisation gab bekannt sie habe Spenden veruntreut. Außerdem haben sie betont dass sie mit schwerwiegenden Konsequenzen rechnen müssen.")
+    res = model.predict("Die Organisation gab bekannt sie habe Spenden veruntreut. Außerdem haben sie betont dass sie mit schwerwiegenden Konsequenzen rechnen müssen.", "json")
     print(res)
     res = model.predict([["Die", "Organisation", "gab", "bekannt", "sie", "habe", "Spenden", "veruntreut", "."],
                          ["Außerdem", "haben", "sie", "betont", "dass", "sie", "mit", "schwerwiegenden", "Konsequenzen", "rechnen", "müssen", "."]],
                         "conll")
     print(res)
-    res = model.predict("Es war einmal eine Königstochter, die saß daheim und wusste nicht, was sie vor langer Weile anfangen sollte. Da stand sie auf, nahm eine goldene Kugel, womit sie schon oft gespielt hatte und ging hinaus in den Wald. Mitten in dem Wald aber war ein reiner, kühler Brunnen, dabei setzte sie sich nieder, warf die Kugel in die Höhe, fing sie wieder und das war ihr so ein Spielwerk. Es geschah aber, als die Kugel einmal recht hoch geflogen war und die Königstochter schon den Arm in die Höhe hielt und die Fingerchen streckte, um sie zu fangen, dass sie neben vorbei auf die Erde schlug und geradezu ins Wasser hinein rollte.")
+    res = model.predict("Es war einmal eine Königstochter, die saß daheim und wusste nicht, was sie vor langer Weile anfangen sollte. Da stand sie auf, nahm eine goldene Kugel, womit sie schon oft gespielt hatte und ging hinaus in den Wald. Mitten in dem Wald aber war ein reiner, kühler Brunnen, dabei setzte sie sich nieder, warf die Kugel in die Höhe, fing sie wieder und das war ihr so ein Spielwerk. Es geschah aber, als die Kugel einmal recht hoch geflogen war und die Königstochter schon den Arm in die Höhe hielt und die Fingerchen streckte, um sie zu fangen, dass sie neben vorbei auf die Erde schlug und geradezu ins Wasser hinein rollte.", "conll")
     print(res)

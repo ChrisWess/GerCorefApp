@@ -1,1 +1,1 @@
-from app.routes import user, login
+from app.routes import user, login, annotate
