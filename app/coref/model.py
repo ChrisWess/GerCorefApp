@@ -31,8 +31,12 @@ WINDOW_SIZE = 384
 
 class ProdCorefModel:
     def __init__(self, model_path, gpu_id=0, seed=None):
-        self.gpu_id = gpu_id
-        self.device = torch.device('cpu' if gpu_id is None else f'cuda:{gpu_id}')
+        if torch.cuda.is_available:
+            self.gpu_id = gpu_id
+            self.device = torch.device('cpu' if gpu_id is None else f'cuda:{gpu_id}')
+        else:
+            self.gpu_id = None
+            self.device = torch.device('cpu')
 
         self.seed = seed
         if seed:
