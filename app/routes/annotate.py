@@ -1,10 +1,11 @@
 from flask import request
-
+from flask_cors import cross_origin
 from app import application
 from app.coref.model import model
 
 
 @application.route('/model', methods=['POST'])
+@cross_origin()
 def model_predict():
     args = request.json
     output_mode = "json_small"
