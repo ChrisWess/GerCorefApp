@@ -23,7 +23,7 @@ export default function Text(props: any) {
             );
             console.log(JSON.stringify(data, null, 4));
             props.sendDataToParent(data.clusters)
-            props.sendTextDocToParent(text.split("."))
+            props.sendTextDocToParent(data.tokens)
         }
         catch (error) {
             if (axios.isAxiosError(error)) {
