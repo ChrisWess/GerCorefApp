@@ -3,6 +3,7 @@ import SentenceItem from "./SentenceItem";
 import { makeStyles } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import {Button, ButtonGroup, List, TextField} from "@mui/material";
+import "./MainView.css"
 
 export default function MainView(props:any) {
     const divStyle = {
@@ -10,6 +11,48 @@ export default function MainView(props:any) {
         background: 'lime'
     };
 
+    function showCorefs(a: any[], b: any[]){
+        let buffer = []
+
+        //Puts Text in one long Array instead of one array for each sentence.
+        for (let i = 0; i < a.length; i++) {
+            for (let j = 0; j < a[i].length; j++) {
+                buffer.push( (a[i][j]+" ") as any);
+            }
+        }
+
+        let currentIndexOfCoref = 1;
+        //for each coref cluster it puts an html element in front of its first word and behind its last word
+        //from big to small seems to handle overlapping corefs better
+        for (let i = b.length-1; i >= 0; i--) {
+            currentIndexOfCoref = i+1;
+            for (let j = 0; j < b[i].length; j++) {
+                buffer.splice(b[i][j][0], 1, "<b id=\"d1c1m0\" class=\"cr cr-"+currentIndexOfCoref+"\">\n" +
+                    "                    <a href=\"#d1c1m1\">[</a>" + buffer[b[i][j][0]]);
+                console.log(buffer[b[i][j][0]])
+                buffer.splice(b[i][j][1], 1, buffer[b[i][j][1]]+"<a href=\"#d1c1m1\">]</a>\n" +
+                    "                    <sub>"+currentIndexOfCoref+"</sub>\n" +
+                    "                </b>");
+            }
+        }
+
+        // turn result into one string
+        console.log(buffer);
+        let stringAll = "";
+        for (let i = 0; i < buffer.length; i++) {
+            stringAll+= buffer[i];
+        }
+        console.log(stringAll);
+
+        //render string as html element
+        return (
+            <article>
+                <div dangerouslySetInnerHTML={{ __html:  stringAll}}/>
+            </article>
+        );
+    }
+
+    /* //old  function
     function showCorefs(a: any[], b: any[]){
         let allElements = []
         let buffer = []
@@ -23,7 +66,6 @@ export default function MainView(props:any) {
                 buffer.push( (a[i][j]+" ") as any);
             }
         }
-
         //finds coref-clusters and splices the buffer to insert the span and replace the normal string.
         for (let i = 0; i < b.length; i++) {
             for (let j = 0; j < b[i].length; j++) {
@@ -42,6 +84,7 @@ export default function MainView(props:any) {
             </>
         );
     }
+     */
 
 
     //this.showCorefs = this.showCorefs.bind(this);
