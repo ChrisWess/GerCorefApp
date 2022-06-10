@@ -107,7 +107,7 @@ function MainPageContent() {
                         overflow: 'auto',
                     }}
                 >
-                    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+                    <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
                         <Grid container spacing={3}>
 
                             {/* Corefview */}
@@ -120,7 +120,7 @@ function MainPageContent() {
                                     flexDirection: 'column',
                                     height: 800,
                                 }}>
-                                    <CorefView></CorefView>
+                                    <CorefView/>
                                 </Paper>
                             </Grid>
 
@@ -169,7 +169,7 @@ function MainPageContent() {
 
                                         </TabPanel>
                                         <TabPanel value={value} index={1}>
-                                            <Documents></Documents>
+                                            <Documents/>
                                         </TabPanel>
                                     </Box>
                                 </Paper>

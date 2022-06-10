@@ -41,7 +41,8 @@ export default function Text(props: any) {
         <>
             <TextField
                 label={"text"}
-                multiline rows={28}
+                fullWidth
+                multiline rows={26}
                 variant={"outlined"}
                 onChange={(e) => setText(e.target.value)}>
             </TextField>
