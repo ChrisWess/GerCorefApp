@@ -17,7 +17,7 @@ export default function MainView(props:any) {
         //Puts Text in one long Array instead of one array for each sentence.
         for (let i = 0; i < a.length; i++) {
             for (let j = 0; j < a[i].length; j++) {
-                buffer.push( (a[i][j]+" ") as any);
+                buffer.push( (" " + a[i][j]) as any);
             }
         }
 
@@ -27,12 +27,13 @@ export default function MainView(props:any) {
         for (let i = b.length-1; i >= 0; i--) {
             currentIndexOfCoref = i+1;
             for (let j = 0; j < b[i].length; j++) {
-                buffer.splice(b[i][j][0], 1, "<b id=\"d1c1m0\" class=\"cr cr-"+currentIndexOfCoref+"\">\n" +
-                    "                    <a href=\"#d1c1m1\">[</a>" + buffer[b[i][j][0]]);
-                console.log(buffer[b[i][j][0]])
-                buffer.splice(b[i][j][1], 1, buffer[b[i][j][1]]+"<a href=\"#d1c1m1\">]</a>\n" +
-                    "                    <sub>"+currentIndexOfCoref+"</sub>\n" +
-                    "                </b>");
+                let coref = buffer[b[i][j][0]]
+                buffer.splice(b[i][j][0], 1,
+                    " <b id=\"d1c1m0\" class=\"cr cr-" + currentIndexOfCoref +
+                    " onClick=\"><a href=\"#d1c1m1\">[</a>" + coref.substring(1));  // TODO: add a function that selects this mention (to show it in the CorefView)
+                console.log(coref)
+                buffer.splice(b[i][j][1], 1,
+                    buffer[b[i][j][1]]+"<a href=\"#d1c1m1\">]</a><sub>"+currentIndexOfCoref+"</sub></b>");
             }
         }
 
@@ -40,7 +41,11 @@ export default function MainView(props:any) {
         console.log(buffer);
         let stringAll = "";
         for (let i = 0; i < buffer.length; i++) {
-            stringAll+= buffer[i];
+            let token = buffer[i];
+            if (token.length === 2 && token[0] === " ") {  // TODO: Actual check for punctuation
+                token = token.substring(1)
+            }
+            stringAll += token;
         }
         console.log(stringAll);
 
@@ -109,9 +114,8 @@ export default function MainView(props:any) {
 
     return (
         <>
-
-            <div>{showCorefs(docu, clusters)}</div>
-            <ButtonGroup variant="contained" aria-label="outlined primary button group" style={{marginTop: 15}}>
+            <div style={{height:720}}>{showCorefs(docu, clusters)}</div>
+            <ButtonGroup variant="outlined" aria-label="outlined primary button group" style={{marginTop: 15}}>
                 <Button style={{width:120}}>Back</Button>
                 <Button style={{width:120}}>Next</Button>
             </ButtonGroup>
