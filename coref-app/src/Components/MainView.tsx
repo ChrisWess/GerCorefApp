@@ -6,12 +6,11 @@ import {Button, ButtonGroup, List, TextField} from "@mui/material";
 import "./MainView.css"
 
 export default function MainView(props:any) {
-    const divStyle = {
-        color: 'blue',
-        background: 'lime'
-    };
 
     function showCorefs(a: any[], b: any[]){
+        console.log(b[0])
+        if(b[0] === "Nothing")
+            return <h1>No Document yet</h1>
         let buffer = []
 
         //Puts Text in one long Array instead of one array for each sentence.
@@ -94,31 +93,14 @@ export default function MainView(props:any) {
 
     //this.showCorefs = this.showCorefs.bind(this);
     //const [texres, setTexres] = useState("");
-    const docu = props.text;
 
-    const textItems = docu.map((tex:any) =>
-        <li key={tex.toString()}>
-            <SentenceItem text={tex}></SentenceItem>
-        </li>
-    );
-
-    const clusters = props.clust;
-    const clusterItems = clusters.map((tex:any) =>
-        <li key={tex.toString()}>
-            <p>{tex}</p>
-        </li>
-    );
-
-    <p>{props.clust.length}, {props.text}</p>
+    const corefText = props.text;
+    const corefClusters = props.clust;
 
 
     return (
         <>
-            <div style={{height:720}}>{showCorefs(docu, clusters)}</div>
-            <ButtonGroup variant="outlined" aria-label="outlined primary button group" style={{marginTop: 15}}>
-                <Button style={{width:120}}>Back</Button>
-                <Button style={{width:120}}>Next</Button>
-            </ButtonGroup>
+            <div style={{height:720}}>{showCorefs(corefText, corefClusters)}</div>
         </>
     );
 }
