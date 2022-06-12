@@ -1,22 +1,14 @@
 import * as React from 'react';
-import { styled, createTheme, ThemeProvider } from '@mui/material/styles';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import MuiDrawer from '@mui/material/Drawer';
 import Box from '@mui/material/Box';
-import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
-import Toolbar from '@mui/material/Toolbar';
-import List from '@mui/material/List';
 import Typography from '@mui/material/Typography';
-import Divider from '@mui/material/Divider';
-import IconButton from '@mui/material/IconButton';
-import Badge from '@mui/material/Badge';
 import Container from '@mui/material/Container';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import Link from '@mui/material/Link';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import PropTypes from 'prop-types';
 import MainView from "./MainView";
 import Documents from "./Documents";
 import CorefView from "./CorefView";
@@ -66,23 +58,26 @@ function a11yProps(index: number) {
     };
 }
 
-
-const mdTheme = createTheme();
+//unused, possibly usable to create a color theme to improve visuals
+const theme = createTheme();
 
 function MainPageContent() {
-    const [messageFromChild, getMessageFromChild] = React.useState(
-        ["Dad is waiting"]
+    const [corefClusters, getCorefClusters] = React.useState(
+        ["Nothing"]
     );
-    const [textDoc, getTextFromChild] = React.useState(
+    const [corefText, getCorefText] = React.useState(
         ["No Document"]
     );
-    const sendDataToParent = (message:any) => {
+
+    //Functions used by Child-Component "Text" to send the received data to the
+    // main page. Maybe 1 function to send both would be enough
+    const sendCorefClustersToMainPage = (message:any) => {
         console.log(message)
-        getMessageFromChild(message);
+        getCorefClusters(message);
     };
-    const sendTextDocToParent = (message:any) => {
+    const sendCorefTextToMainPage = (message:any) => {
         console.log(message)
-        getTextFromChild(message);
+        getCorefText(message);
     };
 
     //For Tabs
@@ -92,7 +87,7 @@ function MainPageContent() {
     };
 
     return (
-        <ThemeProvider theme={mdTheme}>
+        <ThemeProvider theme={theme}>
             <Box sx={{ display: 'flex' }}>
                 <CssBaseline />
                 <Box
@@ -135,8 +130,8 @@ function MainPageContent() {
                                     height: 800,
                                 }}>
                                     <MainView
-                                        clust={messageFromChild}
-                                        text={textDoc}
+                                        clust={corefClusters}
+                                        text={corefText}
                                     ></MainView>
                                 </Paper>
                             </Grid>
@@ -162,8 +157,8 @@ function MainPageContent() {
 
                                             {/* Text */}
                                             <Text
-                                                sendDataToParent={sendDataToParent}
-                                                sendTextDocToParent={sendTextDocToParent}>
+                                                sendCorefClusterToParent={sendCorefClustersToMainPage}
+                                                sendCorefTextToParent={sendCorefTextToMainPage}>
                                             </Text>
 
 
