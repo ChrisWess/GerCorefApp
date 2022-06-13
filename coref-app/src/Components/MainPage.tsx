@@ -13,6 +13,7 @@ import MainView from "./MainView";
 import Documents from "./Documents";
 import CorefView from "./CorefView";
 import Text from "./Text";
+import {ChangeEvent} from "react";
 
 function Copyright(props: any) {
     return (
@@ -62,22 +63,20 @@ function a11yProps(index: number) {
 const theme = createTheme();
 
 function MainPageContent() {
-    const [corefClusters, getCorefClusters] = React.useState(
-        ["Nothing"]
-    );
-    const [corefText, getCorefText] = React.useState(
-        ["No Document"]
-    );
+    const [corefClusters, setCorefClusters] = React.useState(["Nothing"]);
+    const [corefText, setCorefText] = React.useState(["No Document"]);
+    const [selectedCoref, setSelectedCoref] = React.useState("No Selection");
+    const allCorefsMapped = new Map<string, string>(new Map());
 
     //Functions used by Child-Component "Text" to send the received data to the
     // main page. Maybe 1 function to send both would be enough
-    const sendCorefClustersToMainPage = (message:any) => {
-        console.log(message)
-        getCorefClusters(message);
+    const sendCorefClustersToMainPage = (cluster:any[]) => {
+        console.log(cluster)
+        setCorefClusters(cluster);
     };
-    const sendCorefTextToMainPage = (message:any) => {
-        console.log(message)
-        getCorefText(message);
+    const sendCorefTextToMainPage = (messages:any[]) => {
+        console.log(messages)
+        setCorefText(messages);
     };
 
     //For Tabs
@@ -115,7 +114,10 @@ function MainPageContent() {
                                     flexDirection: 'column',
                                     height: 800,
                                 }}>
-                                    <CorefView/>
+                                    <CorefView
+                                        selectedCoref={selectedCoref}
+                                        handleSelectCoref={setSelectedCoref}
+                                    />
                                 </Paper>
                             </Grid>
 
@@ -130,8 +132,10 @@ function MainPageContent() {
                                     height: 800,
                                 }}>
                                     <MainView
+                                        txt={corefText}
                                         clust={corefClusters}
-                                        text={corefText}
+                                        allCorefs={allCorefsMapped}
+                                        setSelectedCoref={setSelectedCoref}
                                     ></MainView>
                                 </Paper>
                             </Grid>
@@ -158,8 +162,8 @@ function MainPageContent() {
                                             {/* Text */}
                                             <Text
                                                 sendCorefClusterToParent={sendCorefClustersToMainPage}
-                                                sendCorefTextToParent={sendCorefTextToMainPage}>
-                                            </Text>
+                                                sendCorefTextToParent={sendCorefTextToMainPage}
+                                            />
 
 
                                         </TabPanel>

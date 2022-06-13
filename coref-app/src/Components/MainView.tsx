@@ -1,60 +1,78 @@
-import React, {useState} from 'react';
-import SentenceItem from "./SentenceItem";
-import { makeStyles } from '@mui/material/styles';
-import Typography from '@mui/material/Typography';
-import {Button, ButtonGroup, List, TextField} from "@mui/material";
+import React, {useEffect} from 'react';
 import "./MainView.css"
 
-export default function MainView(props:any) {
 
-    function showCorefs(a: any[], b: any[]){
-        console.log(b[0])
-        if(b[0] === "Nothing")
-            return <h1>No Document yet</h1>
-        let buffer = []
+interface MainViewProps {
+    txt: any[]
+    clust: any[]
+    allCorefs: Map<string, string>
+    setSelectedCoref: Function
+}
 
-        //Puts Text in one long Array instead of one array for each sentence.
-        for (let i = 0; i < a.length; i++) {
-            for (let j = 0; j < a[i].length; j++) {
-                buffer.push( (" " + a[i][j]) as any);
-            }
+const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
+                                               setSelectedCoref }) => {
+
+    useEffect(() => {
+        let elems = document.querySelectorAll(".cr");
+        elems.forEach(function(value) {
+            value.addEventListener("click", () => setSelectedCoref(allCorefs.get(value.id)), false)
+        });
+    }, [txt, clust]);
+
+    console.log(clust[0])
+    if(clust[0] === "Nothing")
+        return <h1>No Document yet</h1>
+    let buffer = []
+
+    //Puts Text in one long Array instead of one array for each sentence.
+    for (let i = 0; i < txt.length; i++) {
+        for (let j = 0; j < txt[i].length; j++) {
+            buffer.push( (" " + txt[i][j]) as any);
         }
+    }
 
-        let currentIndexOfCoref = 1;
-        //for each coref cluster it puts an html element in front of its first word and behind its last word
-        //from big to small seems to handle overlapping corefs better
-        for (let i = b.length-1; i >= 0; i--) {
-            currentIndexOfCoref = i+1;
-            for (let j = 0; j < b[i].length; j++) {
-                let coref = buffer[b[i][j][0]]
-                buffer.splice(b[i][j][0], 1,
-                    " <b id=\"d1c1m0\" class=\"cr cr-" + currentIndexOfCoref +
-                    " onClick=\"><a href=\"#d1c1m1\">[</a>" + coref.substring(1));  // TODO: add a function that selects this mention (to show it in the CorefView)
-                console.log(coref)
-                buffer.splice(b[i][j][1], 1,
-                    buffer[b[i][j][1]]+"<a href=\"#d1c1m1\">]</a><sub>"+currentIndexOfCoref+"</sub></b>");
-            }
+    allCorefs.clear()
+    let currentIndexOfCoref = 1;
+    //for each coref cluster it puts an html element in front of its first word and behind its last word
+    //from big to small seems to handle overlapping corefs better
+    for (let i = clust.length-1; i >= 0; i--) {
+        currentIndexOfCoref = i+1;
+        for (let j = 0; j < clust[i].length; j++) {
+            let mentionIdxStart = clust[i][j][0]
+            let mentionIdxEnd = clust[i][j][1]
+            let corefStart = buffer[mentionIdxStart].substring(1)
+            let coref = buffer.slice(mentionIdxStart, mentionIdxEnd + 1).join("")
+            let corefId = `d1c${i}m${j}`
+            allCorefs.set(corefId, coref)
+            buffer.splice(mentionIdxStart, 1,
+                " <b id=\"" + corefId + "\" class=\"cr cr-" +
+                currentIndexOfCoref + "\"><a href=\"#d1c1m1\">[</a>" + corefStart);
+            console.log(coref)
+            buffer.splice(mentionIdxEnd, 1,
+                buffer[mentionIdxEnd]+"<a href=\"#d1c1m1\">]</a><sub>"+currentIndexOfCoref+"</sub></b>");
         }
+    }
 
-        // turn result into one string
-        console.log(buffer);
-        let stringAll = "";
-        for (let i = 0; i < buffer.length; i++) {
-            let token = buffer[i];
-            if (token.length === 2 && token[0] === " ") {  // TODO: Actual check for punctuation
-                token = token.substring(1)
-            }
-            stringAll += token;
+    // turn result into one string
+    console.log(buffer);
+    let stringAll = "";
+    for (let i = 0; i < buffer.length; i++) {
+        let token = buffer[i];
+        if (token.length === 2 && token[0] === " ") {  // TODO: Actual check for punctuation
+            token = token.substring(1)
         }
-        console.log(stringAll);
+        stringAll += token;
+    }
+    console.log(stringAll);
 
-        //render string as html element
-        return (
+    //render string as html element
+    return (
+        <div style={{height:720}}>
             <article>
                 <div dangerouslySetInnerHTML={{ __html:  stringAll}}/>
             </article>
-        );
-    }
+        </div>
+    );
 
     /* //old  function
     function showCorefs(a: any[], b: any[]){
@@ -93,14 +111,6 @@ export default function MainView(props:any) {
 
     //this.showCorefs = this.showCorefs.bind(this);
     //const [texres, setTexres] = useState("");
-
-    const corefText = props.text;
-    const corefClusters = props.clust;
-
-
-    return (
-        <>
-            <div style={{height:720}}>{showCorefs(corefText, corefClusters)}</div>
-        </>
-    );
 }
+
+export default MainView;
