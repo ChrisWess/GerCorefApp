@@ -168,7 +168,11 @@ function MainPageContent() {
 
                                         </TabPanel>
                                         <TabPanel value={value} index={1}>
-                                            <Documents/>
+                                            {/* Documents */}
+                                            <Documents
+                                                sendCorefClusterToParent={sendCorefClustersToMainPage}
+                                                sendCorefTextToParent={sendCorefTextToMainPage}>
+                                            </Documents>                                        
                                         </TabPanel>
                                     </Box>
                                 </Paper>
