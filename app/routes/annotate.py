@@ -12,3 +12,10 @@ def model_predict():
     if 'output_mode' in args and args['output_mode'] == 'long':
         output_mode = "json"
     return model.predict(args["text"], output_mode)
+
+
+@application.route('/uploadfile', methods=['POST'])
+@cross_origin()
+def model_file():
+    text = request.files.get("myFile").read().decode("utf-8") 
+    return model.predict(text, "json_small")
