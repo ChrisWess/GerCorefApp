@@ -15,28 +15,60 @@ interface MainViewProps {
     allCorefs: Map<string, Mention>
     wordArr: MutableRefObject<string[]>
     wordFlags: MutableRefObject<boolean[]>
+    markedWord: MutableRefObject<number[]>
     setSelectedCoref: Function
+    setClusterColor: Function
 }
+
+export const clearPrevMarking = function(markedWord: number[]) {
+    if (markedWord.length === 1) {
+        let prev = document.getElementById("w" + markedWord[0])
+        if (prev) {  // && prev.classList.contains("wregular")
+            prev.style.backgroundColor = "transparent"
+        }
+    } else if (markedWord.length === 2) {
+        for (let i = markedWord[0]; i < markedWord[1]; i++) {
+            let prev = document.getElementById("w" + i)
+            if (prev) {  // && prev.classList.contains("wregular")
+                prev.style.backgroundColor = "transparent"
+            }
+        }
+    }
+};
 
 const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
                                                wordArr, wordFlags,
-                                               setSelectedCoref }) => {
+                                               markedWord, setSelectedCoref, setClusterColor }) => {
+
+    const getStyle = function(element: any, property: string) {
+        return window.getComputedStyle ? window.getComputedStyle(element, null).getPropertyValue(property) :
+            element.style[property.replace(/-([a-z])/g, function (g) { return g[1].toUpperCase(); })];
+    };
 
     useEffect(() => {
-        let elems = document.querySelectorAll(".cr");
+        let elems = document.querySelectorAll("b.cr");
         elems.forEach(function(value) {
             value.addEventListener("click", () => {
+                clearPrevMarking(markedWord.current)
+                markedWord.current = []
                 let mention = allCorefs.get(value.id)
                 if (mention) {
                     setSelectedCoref(mention.selectionRange)
+                    setClusterColor(getStyle(value, "background-color"))
                 }
             }, false)
         });
         elems = document.querySelectorAll("bb.wregular");
         elems.forEach(function(value) {
             value.addEventListener("click", () => {
+                clearPrevMarking(markedWord.current)
+                markedWord.current = []
                 let wid = parseInt(value.id.substring(1))
                 setSelectedCoref([wid, wid + 1])
+                // @ts-ignore
+                value.style.backgroundColor = "yellow";
+                setClusterColor("yellow")
+                markedWord.current = [wid]
             }, false)
         });
     }, [txt, clust]);
@@ -83,7 +115,7 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
                        `"><bb id="w${mentionIdxStart}"> <a id="w${mentionIdxStart}" href="#d1c1m1">[</a>` +
                     buffer[mentionIdxStart] + "</bb>");
                 buffer.splice(mentionIdxEnd, 1,
-                `<bb id="w${mentionIdxEnd}">` + buffer[mentionIdxEnd] +
+                `<bb id="w${mentionIdxEnd}"> ` + buffer[mentionIdxEnd] +
                       `<a id="w${mentionIdxStart}" href="#d1c1m1">]</a><sub id="w${mentionIdxStart}">` +
                     currentIndexOfCoref + "</sub></bb></b>");
             }
@@ -93,12 +125,21 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
     // turn result into one string
     // console.log(buffer);
     let stringAll = "";
+    let corefFlag: boolean = false
     for (let i = 0; i < buffer.length; i++) {
         let token = buffer[i];
         if (token.match(/[.,:!?]/)) {  // check for punctuation
             token = `<bb id='w${i}'>` + token + "</bb>"
             wordFlags.current[i] = false
-        } else if (!token.startsWith("<b id")) {
+        } else if (token.startsWith("<b id")) {
+            if (!token.endsWith("</b>")) {
+                corefFlag = true
+            }
+        } else if (token.endsWith("</b>")) {
+            corefFlag = false
+        } else if (corefFlag) {
+            token = `<bb id='w${i}'> ` + token + "</bb>"
+        } else {
             token = `<bb id='w${i}' class="wregular"> ` + token + "</bb>"
         }
         stringAll += token;

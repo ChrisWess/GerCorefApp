@@ -9,7 +9,7 @@ import Paper from '@mui/material/Paper';
 import Link from '@mui/material/Link';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import MainView, {Mention} from "./MainView";
+import MainView, {Mention, clearPrevMarking} from "./MainView";
 import Documents from "./Documents";
 import CorefView from "./CorefView";
 import Text from "./Text";
@@ -66,11 +66,13 @@ function MainPageContent() {
     const [corefClusters, setCorefClusters] = React.useState(["Nothing"]);
     const [corefText, setCorefText] = React.useState(["No Document"]);
     const [selectedCoref, setSelectedCoref] = React.useState<number[]>([]);
+    const [clusterColor, setClusterColor] = React.useState<string>("black");
 
     const allCorefsMapped = new Map<string, Mention>();
     const allCorefs: Mention[][] = [];  // different mention representation (more efficient access to entire docs or clusters)
     const wordArr = React.useRef<string[]>([]);
     const wordFlags = React.useRef<boolean[]>([]);
+    const markedWord = React.useRef<number[]>([])
 
     //Functions used by Child-Component "Text" to send the received data to the
     // main page. Maybe 1 function to send both would be enough
@@ -113,7 +115,13 @@ function MainPageContent() {
                             let isWord: boolean = wordFlags.current[startWordIdx]
                             // offset needs to start at 1, because there is always a space at 0
                             if (startOffset <= 1 && isWord && endOffset === word.length + 1) {
+                                clearPrevMarking(markedWord.current)
+                                markedWord.current = [startWordIdx]
+                                // @ts-ignore
+                                value.style.backgroundColor = "yellow";
+                                setClusterColor("yellow")
                                 setSelectedCoref([startWordIdx, startWordIdx + 1])
+                                selection.empty()
                             }
                             return
                         } else if (startWordIdx > endWordIdx) {
@@ -150,7 +158,17 @@ function MainPageContent() {
                             result.push(endWordIdx)
                         }
                         if (result[1] > result[0]) {
+                            clearPrevMarking(markedWord.current)
+                            markedWord.current = result
+                            for (let i = result[0]; i < result[1]; i++) {
+                                let prev = document.getElementById("w" + i)
+                                if (prev) {
+                                    prev.style.backgroundColor = "yellow"
+                                }
+                            }
+                            setClusterColor("yellow")
                             setSelectedCoref(result)
+                            selection.empty()
                         }
                     }
                 }
@@ -190,6 +208,7 @@ function MainPageContent() {
                                     <CorefView
                                         selectedCoref={selectedCoref}
                                         wordArr={wordArr}
+                                        clusterColor={clusterColor}
                                         handleSelectCoref={setSelectedCoref}
                                     />
                                 </Paper>
@@ -211,7 +230,9 @@ function MainPageContent() {
                                         allCorefs={allCorefsMapped}
                                         wordArr={wordArr}
                                         wordFlags={wordFlags}
+                                        markedWord={markedWord}
                                         setSelectedCoref={setSelectedCoref}
+                                        setClusterColor={setClusterColor}
                                     ></MainView>
                                 </Paper>
                             </Grid>
