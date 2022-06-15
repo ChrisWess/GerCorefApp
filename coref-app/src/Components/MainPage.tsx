@@ -9,7 +9,7 @@ import Paper from '@mui/material/Paper';
 import Link from '@mui/material/Link';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import MainView from "./MainView";
+import MainView, {Mention} from "./MainView";
 import Documents from "./Documents";
 import CorefView from "./CorefView";
 import Text from "./Text";
@@ -59,6 +59,27 @@ function a11yProps(index: number) {
     };
 }
 
+// TODO: perhaps mouseup event better (and check if selection is in the right component for this event)
+document.addEventListener('selectionchange', () => {
+    let selection = window.getSelection()
+    if (selection) {
+        let anchor = selection.anchorNode
+        let nfocus = selection.focusNode
+        if (anchor && nfocus && !nfocus.hasChildNodes() && !anchor.hasChildNodes()) {
+            let startElem = anchor.parentElement
+            let endElem = nfocus.parentElement
+            //console.log([selection.anchorOffset, selection.focusOffset])
+            if (startElem && endElem) {
+                console.log([startElem.id, endElem.id])
+                // TODO: id must start with "w"
+                let startWordIdx = parseInt(startElem.id.substring(1))
+                let endWordIdx = parseInt(endElem.id.substring(1))
+            }
+        }
+    }
+});
+
+
 //unused, possibly usable to create a color theme to improve visuals
 const theme = createTheme();
 
@@ -66,7 +87,10 @@ function MainPageContent() {
     const [corefClusters, setCorefClusters] = React.useState(["Nothing"]);
     const [corefText, setCorefText] = React.useState(["No Document"]);
     const [selectedCoref, setSelectedCoref] = React.useState("No Selection");
-    const allCorefsMapped = new Map<string, string>(new Map());
+
+    const allCorefsMapped = new Map<string, Mention>();
+    const allCorefs: Mention[][] = [];
+    const wordList: string[][] = [];
 
     //Functions used by Child-Component "Text" to send the received data to the
     // main page. Maybe 1 function to send both would be enough
