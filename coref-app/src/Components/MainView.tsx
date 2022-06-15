@@ -1,10 +1,11 @@
-import React, {useEffect} from 'react';
+import React, {MutableRefObject, useEffect} from 'react';
 import "./MainView.css"
 
 
 export type Mention = {
     id: string;
     content: string;
+    selectionRange: number[]
     username?: string;
 }
 
@@ -12,10 +13,13 @@ interface MainViewProps {
     txt: any[]
     clust: any[]
     allCorefs: Map<string, Mention>
+    wordArr: MutableRefObject<string[]>
+    wordFlags: MutableRefObject<boolean[]>
     setSelectedCoref: Function
 }
 
 const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
+                                               wordArr, wordFlags,
                                                setSelectedCoref }) => {
 
     useEffect(() => {
@@ -24,8 +28,15 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
             value.addEventListener("click", () => {
                 let mention = allCorefs.get(value.id)
                 if (mention) {
-                    setSelectedCoref(mention.content)
+                    setSelectedCoref(mention.selectionRange)
                 }
+            }, false)
+        });
+        elems = document.querySelectorAll("bb.wregular");
+        elems.forEach(function(value) {
+            value.addEventListener("click", () => {
+                let wid = parseInt(value.id.substring(1))
+                setSelectedCoref([wid, wid + 1])
             }, false)
         });
     }, [txt, clust]);
@@ -33,16 +44,18 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
     console.log(clust[0])
     if(clust[0] === "Nothing")
         return <h1>No Document yet</h1>
+    wordArr.current = []
+    wordFlags.current = []
     let buffer = []
 
     //Puts Text in one long Array instead of one array for each sentence.
     for (let i = 0; i < txt.length; i++) {
         for (let j = 0; j < txt[i].length; j++) {
-            buffer.push(txt[i][j] as any);
+            buffer.push(txt[i][j] as string);
+            wordArr.current.push(txt[i][j])
+            wordFlags.current.push(true)
         }
     }
-    // TODO: keep copy of this array globally (perhaps change it to an array of array=[w<id>, word])
-    //   => wordList in MainPage
     console.log(buffer);
 
     allCorefs.clear()
@@ -56,7 +69,8 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
             let mentionIdxEnd = clust[i][j][1]
             let coref = buffer.slice(mentionIdxStart, mentionIdxEnd + 1).join(" ")
             let corefId = `d1c${i}m${j}`
-            allCorefs.set(corefId, { id: corefId, content: coref })
+            allCorefs.set(corefId, { id: corefId, content: coref, selectionRange: [mentionIdxStart, mentionIdxEnd + 1] })
+            // TODO: make mouseover event that shows a small prompt with information at the mouse pointer
             if (mentionIdxStart === mentionIdxEnd) {
                 buffer.splice(mentionIdxStart, 1,
                 "<b id=\"" + corefId + "\" class=\"cr cr-" + currentIndexOfCoref +
@@ -83,9 +97,9 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
         let token = buffer[i];
         if (token.match(/[.,:!?]/)) {  // check for punctuation
             token = `<bb id='w${i}'>` + token + "</bb>"
+            wordFlags.current[i] = false
         } else if (!token.startsWith("<b id")) {
-            // TODO: make a click-event on words to make single words easier to select as annotations
-            token = `<bb id='w${i}'> ` + token + "</bb>"
+            token = `<bb id='w${i}' class="wregular"> ` + token + "</bb>"
         }
         stringAll += token;
     }
@@ -94,7 +108,7 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
     //render string as html element
     return (
         <div style={{height:720}}>
-            <article>
+            <article id="docView">
                 <div dangerouslySetInnerHTML={{ __html:  stringAll}}/>
             </article>
         </div>
