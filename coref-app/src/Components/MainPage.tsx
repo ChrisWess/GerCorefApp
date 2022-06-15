@@ -13,7 +13,6 @@ import MainView, {Mention} from "./MainView";
 import Documents from "./Documents";
 import CorefView from "./CorefView";
 import Text from "./Text";
-import {ChangeEvent} from "react";
 
 function Copyright(props: any) {
     return (
@@ -59,26 +58,6 @@ function a11yProps(index: number) {
     };
 }
 
-// TODO: perhaps mouseup event better (and check if selection is in the right component for this event)
-document.addEventListener('selectionchange', () => {
-    let selection = window.getSelection()
-    if (selection) {
-        let anchor = selection.anchorNode
-        let nfocus = selection.focusNode
-        if (anchor && nfocus && !nfocus.hasChildNodes() && !anchor.hasChildNodes()) {
-            let startElem = anchor.parentElement
-            let endElem = nfocus.parentElement
-            //console.log([selection.anchorOffset, selection.focusOffset])
-            if (startElem && endElem) {
-                console.log([startElem.id, endElem.id])
-                // TODO: id must start with "w"
-                let startWordIdx = parseInt(startElem.id.substring(1))
-                let endWordIdx = parseInt(endElem.id.substring(1))
-            }
-        }
-    }
-});
-
 
 //unused, possibly usable to create a color theme to improve visuals
 const theme = createTheme();
@@ -86,11 +65,12 @@ const theme = createTheme();
 function MainPageContent() {
     const [corefClusters, setCorefClusters] = React.useState(["Nothing"]);
     const [corefText, setCorefText] = React.useState(["No Document"]);
-    const [selectedCoref, setSelectedCoref] = React.useState("No Selection");
+    const [selectedCoref, setSelectedCoref] = React.useState<number[]>([]);
 
     const allCorefsMapped = new Map<string, Mention>();
-    const allCorefs: Mention[][] = [];
-    const wordList: string[][] = [];
+    const allCorefs: Mention[][] = [];  // different mention representation (more efficient access to entire docs or clusters)
+    const wordArr = React.useRef<string[]>([]);
+    const wordFlags = React.useRef<boolean[]>([]);
 
     //Functions used by Child-Component "Text" to send the received data to the
     // main page. Maybe 1 function to send both would be enough
@@ -108,6 +88,75 @@ function MainPageContent() {
     const handleChange = (event: React.SyntheticEvent, newValue: number) => {
         setValue(newValue);
     };
+
+    React.useEffect(() => {
+        document.addEventListener('mouseup', () => {
+            let selection = window.getSelection()
+            let words = wordArr.current
+            if (selection && words.length > 0) {
+                let anchor = selection.anchorNode
+                let nfocus = selection.focusNode
+                if (anchor && nfocus && !nfocus.hasChildNodes() && !anchor.hasChildNodes()) {
+                    let startElem = anchor.parentElement
+                    let endElem = nfocus.parentElement
+                    let docView = document.getElementById("docView")
+                    if (startElem && endElem && docView && startElem.id.startsWith("w") && endElem.id.startsWith("w") &&
+                        docView.contains(startElem) && docView.contains(endElem)) {
+                        let startWordIdx: number = parseInt(startElem.id.substring(1))
+                        let endWordIdx: number = parseInt(endElem.id.substring(1))
+                        let startOffset: number
+                        let endOffset: number
+                        if (startWordIdx === endWordIdx) {
+                            startOffset = Math.min(selection.anchorOffset, selection.focusOffset)
+                            endOffset = Math.max(selection.anchorOffset, selection.focusOffset)
+                            let word: string = words[startWordIdx]
+                            let isWord: boolean = wordFlags.current[startWordIdx]
+                            // offset needs to start at 1, because there is always a space at 0
+                            if (startOffset <= 1 && isWord && endOffset === word.length + 1) {
+                                setSelectedCoref([startWordIdx, startWordIdx + 1])
+                            }
+                            return
+                        } else if (startWordIdx > endWordIdx) {
+                            let temp: number = startWordIdx
+                            startWordIdx = endWordIdx
+                            endWordIdx = temp
+                            startOffset = selection.focusOffset
+                            endOffset = selection.anchorOffset
+                        } else {
+                            startOffset = selection.anchorOffset
+                            endOffset = selection.focusOffset
+                        }
+                        let result: number[] = []
+                        let wordFlagsSlice: boolean[] = wordFlags.current.slice(startWordIdx, endWordIdx + 1)
+                        for (let i = 1; i < wordFlagsSlice.length - 1; i++) {
+                            if (!wordFlagsSlice[i]) {
+                                return
+                            }
+                        }
+
+                        if (!wordFlagsSlice[0]) {
+                            result.push(startWordIdx + 1)
+                        } else if (startOffset <= 1) {
+                            result.push(startWordIdx)
+                        } else {
+                            result.push(startWordIdx + 1)
+                        }
+
+                        if (!wordFlagsSlice[wordFlagsSlice.length - 1]) {
+                            result.push(endWordIdx)
+                        } else if (endOffset === words[endWordIdx].length + 1) {
+                            result.push(endWordIdx + 1)
+                        } else {
+                            result.push(endWordIdx)
+                        }
+                        if (result[1] > result[0]) {
+                            setSelectedCoref(result)
+                        }
+                    }
+                }
+            }
+        });
+    }, []);
 
     return (
         <ThemeProvider theme={theme}>
@@ -140,6 +189,7 @@ function MainPageContent() {
                                 }}>
                                     <CorefView
                                         selectedCoref={selectedCoref}
+                                        wordArr={wordArr}
                                         handleSelectCoref={setSelectedCoref}
                                     />
                                 </Paper>
@@ -159,6 +209,8 @@ function MainPageContent() {
                                         txt={corefText}
                                         clust={corefClusters}
                                         allCorefs={allCorefsMapped}
+                                        wordArr={wordArr}
+                                        wordFlags={wordFlags}
                                         setSelectedCoref={setSelectedCoref}
                                     ></MainView>
                                 </Paper>
