@@ -11,7 +11,9 @@ interface CorefViewProps {
     allCorefs: MutableRefObject<Mention[][]>
     clusterColor: string
     markedWord: MutableRefObject<number[]>
+    currentMention: Mention | undefined
     handleSelectCoref: Function;
+    setCurrentMention: Function
 }
 
 export const parseMentionId = function(mentionId: string) {
@@ -25,8 +27,8 @@ export const parseMentionId = function(mentionId: string) {
 };
 
 const CorefView: React.FC<CorefViewProps> = ({ selectedCoref, wordArr, allCorefsMapped,
-                                                 allCorefs, clusterColor,
-                                                 markedWord, handleSelectCoref }) => {
+                                                 allCorefs, clusterColor, markedWord,
+                                                 currentMention, handleSelectCoref, setCurrentMention }) => {
     const theme = useTheme();
 
     // TODO: dynamically add more list entries to MyList, when coreference is selected
@@ -45,7 +47,9 @@ const CorefView: React.FC<CorefViewProps> = ({ selectedCoref, wordArr, allCorefs
                 allCorefsMapped={allCorefsMapped}
                 allCorefs={allCorefs}
                 markedWord={markedWord}
-                handleSelectCoref={handleSelectCoref}/>
+                currentMention={currentMention}
+                handleSelectCoref={handleSelectCoref}
+                setCurrentMention={setCurrentMention}/>
 
             <Button variant="outlined" style={{margin: 5, textTransform: "none"}}>Add new Coreference</Button>
             <Button variant="outlined" style={{margin: 5, textTransform: "none"}}>Delete Coreference</Button>

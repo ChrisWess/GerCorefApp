@@ -20,6 +20,7 @@ interface MainViewProps {
     markedWord: MutableRefObject<number[]>
     setSelectedCoref: Function
     setClusterColor: Function
+    setCurrentMention: Function
 }
 
 export const clearPrevMarking = function(markedWord: number[]) {
@@ -40,7 +41,8 @@ export const clearPrevMarking = function(markedWord: number[]) {
 
 const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefsMapped, allCorefs,
                                                wordArr, wordFlags,
-                                               markedWord, setSelectedCoref, setClusterColor }) => {
+                                               markedWord, setSelectedCoref, setClusterColor,
+                                               setCurrentMention}) => {
 
     const getStyle = function(element: any, property: string) {
         return window.getComputedStyle ? window.getComputedStyle(element, null).getPropertyValue(property) :
@@ -64,7 +66,7 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefsMapped, allCor
                 if (mention) {
                     setSelectedCoref(mention.selectionRange)
                     setClusterColor(getStyle(value, "background-color"))
-                    allCorefsMapped.current.set("current", mention)
+                    setCurrentMention(mention)
                 }
             }, false)
         });
@@ -173,7 +175,8 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefsMapped, allCor
 
     //Decide which Items are to be displayed on this page
     const currentItems = sentenceArray.slice(indexOfFirstItem, indexOfLastItem);
-    const sentenceList = currentItems.map((d) => <ListItem divider key={d.toString()}>
+    const sentenceList = currentItems.map((d) =>
+        <ListItem divider key={d.toString()}>
             <div dangerouslySetInnerHTML={{ __html:  d}}/>
             <Divider />
         </ListItem>
@@ -184,7 +187,6 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefsMapped, allCor
         <>
             <div style={{height:720}}>
                 <article id="docView">
-
                         <List className="pagination">
                                 {sentenceList}
                         </List>

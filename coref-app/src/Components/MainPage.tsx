@@ -67,6 +67,7 @@ function MainPageContent() {
     const [corefText, setCorefText] = React.useState(["No Document"]);
     const [selectedCoref, setSelectedCoref] = React.useState<number[]>([]);
     const [clusterColor, setClusterColor] = React.useState<string>("black");
+    const [currentMention, setCurrentMention] = React.useState<Mention | undefined>(undefined);
 
     const allCorefsMapped = React.useRef<Map<string, Mention>>(new Map<string, Mention>());
     const allCorefs = React.useRef<Mention[][]>([]);  // different mention representation (more efficient access to entire docs or clusters)
@@ -212,7 +213,9 @@ function MainPageContent() {
                                         allCorefs={allCorefs}
                                         clusterColor={clusterColor}
                                         markedWord={markedWord}
+                                        currentMention={currentMention}
                                         handleSelectCoref={setSelectedCoref}
+                                        setCurrentMention={setCurrentMention}
                                     />
                                 </Paper>
                             </Grid>
@@ -237,6 +240,7 @@ function MainPageContent() {
                                         markedWord={markedWord}
                                         setSelectedCoref={setSelectedCoref}
                                         setClusterColor={setClusterColor}
+                                        setCurrentMention={setCurrentMention}
                                     ></MainView>
                                 </Paper>
                             </Grid>
