@@ -1,6 +1,7 @@
-import React, {MutableRefObject, useEffect} from 'react';
+import React, {MutableRefObject, useEffect, useState} from 'react';
 import "./MainView.css"
-
+import Paper from '@mui/material/Paper';
+import {Divider, List, ListItem, Pagination} from "@mui/material";
 
 export type Mention = {
     id: string;
@@ -46,6 +47,13 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefsMapped, allCor
             element.style[property.replace(/-([a-z])/g, function (g) { return g[1].toUpperCase(); })];
     };
 
+
+    //For Pagination
+    const [listItem, setListItems] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(15);
+    const indexOfLastItem = currentPage*itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     useEffect(() => {
         let elems = document.querySelectorAll("b.cr");
         elems.forEach(function(value) {
@@ -74,13 +82,16 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefsMapped, allCor
             }, false)
         });
     }, [txt, clust]);
+    //
 
-    console.log(clust[0])
+
+    //State before anything is sent to the API
     if(clust[0] === "Nothing")
         return <h1>No Document yet</h1>
     wordArr.current = []
     wordFlags.current = []
     let buffer = []
+    //
 
     //Puts Text in one long Array instead of one array for each sentence.
     for (let i = 0; i < txt.length; i++) {
@@ -90,7 +101,7 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefsMapped, allCor
             wordFlags.current.push(true)
         }
     }
-    console.log(buffer);
+    //
 
     allCorefs.current = []
     allCorefsMapped.current.clear()
@@ -152,54 +163,40 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefsMapped, allCor
         }
         stringAll += token;
     }
-    // console.log(stringAll);
 
-    //render string as html element
-    return (
-        <div style={{height:720}}>
-            <article id="docView">
-                <div dangerouslySetInnerHTML={{ __html:  stringAll}}/>
-            </article>
-        </div>
-    );
-
-    /* //old  function
-    function showCorefs(a: any[], b: any[]){
-        let allElements = []
-        let buffer = []
-        let currentEdge = 0;
-        let offset = 0;
-
-        //Puts Text in one long Array instead of one array for each sentence.
-        for (let i = 0; i < a.length; i++) {
-            for (let j = 0; j < a[i].length; j++) {
-                allElements.push(a[i][j]);
-                buffer.push( (a[i][j]+" ") as any);
-            }
-        }
-        //finds coref-clusters and splices the buffer to insert the span and replace the normal string.
-        for (let i = 0; i < b.length; i++) {
-            for (let j = 0; j < b[i].length; j++) {
-                //buffer.push(<span style={divStyle}>{allElements.slice(b[i][j][0], b[i][j][1]+1)}</span>);
-                buffer.splice(b[i][j][0]-offset, b[i][j][1]-b[i][j][0]+1, <span style={divStyle}>{allElements.slice(b[i][j][0], b[i][j][1]+1)} </span>);
-                offset += b[i][j][1]-b[i][j][0];
-                console.log(offset)
-            }
-        }
-        console.log(buffer);
-
-
-        return (
-            <>
-                <p>{buffer}</p>
-            </>
-        );
+    //Cut up string into sentences, resulting in sentenceArray
+    var sentenceArray = [];
+    var splitString = stringAll.split(/([.,:;!?]<\/bb>)/);
+    for (let i = 0; i < splitString.length/2 -1; i++) {
+        sentenceArray[i]= splitString[2*i]+splitString[2*i+1];
     }
-     */
 
+    //Decide which Items are to be displayed on this page
+    const currentItems = sentenceArray.slice(indexOfFirstItem, indexOfLastItem);
+    const sentenceList = currentItems.map((d) => <ListItem divider key={d.toString()}>
+            <div dangerouslySetInnerHTML={{ __html:  d}}/>
+            <Divider />
+        </ListItem>
+    );
+    //
 
-    //this.showCorefs = this.showCorefs.bind(this);
-    //const [texres, setTexres] = useState("");
+    return (
+        <>
+            <div style={{height:720}}>
+                <article id="docView">
+
+                        <List className="pagination">
+                                {sentenceList}
+                        </List>
+                </article>
+            </div>
+            <Pagination
+                count={Math.ceil(sentenceArray.length / itemsPerPage)}
+                onChange={(event,page) => setCurrentPage(page)}
+                style={{marginLeft: "auto", marginRight: "auto"}}
+            />
+        </>
+    );
 }
 
 export default MainView;
