@@ -1,5 +1,7 @@
 import React, {MutableRefObject, useEffect} from 'react';
 import "./MainView.css"
+import Paper from '@mui/material/Paper';
+import {Divider, List, ListItem} from "@mui/material";
 
 
 export type Mention = {
@@ -144,54 +146,29 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
         }
         stringAll += token;
     }
-    // console.log(stringAll);
 
-    //render string as html element
+    //Cut up string into sentences, resulting in sentenceArray
+    var sentenceArray = [];
+    var splitString = stringAll.split(/([.,:;!?]<\/bb>)/);
+    for (let i = 0; i < splitString.length-1; i = i+2) {
+        sentenceArray[i]= splitString[i]+splitString[i+1];
+    }
+
+    const sentenceList = sentenceArray.map((d) => <ListItem divider key={d.toString()}>
+        <div dangerouslySetInnerHTML={{ __html:  d}}/>
+        <Divider />
+    </ListItem>
+);
+    
     return (
         <div style={{height:720}}>
             <article id="docView">
-                <div dangerouslySetInnerHTML={{ __html:  stringAll}}/>
+                <List>
+                {sentenceList}
+                </List>
             </article>
         </div>
     );
-
-    /* //old  function
-    function showCorefs(a: any[], b: any[]){
-        let allElements = []
-        let buffer = []
-        let currentEdge = 0;
-        let offset = 0;
-
-        //Puts Text in one long Array instead of one array for each sentence.
-        for (let i = 0; i < a.length; i++) {
-            for (let j = 0; j < a[i].length; j++) {
-                allElements.push(a[i][j]);
-                buffer.push( (a[i][j]+" ") as any);
-            }
-        }
-        //finds coref-clusters and splices the buffer to insert the span and replace the normal string.
-        for (let i = 0; i < b.length; i++) {
-            for (let j = 0; j < b[i].length; j++) {
-                //buffer.push(<span style={divStyle}>{allElements.slice(b[i][j][0], b[i][j][1]+1)}</span>);
-                buffer.splice(b[i][j][0]-offset, b[i][j][1]-b[i][j][0]+1, <span style={divStyle}>{allElements.slice(b[i][j][0], b[i][j][1]+1)} </span>);
-                offset += b[i][j][1]-b[i][j][0];
-                console.log(offset)
-            }
-        }
-        console.log(buffer);
-
-
-        return (
-            <>
-                <p>{buffer}</p>
-            </>
-        );
-    }
-     */
-
-
-    //this.showCorefs = this.showCorefs.bind(this);
-    //const [texres, setTexres] = useState("");
 }
 
 export default MainView;
