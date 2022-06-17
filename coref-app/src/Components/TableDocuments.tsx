@@ -5,6 +5,15 @@ import axios from 'axios';
 import { useTable } from 'react-table';
 import './Table.css';
 import ReactDOM from 'react-dom';
+import Box from '@mui/material/Box';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemText from '@mui/material/ListItemText';
+import Divider from '@mui/material/Divider';
+import ListSubheader from '@mui/material/ListSubheader';
+import { tab } from '@testing-library/user-event/dist/tab';
+
 
 
 function Table(props:any){
@@ -42,40 +51,40 @@ function Table(props:any){
         }
     };
 
-    if (Object.keys(props.tableData).length != 0) {
+    //TODO: rewrite it more clear, without 2 lists and if 
+   if (Object.keys(props.tableData).length != 0) {
         let arr = Array.from(Object.keys(props.tableData));
-        class TableComponent extends React.Component{
-            render() {
-              // Data
-              var dataColumns = ['Index', 'File'];          
-              var tableHeaders = (<thead>
-                    <tr>
-                      {dataColumns.map(function(column) {
-                        return <th>{column}</th>; })}
-                    </tr>
-                </thead>);
-          
-              var tableBody = arr.map((el: any, index)=>{
-                return(
-                    <tr key={index}>
-                        <td>{index+1}</td>
-                        <td onClick = {() =>handleClick(el)}>{el}</td>
-                    </tr>
-                )
-            })
-            return (<table className="table table-bordered table-hover" width="100%">
-                    {tableHeaders}
-                    {tableBody}
-                </table>) }};
 
-        return(
-            <TableComponent/>
-        )
+        const tableBody = arr.map((el: any, index)=> (
+            <div key={index}>
+                <ListItemButton>
+                        <ListItemText onClick={() => handleClick(el)}>{el}</ListItemText>
+                </ListItemButton>
+                <Divider/>
+            </div>
+        ));
+        return (
+            <List key='list' sx={{width: '100%', maxWidth: 360,
+            bgcolor: 'background.paper', height: 300, overflow: 'auto' }} component="nav"
+            subheader={<ListSubheader>Files</ListSubheader>}>
+                <Divider/>
+                {tableBody}
+            </List>
+        );
     }
     else {
         return(
-            <table className="table">
-            </table>
+            <List sx={{width: '100%', maxWidth: 360,
+            bgcolor: 'background.paper', height: 300, overflow: 'auto' }} component="nav"
+            subheader={<ListSubheader>Files</ListSubheader>}>
+                <><Divider />
+                    <ListItem>
+                    <ListItemButton disabled={true}>
+                    <ListItemText primary="No files uploaded" />
+                    </ListItemButton>
+                    </ListItem>
+                </>
+            </List>
         )
     }
 }
