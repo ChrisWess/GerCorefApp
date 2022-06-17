@@ -1,8 +1,7 @@
-import React, {MutableRefObject, useEffect} from 'react';
+import React, {MutableRefObject, useEffect, useState} from 'react';
 import "./MainView.css"
 import Paper from '@mui/material/Paper';
-import {Divider, List, ListItem} from "@mui/material";
-
+import {Divider, List, ListItem, Pagination} from "@mui/material";
 
 export type Mention = {
     id: string;
@@ -47,6 +46,13 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
             element.style[property.replace(/-([a-z])/g, function (g) { return g[1].toUpperCase(); })];
     };
 
+
+    //For Pagination
+    const [listItem, setListItems] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(15);
+    const indexOfLastItem = currentPage*itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     useEffect(() => {
         let elems = document.querySelectorAll("b.cr");
         elems.forEach(function(value) {
@@ -74,13 +80,16 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
             }, false)
         });
     }, [txt, clust]);
+    //
 
-    console.log(clust[0])
+
+    //State before anything is sent to the API
     if(clust[0] === "Nothing")
         return <h1>No Document yet</h1>
     wordArr.current = []
     wordFlags.current = []
     let buffer = []
+    //
 
     //Puts Text in one long Array instead of one array for each sentence.
     for (let i = 0; i < txt.length; i++) {
@@ -90,7 +99,7 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
             wordFlags.current.push(true)
         }
     }
-    console.log(buffer);
+    //
 
     allCorefs.clear()
     let currentIndexOfCoref = 1;
@@ -150,24 +159,35 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
     //Cut up string into sentences, resulting in sentenceArray
     var sentenceArray = [];
     var splitString = stringAll.split(/([.,:;!?]<\/bb>)/);
-    for (let i = 0; i < splitString.length-1; i = i+2) {
-        sentenceArray[i]= splitString[i]+splitString[i+1];
+    for (let i = 0; i < splitString.length/2 -1; i++) {
+        sentenceArray[i]= splitString[2*i]+splitString[2*i+1];
     }
 
-    const sentenceList = sentenceArray.map((d) => <ListItem divider key={d.toString()}>
-        <div dangerouslySetInnerHTML={{ __html:  d}}/>
-        <Divider />
-    </ListItem>
-);
-    
+    //Decide which Items are to be displayed on this page
+    const currentItems = sentenceArray.slice(indexOfFirstItem, indexOfLastItem);
+    const sentenceList = currentItems.map((d) => <ListItem divider key={d.toString()}>
+            <div dangerouslySetInnerHTML={{ __html:  d}}/>
+            <Divider />
+        </ListItem>
+    );
+    //
+
     return (
-        <div style={{height:720}}>
-            <article id="docView">
-                <List>
-                {sentenceList}
-                </List>
-            </article>
-        </div>
+        <>
+            <div style={{height:720}}>
+                <article id="docView">
+
+                        <List className="pagination">
+                                {sentenceList}
+                        </List>
+                </article>
+            </div>
+            <Pagination
+                count={Math.ceil(sentenceArray.length / itemsPerPage)}
+                onChange={(event,page) => setCurrentPage(page)}
+                style={{marginLeft: "auto", marginRight: "auto"}}
+            />
+        </>
     );
 }
 
