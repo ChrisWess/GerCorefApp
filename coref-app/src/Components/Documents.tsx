@@ -2,6 +2,8 @@ import React, {useState, Component} from 'react';
 import { useTheme } from '@mui/material/styles';
 import axios from 'axios';
 import {Button, Box, FormControlLabel, Checkbox} from "@mui/material";
+import Table from "./TableDocuments";
+import { uniqueNamesGenerator, Config, adjectives, colors, animals } from 'unique-names-generator';
  
 
 interface MyProps { sendCorefClusterToParent: any 
@@ -9,9 +11,14 @@ interface MyProps { sendCorefClusterToParent: any
 					children: any};
 type MyState = { selectedFile: any };
 
+type dict = {
+    [key: string]: any
+};
 
 class Documents extends React.Component <MyProps, MyState>{
 
+
+    static allData:dict = new Object();
 	constructor(props: any) {
 		super(props);
 		this.state = {selectedFile: null};
@@ -30,19 +37,30 @@ class Documents extends React.Component <MyProps, MyState>{
 	
 	// On file upload (click the upload button)
 	onFileUpload = async () => {
-        // Create an object of formData
-        const formData = new FormData();
-        
-        // Update the formData object
+        // TODO: clever handle files with same names
+        // TODO: store files on backend 
+        // TODO: store jsons, not recompute them every time
+
+        const name = this.state.selectedFile.name;
+        if (name in  Documents.allData) {
+            let arr = name.split(".");
+            //const last = arr.at(-1);
+            const last = arr.pop();
+            const first = arr.join('.');
+            const randomName = Math.floor(Math.random() * 10000);
+            const finalName = first + '-' + randomName + '.' + last;
+            Documents.allData[finalName] = this.state.selectedFile;
+        } else {
+            Documents.allData[name] = this.state.selectedFile;
+        }
+
+
+        let formData = new FormData();
         formData.append(
-            "myFile",
+            'myFile',
             this.state.selectedFile !== null? this.state.selectedFile: "",
-			"file123",
         );
         
-        // Details of the uploaded file
-        console.log(this.state.selectedFile);
-        console.log(formData);
 		try{
             const { data } = await axios.post(
                 `http://127.0.0.1:5000/uploadfile`,
@@ -58,7 +76,6 @@ class Documents extends React.Component <MyProps, MyState>{
 			  }, (error) => {
 				console.log(error);
 			});*/
-            console.log(JSON.stringify(data, null, 4));
             this.props.sendCorefClusterToParent(data.clusters)
             this.props.sendCorefTextToParent(data.tokens)
         }
@@ -97,12 +114,17 @@ class Documents extends React.Component <MyProps, MyState>{
 	};
 	
 	render() {
-	
 	return (
 		<div>
 			<div>
                 <input type="file" onChange={this.onFileChange} accept=".txt"/>
                 <Button variant="outlined" style={{margin: 1, textTransform: "none"}} onClick={this.onFileUpload}>Upload</Button>
+                <Table
+                    tableData={Documents.allData}
+                    sendCorefClusterToParent={this.props.sendCorefClusterToParent}
+                    sendCorefTextToParent={this.props.sendCorefTextToParent}
+                    >
+                </Table>
             </div>
           {this.fileData()}
 		</div>
