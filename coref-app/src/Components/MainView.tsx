@@ -12,7 +12,8 @@ export type Mention = {
 interface MainViewProps {
     txt: any[]
     clust: any[]
-    allCorefs: Map<string, Mention>
+    allCorefsMapped: MutableRefObject<Map<string, Mention>>
+    allCorefs: MutableRefObject<Mention[][]>
     wordArr: MutableRefObject<string[]>
     wordFlags: MutableRefObject<boolean[]>
     markedWord: MutableRefObject<number[]>
@@ -36,7 +37,7 @@ export const clearPrevMarking = function(markedWord: number[]) {
     }
 };
 
-const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
+const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefsMapped, allCorefs,
                                                wordArr, wordFlags,
                                                markedWord, setSelectedCoref, setClusterColor }) => {
 
@@ -51,10 +52,11 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
             value.addEventListener("click", () => {
                 clearPrevMarking(markedWord.current)
                 markedWord.current = []
-                let mention = allCorefs.get(value.id)
+                let mention: Mention | undefined = allCorefsMapped.current.get(value.id);
                 if (mention) {
                     setSelectedCoref(mention.selectionRange)
                     setClusterColor(getStyle(value, "background-color"))
+                    allCorefsMapped.current.set("current", mention)
                 }
             }, false)
         });
@@ -90,18 +92,22 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
     }
     console.log(buffer);
 
-    allCorefs.clear()
+    allCorefs.current = []
+    allCorefsMapped.current.clear()
     let currentIndexOfCoref = 1;
     //for each coref cluster it puts an html element in front of its first word and behind its last word
     //from big to small seems to handle overlapping corefs better
     for (let i = clust.length-1; i >= 0; i--) {
+        let cluster: Mention[] = []
         currentIndexOfCoref = i+1;
         for (let j = 0; j < clust[i].length; j++) {
             let mentionIdxStart = clust[i][j][0]
             let mentionIdxEnd = clust[i][j][1]
             let coref = buffer.slice(mentionIdxStart, mentionIdxEnd + 1).join(" ")
             let corefId = `d1c${i}m${j}`
-            allCorefs.set(corefId, { id: corefId, content: coref, selectionRange: [mentionIdxStart, mentionIdxEnd + 1] })
+            let mention: Mention = { id: corefId, content: coref, selectionRange: [mentionIdxStart, mentionIdxEnd + 1] }
+            allCorefsMapped.current.set(corefId, mention)
+            cluster.push(mention)
             // TODO: make mouseover event that shows a small prompt with information at the mouse pointer
             if (mentionIdxStart === mentionIdxEnd) {
                 buffer.splice(mentionIdxStart, 1,
@@ -120,7 +126,9 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
                     currentIndexOfCoref + "</sub></bb></b>");
             }
         }
+        allCorefs.current.push(cluster)
     }
+    allCorefs.current = allCorefs.current.reverse()
 
     // turn result into one string
     // console.log(buffer);

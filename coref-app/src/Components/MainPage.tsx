@@ -68,8 +68,8 @@ function MainPageContent() {
     const [selectedCoref, setSelectedCoref] = React.useState<number[]>([]);
     const [clusterColor, setClusterColor] = React.useState<string>("black");
 
-    const allCorefsMapped = new Map<string, Mention>();
-    const allCorefs: Mention[][] = [];  // different mention representation (more efficient access to entire docs or clusters)
+    const allCorefsMapped = React.useRef<Map<string, Mention>>(new Map<string, Mention>());
+    const allCorefs = React.useRef<Mention[][]>([]);  // different mention representation (more efficient access to entire docs or clusters)
     const wordArr = React.useRef<string[]>([]);
     const wordFlags = React.useRef<boolean[]>([]);
     const markedWord = React.useRef<number[]>([])
@@ -208,7 +208,10 @@ function MainPageContent() {
                                     <CorefView
                                         selectedCoref={selectedCoref}
                                         wordArr={wordArr}
+                                        allCorefsMapped={allCorefsMapped}
+                                        allCorefs={allCorefs}
                                         clusterColor={clusterColor}
+                                        markedWord={markedWord}
                                         handleSelectCoref={setSelectedCoref}
                                     />
                                 </Paper>
@@ -227,7 +230,8 @@ function MainPageContent() {
                                     <MainView
                                         txt={corefText}
                                         clust={corefClusters}
-                                        allCorefs={allCorefsMapped}
+                                        allCorefsMapped={allCorefsMapped}
+                                        allCorefs={allCorefs}
                                         wordArr={wordArr}
                                         wordFlags={wordFlags}
                                         markedWord={markedWord}
