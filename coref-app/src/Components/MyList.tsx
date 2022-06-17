@@ -12,24 +12,26 @@ interface MyListProps {
     allCorefsMapped: MutableRefObject<Map<string, Mention>>
     allCorefs: MutableRefObject<Mention[][]>
     markedWord: MutableRefObject<number[]>
+    currentMention: Mention | undefined
     handleSelectCoref: Function;
+    setCurrentMention: Function
 }
 
 const MyList: React.FC<MyListProps> = ({ selectedCoref, allCorefsMapped, allCorefs,
-                                           markedWord, handleSelectCoref }) => {
+                                           markedWord, currentMention,
+                                           handleSelectCoref, setCurrentMention }) => {
 
     const handleClick = (mention: Mention) => {
         return function () {
           clearPrevMarking(markedWord.current)
           handleSelectCoref(mention.selectionRange)
-          allCorefsMapped.current.set("current", mention)
+          setCurrentMention(mention)
         }
     };
 
     const listItems = () => {
-        let curr: Mention | undefined = allCorefsMapped.current.get("current")
-        if (selectedCoref.length != 0 && curr) {
-            let mentionLoc = parseMentionId(curr.id)
+        if (selectedCoref.length != 0 && currentMention) {
+            let mentionLoc = parseMentionId(currentMention.id)
             let cluster: Mention[] = allCorefs.current[mentionLoc.clusterIdx]
             return cluster.map((mention) => (
                                     <ListItemButton id={"corefitem-" + mention.id} onClick={handleClick(mention)}>
