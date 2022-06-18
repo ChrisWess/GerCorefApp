@@ -1,31 +1,22 @@
-import { AnyNsRecord } from 'dns';
-import React, { useState } from 'react';
-import Documents from "./Documents";
 import axios from 'axios';
-import { useTable } from 'react-table';
-import './Table.css';
-import ReactDOM from 'react-dom';
-import Box from '@mui/material/Box';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import Divider from '@mui/material/Divider';
 import ListSubheader from '@mui/material/ListSubheader';
-import { tab } from '@testing-library/user-event/dist/tab';
 
 
+function Table(props: any) {
 
-function Table(props:any){
-
-    async function handleClick(el: any ) {
+    async function handleClick(el: any) {
         let formData = new FormData();
         formData.append(
             'myFile',
             props.tableData[el],
         );
 
-		try{
+        try {
             const { data } = await axios.post(
                 `http://127.0.0.1:5000/uploadfile`,
                 formData,
@@ -52,36 +43,40 @@ function Table(props:any){
     };
 
     //TODO: rewrite it more clear, without 2 lists and if 
-   if (Object.keys(props.tableData).length != 0) {
+    if (Object.keys(props.tableData).length != 0) {
         let arr = Array.from(Object.keys(props.tableData));
 
-        const tableBody = arr.map((el: any, index)=> (
+        const tableBody = arr.map((el: any, index) => (
             <div key={index}>
                 <ListItemButton>
-                        <ListItemText onClick={() => handleClick(el)}>{el}</ListItemText>
+                    <ListItemText onClick={() => handleClick(el)}>{el}</ListItemText>
                 </ListItemButton>
-                <Divider/>
+                <Divider />
             </div>
         ));
         return (
-            <List key='list' sx={{width: '100%', maxWidth: 360,
-            bgcolor: 'background.paper', height: 300, overflow: 'auto' }} component="nav"
-            subheader={<ListSubheader>Files</ListSubheader>}>
-                <Divider/>
+            <List key='list' sx={{
+                width: '100%', maxWidth: 360,
+                bgcolor: 'background.paper', height: 300, overflow: 'auto'
+            }} component="nav"
+                subheader={<ListSubheader>Files</ListSubheader>}>
+                <Divider />
                 {tableBody}
             </List>
         );
     }
     else {
-        return(
-            <List sx={{width: '100%', maxWidth: 360,
-            bgcolor: 'background.paper', height: 300, overflow: 'auto' }} component="nav"
-            subheader={<ListSubheader>Files</ListSubheader>}>
+        return (
+            <List sx={{
+                width: '100%', maxWidth: 360,
+                bgcolor: 'background.paper', height: 300, overflow: 'auto'
+            }} component="nav"
+                subheader={<ListSubheader>Files</ListSubheader>}>
                 <><Divider />
                     <ListItem>
-                    <ListItemButton disabled={true}>
-                    <ListItemText primary="No files uploaded" />
-                    </ListItemButton>
+                        <ListItemButton disabled={true}>
+                            <ListItemText primary="No files uploaded" />
+                        </ListItemButton>
                     </ListItem>
                 </>
             </List>

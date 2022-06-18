@@ -1,49 +1,49 @@
-import React, {useState, Component} from 'react';
-import { useTheme } from '@mui/material/styles';
+import React from 'react';
 import axios from 'axios';
-import {Button, Box, FormControlLabel, Checkbox} from "@mui/material";
+import { Button} from "@mui/material";
 import Table from "./TableDocuments";
-import { uniqueNamesGenerator, Config, adjectives, colors, animals } from 'unique-names-generator';
- 
 
-interface MyProps { sendCorefClusterToParent: any 
-                    sendCorefTextToParent: any, 
-					children: any};
+
+interface MyProps {
+    sendCorefClusterToParent: any
+    sendCorefTextToParent: any,
+    children: any
+};
 type MyState = { selectedFile: any };
 
 type dict = {
     [key: string]: any
 };
 
-class Documents extends React.Component <MyProps, MyState>{
+class Documents extends React.Component<MyProps, MyState>{
 
 
-    static allData:dict = new Object();
-	constructor(props: any) {
-		super(props);
-		this.state = {selectedFile: null};
-	};
-	
-	// On file select (from the pop up)
-	onFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    static allData: dict = new Object();
+    constructor(props: any) {
+        super(props);
+        this.state = { selectedFile: null };
+    };
+
+    // On file select (from the pop up)
+    onFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         // Update the state
         let y = (event?.target as HTMLInputElement).files;
         let file = null;
         if (y != null) {
             file = y[0];
         }
-        this.setState({ selectedFile: file});
-	};
-	
-	// On file upload (click the upload button)
-	onFileUpload = async () => {
+        this.setState({ selectedFile: file });
+    };
+
+    // On file upload (click the upload button)
+    onFileUpload = async () => {
         // TODO: clever handle files with same names
         // TODO: store files on backend 
         // TODO: store jsons, not recompute them every time
 
         if (this.state.selectedFile !== null) {
             const name = this.state.selectedFile.name;
-            if (name in  Documents.allData) {
+            if (name in Documents.allData) {
                 let arr = name.split(".");
                 //const last = arr.at(-1);
                 const last = arr.pop();
@@ -59,10 +59,10 @@ class Documents extends React.Component <MyProps, MyState>{
             let formData = new FormData();
             formData.append(
                 'myFile',
-                this.state.selectedFile !== null? this.state.selectedFile: "",
+                this.state.selectedFile !== null ? this.state.selectedFile : "",
             );
-            
-            try{
+
+            try {
                 const { data } = await axios.post(
                     `http://127.0.0.1:5000/uploadfile`,
                     formData,
@@ -93,45 +93,45 @@ class Documents extends React.Component <MyProps, MyState>{
         }
     };
 
-        // File content to be displayed after
-        // file upload is complete
+    // File content to be displayed after
+    // file upload is complete
     fileData = () => {
-        
+
         if (this.state.selectedFile) {
             return (
-            <div>
-                <h2>File Details:</h2>
-                <p>File Name: {this.state.selectedFile['name']}</p>
-                <p>File Type: {this.state.selectedFile['type']}</p>
-            </div>
+                <div>
+                    <h2>File Details:</h2>
+                    <p>File Name: {this.state.selectedFile['name']}</p>
+                    <p>File Type: {this.state.selectedFile['type']}</p>
+                </div>
             );
         } else {
             return (
-            <div>
-                <br />
-                <h4>Choose before pressing the Upload button</h4>
-            </div>
+                <div>
+                    <br />
+                    <h4>Choose before pressing the Upload button</h4>
+                </div>
             );
         }
-	};
-	
-	render() {
+    };
+
+    render() {
         return (
             <div>
                 <div>
-                    <input type="file" onChange={this.onFileChange} accept=".txt"/>
-                    <Button variant="outlined" style={{margin: 1, textTransform: "none"}} onClick={this.onFileUpload}>Upload</Button>
+                    <input type="file" onChange={this.onFileChange} accept=".txt" />
+                    <Button variant="outlined" style={{ margin: 1, textTransform: "none" }} onClick={this.onFileUpload}>Upload</Button>
                     <Table
                         tableData={Documents.allData}
                         sendCorefClusterToParent={this.props.sendCorefClusterToParent}
                         sendCorefTextToParent={this.props.sendCorefTextToParent}
-                        >
+                    >
                     </Table>
                 </div>
-            {this.fileData()}
+                {this.fileData()}
             </div>
         );
-	}
+    }
 }
 
 export default Documents;
