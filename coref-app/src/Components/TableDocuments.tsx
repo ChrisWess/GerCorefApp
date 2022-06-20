@@ -2,7 +2,6 @@ import { AnyNsRecord } from 'dns';
 import React, { useState } from 'react';
 import Documents from "./Documents";
 import axios from 'axios';
-import { useTable } from 'react-table';
 import './Table.css';
 import ReactDOM from 'react-dom';
 

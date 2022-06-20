@@ -56,6 +56,7 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefsMapped, allCor
     const [itemsPerPage, setItemsPerPage] = useState(15);
     const indexOfLastItem = currentPage*itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    // TODO: only add eventlisteners to the elements that are displayed on a page
     useEffect(() => {
         let elems = document.querySelectorAll("b.cr");
         elems.forEach(function(value) {
@@ -77,14 +78,14 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefsMapped, allCor
                 markedWord.current = []
                 let wid = parseInt(value.id.substring(1))
                 setSelectedCoref([wid, wid + 1])
+                setCurrentMention(undefined)
                 // @ts-ignore
                 value.style.backgroundColor = "yellow";
                 setClusterColor("yellow")
                 markedWord.current = [wid]
             }, false)
         });
-    }, [txt, clust]);
-    //
+    });
 
 
     //State before anything is sent to the API

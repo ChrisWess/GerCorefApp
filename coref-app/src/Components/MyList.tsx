@@ -2,24 +2,21 @@ import * as React from 'react';
 import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
-import {MutableRefObject, useEffect} from "react";
+import {MutableRefObject} from "react";
 import {clearPrevMarking, Mention} from "./MainView";
-import {parseMentionId} from "./CorefView";
 
 
 interface MyListProps {
-    selectedCoref: number[]
-    allCorefsMapped: MutableRefObject<Map<string, Mention>>
+    currentMention: Mention | undefined
+    currentCluster: MutableRefObject<Mention[]>
     allCorefs: MutableRefObject<Mention[][]>
     markedWord: MutableRefObject<number[]>
-    currentMention: Mention | undefined
     handleSelectCoref: Function;
     setCurrentMention: Function
 }
 
-const MyList: React.FC<MyListProps> = ({ selectedCoref, allCorefsMapped, allCorefs,
-                                           markedWord, currentMention,
-                                           handleSelectCoref, setCurrentMention }) => {
+const MyList: React.FC<MyListProps> = ({ currentMention, currentCluster,
+                                           markedWord, handleSelectCoref, setCurrentMention }) => {
 
     const handleClick = (mention: Mention) => {
         return function () {
@@ -30,10 +27,8 @@ const MyList: React.FC<MyListProps> = ({ selectedCoref, allCorefsMapped, allCore
     };
 
     const listItems = () => {
-        if (selectedCoref.length != 0 && currentMention) {
-            let mentionLoc = parseMentionId(currentMention.id)
-            let cluster: Mention[] = allCorefs.current[mentionLoc.clusterIdx]
-            return cluster.map((mention) => (
+        if (currentMention) {
+            return currentCluster.current.map((mention) => (
                                     <ListItemButton id={"corefitem-" + mention.id} onClick={handleClick(mention)}>
                                         <ListItemText primary={mention.content} />
                                     </ListItemButton>
@@ -45,11 +40,6 @@ const MyList: React.FC<MyListProps> = ({ selectedCoref, allCorefsMapped, allCore
         }
     };
 
-    /*useEffect(() => {
-        allCorefs.current
-    }, [allCorefs]);*/
-
-    // TODO: keep track of each mention id in the corresponding item and set it as selected coref when selected in list
     return (
     <List sx={{ marginTop: -1, width: '100%', maxWidth: 360,
         bgcolor: 'background.paper', height: 200, overflow: 'auto' }} component="nav">

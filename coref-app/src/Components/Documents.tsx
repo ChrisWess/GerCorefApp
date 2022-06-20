@@ -3,7 +3,6 @@ import { useTheme } from '@mui/material/styles';
 import axios from 'axios';
 import {Button, Box, FormControlLabel, Checkbox} from "@mui/material";
 import Table from "./TableDocuments";
-import { uniqueNamesGenerator, Config, adjectives, colors, animals } from 'unique-names-generator';
  
 
 interface MyProps { sendCorefClusterToParent: any 
