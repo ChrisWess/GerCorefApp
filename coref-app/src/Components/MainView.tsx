@@ -1,7 +1,7 @@
 import React, {MutableRefObject, useEffect, useState} from 'react';
 import "./MainView.css"
 import Paper from '@mui/material/Paper';
-import {Divider, List, ListItem, Pagination} from "@mui/material";
+import {Divider, List, ListItem,ListItemIcon, Pagination} from "@mui/material";
 
 export type Mention = {
     id: string;
@@ -173,7 +173,10 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefsMapped, allCor
 
     //Decide which Items are to be displayed on this page
     const currentItems = sentenceArray.slice(indexOfFirstItem, indexOfLastItem);
-    const sentenceList = currentItems.map((d) => <ListItem divider key={d.toString()}>
+    const sentenceList = currentItems.map((d, index) => <ListItem divider key={index}>
+        <ListItemIcon>
+            {index+indexOfFirstItem+1}
+        </ListItemIcon>
             <div dangerouslySetInnerHTML={{ __html:  d}}/>
             <Divider />
         </ListItem>
