@@ -17,5 +17,5 @@ def model_predict():
 @application.route('/uploadfile', methods=['POST'])
 @cross_origin()
 def model_file():
-    text = request.files.get("myFile").read().decode("utf-8") 
+    text = request.files.get("myFile").read().decode("utf-8")
     return model.predict(text, "json_small")

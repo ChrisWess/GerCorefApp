@@ -5,6 +5,7 @@ import {Button, Box, FormControlLabel, Checkbox} from "@mui/material";
 import Table from "./TableDocuments";
  
 
+
 interface MyProps { sendCorefClusterToParent: any 
                     sendCorefTextToParent: any, 
 					children: any};

@@ -13,6 +13,7 @@ import MainView, {Mention, clearPrevMarking} from "./MainView";
 import Documents from "./Documents";
 import CorefView from "./CorefView";
 import Text from "./Text";
+import ResponsiveAppBar from "./ResponsiveAppBar";
 
 function Copyright(props: any) {
     return (
@@ -181,6 +182,7 @@ function MainPageContent() {
 
     return (
         <ThemeProvider theme={theme}>
+            <ResponsiveAppBar></ResponsiveAppBar>
             <Box sx={{ display: 'flex' }}>
                 <CssBaseline />
                 <Box
