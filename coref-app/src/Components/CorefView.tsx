@@ -27,10 +27,14 @@ export const parseMentionId = function(mentionId: string) {
     return {docIdx: docIdx, clusterIdx: clusterIdx, mentionIdx: mentionIdx}
 };
 
-export const addNewCoref = function(clusterId: number, allCorefs: Mention[][], allCorefsMapped: Map<string, Mention>,
+export const addNewCoref = function(clusterId: number, allCorefs: MutableRefObject<Mention[][]>,
                                     wordArr: string[], markedWord: number[]) {
     if (markedWord.length > 0) {
-        let corefId = `d1c${clusterId - 1}m${allCorefsMapped.size}`
+        if (clusterId > allCorefs.current.length) {
+            allCorefs.current.push([])
+        }
+        let clusterIdx: number = clusterId - 1
+        let corefId = `d1c${clusterIdx}m${allCorefs.current[clusterIdx].length}`
         let mention: Mention
         let elem
         let replacement
@@ -60,19 +64,15 @@ export const addNewCoref = function(clusterId: number, allCorefs: Mention[][], a
                 elem!.replaceWith(replacement)
             }
 
-            elem = document.getElementById("w" + markedWord[1])
+            elem = document.getElementById("w" + idxEnd)
             replacement = document.createElement('b');
-            replacement.innerHTML = `<bb id="w${idxEnd}"> ` + wordArr[markedWord[1]] +
+            replacement.innerHTML = `<bb id="w${idxEnd}"> ` + wordArr[idxEnd] +
                       `<a id="w${idxEnd}" href="#d1c1m1">]</a><sub id="w${idxEnd}">` +
                         clusterId + "</sub></bb></b>";
             elem!.replaceWith(replacement)
             mention = { id: corefId, content: wordArr.slice(idxStart, idxEnd).join(" "), selectionRange: markedWord }
         }
-        if (clusterId > allCorefs.length) {
-            allCorefs.push([])
-        }
-        allCorefs[clusterId - 1].push(mention)
-        allCorefsMapped.set(corefId, mention)
+        allCorefs.current[clusterIdx].push(mention)
         return mention
     }
 };

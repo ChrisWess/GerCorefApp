@@ -41,7 +41,9 @@ const AddCoreference: React.FC<AddCoreferenceProps> = ({ selectedCoref, currentM
 
     function addCoref(clusterId: number) {
         return function () {
-            let mention: Mention = addNewCoref(clusterId, allCorefs.current, allCorefsMapped.current, wordArr.current, markedWord.current)!
+            let mention: Mention = addNewCoref(clusterId, allCorefs, wordArr.current, markedWord.current)!
+            markedWord.current = []
+            allCorefsMapped.current.set(mention.id, mention)
             setCurrentMention(mention)
             handleSelectCoref(mention.selectionRange)
         }
@@ -53,9 +55,9 @@ const AddCoreference: React.FC<AddCoreferenceProps> = ({ selectedCoref, currentM
                     disabled={!!currentMention || selectedCoref.length == 0}
                     style={{margin: 5, textTransform: "none", width: "97%"}}>Add new Coreference</Button>
             <div id="myDropdown" className="dropdown-content">
-                <a href="#" onClick={addCoref(allCorefs.current.length + 1)}>New Cluster</a>
+                <a onClick={addCoref(allCorefs.current.length + 1)}>New Cluster</a>
                 {allCorefs.current.map((mentions, index) =>
-                    (<a href="#" onClick={addCoref(index + 1)}>Cluster {index + 1}</a>))}
+                    (<a onClick={addCoref(index + 1)}>Cluster {index + 1}</a>))}
             </div>
         </span>
     );

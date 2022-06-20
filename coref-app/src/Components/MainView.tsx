@@ -20,6 +20,7 @@ interface MainViewProps {
     markedWord: MutableRefObject<number[]>
     setSelectedCoref: Function
     setClusterColor: Function
+    setCurrentMention: Function
 }
 
 export const clearPrevMarking = function(markedWord: number[]) {
@@ -40,7 +41,8 @@ export const clearPrevMarking = function(markedWord: number[]) {
 
 const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefsMapped, allCorefs,
                                                wordArr, wordFlags,
-                                               markedWord, setSelectedCoref, setClusterColor }) => {
+                                               markedWord, setSelectedCoref, setClusterColor,
+                                               setCurrentMention}) => {
 
     const getStyle = function(element: any, property: string) {
         return window.getComputedStyle ? window.getComputedStyle(element, null).getPropertyValue(property) :
@@ -62,6 +64,7 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefsMapped, allCor
                 markedWord.current = []
                 let mention: Mention | undefined = allCorefsMapped.current.get(value.id);
                 if (mention) {
+                    setCurrentMention(mention)
                     setSelectedCoref(mention.selectionRange)
                     setClusterColor(getStyle(value, "background-color"))
                     allCorefsMapped.current.set("current", mention)
@@ -72,6 +75,7 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefsMapped, allCor
         elems.forEach(function(value) {
             value.addEventListener("click", () => {
                 clearPrevMarking(markedWord.current)
+                setCurrentMention(undefined)
                 markedWord.current = []
                 let wid = parseInt(value.id.substring(1))
                 setSelectedCoref([wid, wid + 1])
