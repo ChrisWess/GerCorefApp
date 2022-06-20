@@ -1,8 +1,9 @@
 import React, {MutableRefObject, useState} from 'react';
 import { useTheme } from '@mui/material/styles';
-import {Button, Box, FormControlLabel, Checkbox} from "@mui/material";
+import {Button, Box, FormControlLabel, Switch} from "@mui/material";
 import MyList from "./MyList";
 import {Mention} from "./MainView";
+import AddCoreference from "./AddCoreference";
 
 interface CorefViewProps {
     selectedCoref: number[],
@@ -26,12 +27,71 @@ export const parseMentionId = function(mentionId: string) {
     return {docIdx: docIdx, clusterIdx: clusterIdx, mentionIdx: mentionIdx}
 };
 
+export const addNewCoref = function(clusterId: number, allCorefs: Mention[][], allCorefsMapped: Map<string, Mention>,
+                                    wordArr: string[], markedWord: number[]) {
+    if (markedWord.length > 0) {
+        let corefId = `d1c${clusterId - 1}m${allCorefsMapped.size}`
+        let mention: Mention
+        let elem
+        let replacement
+        let idxStart: number = markedWord[0]
+        if (markedWord.length === 1) {
+            elem = document.getElementById("w" + idxStart)
+            replacement = document.createElement('b');
+            replacement.innerHTML = "<b id=\"" + corefId + "\" class=\"cr cr-" + clusterId +
+                      `"><bb id="w${idxStart}"> <a id="w${idxStart}" href="#d1c1m1">[</a>` +
+                        wordArr[idxStart] + `<a id="w${idxStart}" href="#d1c1m1">]</a><sub id="w${idxStart}">` +
+                        clusterId + "</sub></bb></b>";
+            elem!.replaceWith(replacement)
+            mention = { id: corefId, content: wordArr[idxStart], selectionRange: [idxStart, idxStart + 1] }
+        } else {
+            elem = document.getElementById("w" + idxStart)
+            replacement = document.createElement('b');
+            replacement.innerHTML = "<b id=\"" + corefId + "\" class=\"cr cr-" + clusterId +
+                       `"><bb id="w${idxStart}"> <a id="w${idxStart}" href="#d1c1m1">[</a>` +
+                        wordArr[idxStart]+ "</bb>";
+            elem!.replaceWith(replacement)
+
+            let idxEnd: number = markedWord[1]
+            for (let i = idxStart + 1; i < idxEnd - 1; i++) {
+                elem = document.getElementById("w" + i)
+                replacement = document.createElement('b');
+                replacement.innerHTML = `<bb id='w${i}'> ` + wordArr[i] + "</bb>";
+                elem!.replaceWith(replacement)
+            }
+
+            elem = document.getElementById("w" + markedWord[1])
+            replacement = document.createElement('b');
+            replacement.innerHTML = `<bb id="w${idxEnd}"> ` + wordArr[markedWord[1]] +
+                      `<a id="w${idxEnd}" href="#d1c1m1">]</a><sub id="w${idxEnd}">` +
+                        clusterId + "</sub></bb></b>";
+            elem!.replaceWith(replacement)
+            mention = { id: corefId, content: wordArr.slice(idxStart, idxEnd).join(" "), selectionRange: markedWord }
+        }
+        if (clusterId > allCorefs.length) {
+            allCorefs.push([])
+        }
+        allCorefs[clusterId - 1].push(mention)
+        allCorefsMapped.set(corefId, mention)
+        return mention
+    }
+};
+
 const CorefView: React.FC<CorefViewProps> = ({ selectedCoref, wordArr, allCorefsMapped,
                                                  allCorefs, clusterColor, markedWord,
                                                  currentMention, handleSelectCoref, setCurrentMention }) => {
     const theme = useTheme();
 
-    // TODO: dynamically add more list entries to MyList, when coreference is selected
+    const currentCluster = React.useRef<Mention[]>([]);
+
+    if (currentMention) {
+        let mentionLoc = parseMentionId(currentMention.id)
+        currentCluster.current = allCorefs.current[mentionLoc.clusterIdx]
+    }
+
+    // TODO: top button: open a popup window that lets you select the cluster that you want to assign the selection (marked word)
+    //  as a new coreference to
+
     return (
         <>
             <p>Current Text Selection:</p>
@@ -43,18 +103,27 @@ const CorefView: React.FC<CorefViewProps> = ({ selectedCoref, wordArr, allCorefs
             </Box>
             <p>Coreferences:</p>
             <MyList
-                selectedCoref={selectedCoref}
-                allCorefsMapped={allCorefsMapped}
+                currentMention={currentMention}
+                currentCluster={currentCluster}
                 allCorefs={allCorefs}
                 markedWord={markedWord}
-                currentMention={currentMention}
                 handleSelectCoref={handleSelectCoref}
                 setCurrentMention={setCurrentMention}/>
 
-            <Button variant="outlined" style={{margin: 5, textTransform: "none"}}>Add new Coreference</Button>
-            <Button variant="outlined" style={{margin: 5, textTransform: "none"}}>Delete Coreference</Button>
+            <AddCoreference
+                selectedCoref={selectedCoref}
+                currentMention={currentMention}
+                wordArr={wordArr}
+                allCorefsMapped={allCorefsMapped}
+                allCorefs={allCorefs}
+                markedWord={markedWord}
+                handleSelectCoref={handleSelectCoref}
+                setCurrentMention={setCurrentMention}/>
+            <Button variant="outlined" style={{margin: 5, textTransform: "none", width: "97%"}} disabled={!currentMention}>
+                Delete Coreference
+            </Button>
 
-            <FormControlLabel control={<Checkbox defaultChecked />} style={{margin: 5}} label="Auto-Annotate" />
+            <FormControlLabel control={<Switch defaultChecked />} style={{margin: 5}} label="Model Inference" />
         </>
     );
 }

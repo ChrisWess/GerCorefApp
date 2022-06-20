@@ -122,6 +122,7 @@ function MainPageContent() {
                                 value.style.backgroundColor = "yellow";
                                 setClusterColor("yellow")
                                 setSelectedCoref([startWordIdx, startWordIdx + 1])
+                                setCurrentMention(undefined)
                                 selection.empty()
                             }
                             return
@@ -169,6 +170,7 @@ function MainPageContent() {
                             }
                             setClusterColor("yellow")
                             setSelectedCoref(result)
+                            setCurrentMention(undefined)
                             selection.empty()
                         }
                     }
