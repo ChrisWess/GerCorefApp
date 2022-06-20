@@ -162,7 +162,11 @@ function MainPageContent() {
                         }
                         if (result[1] > result[0]) {
                             clearPrevMarking(markedWord.current)
-                            markedWord.current = result
+                            if (result[0] + 1 === result[1]) {
+                                markedWord.current = [result[0]]
+                            } else {
+                                markedWord.current = result
+                            }
                             for (let i = result[0]; i < result[1]; i++) {
                                 let prev = document.getElementById("w" + i)
                                 if (prev) {

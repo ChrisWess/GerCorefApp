@@ -86,8 +86,6 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefsMapped, allCor
             }, false)
         });
     }, [txt, clust]);
-    //
-
 
     //State before anything is sent to the API
     if(clust[0] === "Nothing")
