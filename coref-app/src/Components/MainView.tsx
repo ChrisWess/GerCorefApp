@@ -1,7 +1,7 @@
 import React, {MutableRefObject, useEffect, useState} from 'react';
 import "./MainView.css"
 import Paper from '@mui/material/Paper';
-import {Divider, List, ListItem, Pagination} from "@mui/material";
+import {Divider, List, ListItem,ListItemIcon, Pagination} from "@mui/material";
 
 export type Mention = {
     id: string;
@@ -20,7 +20,6 @@ interface MainViewProps {
     markedWord: MutableRefObject<number[]>
     setSelectedCoref: Function
     setClusterColor: Function
-    setCurrentMention: Function
 }
 
 export const clearPrevMarking = function(markedWord: number[]) {
@@ -41,8 +40,7 @@ export const clearPrevMarking = function(markedWord: number[]) {
 
 const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefsMapped, allCorefs,
                                                wordArr, wordFlags,
-                                               markedWord, setSelectedCoref, setClusterColor,
-                                               setCurrentMention}) => {
+                                               markedWord, setSelectedCoref, setClusterColor }) => {
 
     const getStyle = function(element: any, property: string) {
         return window.getComputedStyle ? window.getComputedStyle(element, null).getPropertyValue(property) :
@@ -56,7 +54,6 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefsMapped, allCor
     const [itemsPerPage, setItemsPerPage] = useState(15);
     const indexOfLastItem = currentPage*itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    // TODO: only add eventlisteners to the elements that are displayed on a page
     useEffect(() => {
         let elems = document.querySelectorAll("b.cr");
         elems.forEach(function(value) {
@@ -67,7 +64,7 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefsMapped, allCor
                 if (mention) {
                     setSelectedCoref(mention.selectionRange)
                     setClusterColor(getStyle(value, "background-color"))
-                    setCurrentMention(mention)
+                    allCorefsMapped.current.set("current", mention)
                 }
             }, false)
         });
@@ -78,14 +75,14 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefsMapped, allCor
                 markedWord.current = []
                 let wid = parseInt(value.id.substring(1))
                 setSelectedCoref([wid, wid + 1])
-                setCurrentMention(undefined)
                 // @ts-ignore
                 value.style.backgroundColor = "yellow";
                 setClusterColor("yellow")
                 markedWord.current = [wid]
             }, false)
         });
-    });
+    }, [txt, clust]);
+    //
 
 
     //State before anything is sent to the API
@@ -176,8 +173,10 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefsMapped, allCor
 
     //Decide which Items are to be displayed on this page
     const currentItems = sentenceArray.slice(indexOfFirstItem, indexOfLastItem);
-    const sentenceList = currentItems.map((d) =>
-        <ListItem divider key={d.toString()}>
+    const sentenceList = currentItems.map((d, index) => <ListItem divider key={index}>
+        <ListItemIcon>
+            {index+indexOfFirstItem+1}
+        </ListItemIcon>
             <div dangerouslySetInnerHTML={{ __html:  d}}/>
             <Divider />
         </ListItem>
@@ -188,6 +187,7 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefsMapped, allCor
         <>
             <div style={{height:720}}>
                 <article id="docView">
+
                         <List className="pagination">
                                 {sentenceList}
                         </List>
