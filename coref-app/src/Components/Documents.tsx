@@ -7,6 +7,8 @@ import Table from "./TableDocuments";
 interface MyProps {
     sendCorefClusterToParent: any
     sendCorefTextToParent: any,
+    changeChosenDocument: any,
+    chosenDocument: any
     children: any
 };
 type MyState = { selectedFile: any, nameWasChanged: boolean, newName: string };
@@ -18,6 +20,7 @@ type dict = {
 class Documents extends React.Component<MyProps, MyState>{
 
     static allData: dict = new Object();
+
     constructor(props: any) {
         super(props);
         this.state = { selectedFile: null, nameWasChanged: false, newName: "" };
@@ -35,8 +38,7 @@ class Documents extends React.Component<MyProps, MyState>{
     };
 
     // On file upload (click the upload button)
-    onFileUpload = async () => {
-        // TODO: clever handle files with same names
+    onFileUpload = async (event: any) => {
         // TODO: store files on backend 
         // TODO: store jsons, not recompute them every time
 
@@ -44,11 +46,19 @@ class Documents extends React.Component<MyProps, MyState>{
             const name = this.state.selectedFile.name;
             if (name in Documents.allData) {
                 let arr = name.split(".");
-                //const last = arr.at(-1);
                 const last = arr.pop();
                 const first = arr.join('.');
-                const randomName = Math.floor(Math.random() * 10000);
-                const finalName = first + '-' + randomName + '.' + last;
+                let sameNames = [];
+                for (const [key, value] of Object.entries(Documents.allData)) {
+                    if (key.startsWith(first) && key.endsWith('.' + last)) {
+                        sameNames.push(key);
+                    }
+                }
+                let number = 1;
+                while (sameNames.includes(first + '-' + number + '.' + last)) {
+                    ++number;
+                }
+                const finalName = first + '-' + number + '.' + last;
                 Documents.allData[finalName] = this.state.selectedFile;
                 this.setState({ nameWasChanged: true });
                 this.setState({ newName: finalName });
@@ -74,73 +84,51 @@ class Documents extends React.Component<MyProps, MyState>{
                             'Content-Type': 'multipart/form-data',
                         },
                     },
-                );/*.then((response) => {
-                    console.log(response);
-                }, (error) => {
-                    console.log(error);
-                });*/
+                );
                 this.props.sendCorefClusterToParent(data.clusters)
                 this.props.sendCorefTextToParent(data.tokens)
+                if (!this.state.nameWasChanged) {
+                    this.props.changeChosenDocument(this.state.selectedFile['name']);
+                } else {
+                    this.props.changeChosenDocument(this.state.newName);
+                }
             }
             catch (error) {
                 if (axios.isAxiosError(error)) {
                     console.log('error message: ', error.message);
-                    // 👇️ error: AxiosError<any, any>
                     return error.message;
                 } else {
                     console.log('unexpected error: ', error);
                     return 'An unexpected error occurred';
                 }
             }
+            this.setState({ selectedFile: null });
+        }
+        if (document !== null && document.getElementById('file') !== null) {
+            (document.getElementById('file') as HTMLInputElement).value = '';
         }
     };
-
-    // File content to be displayed after
-    // file upload is complete
-    fileData = () => {
-
-        if (this.state.selectedFile) {
-            if (!this.state.nameWasChanged) {
-                return (
-                    <div>
-                        <h4>Selected file details:</h4>
-                        <p>File Name: {this.state.selectedFile['name']}</p>
-                        <p>File Type: {this.state.selectedFile['type']}</p>
-                    </div>
-                );
-            } else {
-                return (
-                    <div>
-                        <h4>There is a file with the same name. A name was changed. Selected file details:</h4>
-                        <p>File Name: {this.state.newName}</p>
-                        <p>File Type: {this.state.selectedFile['type']}</p>
-                    </div>
-                );
-            }
-        } else {
-            return (
-                <div>
-                    <br />
-                    <h4>Please, choose .txt file before pressing the upload button!</h4>
-                </div>
-            );
-        }
-    };
-
+    
     render() {
         return (
             <div>
-                <div>
-                    <input type="file" onChange={this.onFileChange} accept=".txt" />
-                    <Button variant="outlined" style={{ margin: 1, textTransform: "none" }} onClick={this.onFileUpload}>Upload</Button>
-                    <Table
-                        tableData={Documents.allData}
-                        sendCorefClusterToParent={this.props.sendCorefClusterToParent}
-                        sendCorefTextToParent={this.props.sendCorefTextToParent}
-                    >
-                    </Table>
-                </div>
-                {this.fileData()}
+                <input type="file" id="file" onChange={this.onFileChange} accept=".txt" />
+                <Button variant="outlined" style={{ margin: 1, textTransform: "none", width: "97%" }}
+                    onClick={this.onFileUpload} type="submit" disabled={!this.state.selectedFile}> Upload </Button>
+                <Table
+                    tableData={Documents.allData}
+                    sendCorefClusterToParent={this.props.sendCorefClusterToParent}
+                    sendCorefTextToParent={this.props.sendCorefTextToParent}
+                    changeChosenDocument={this.props.changeChosenDocument}
+                    chosenDocument={this.props.chosenDocument}
+                >
+                </Table>
+                <Button variant="outlined" style={{ margin: 5, textTransform: "none", width: "97%" }} disabled>
+                    Share selected document</Button>
+                <Button variant="outlined" style={{ margin: 5, textTransform: "none", width: "97%" }} disabled>
+                    Download annotated document</Button>
+                <Button variant="outlined" style={{ margin: 5, textTransform: "none", width: "97%" }} disabled>
+                    Submit annotation <br />(Submit for online learning)</Button>
             </div>
         );
     }
