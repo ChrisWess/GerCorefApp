@@ -69,6 +69,7 @@ function MainPageContent() {
     const [selectedCoref, setSelectedCoref] = React.useState<number[]>([]);
     const [clusterColor, setClusterColor] = React.useState<string>("black");
     const [currentMention, setCurrentMention] = React.useState<Mention | undefined>(undefined);
+    const [chosenDocument, setChosenDocument] = React.useState([null]);
 
     const allCorefsMapped = React.useRef<Map<string, Mention>>(new Map<string, Mention>());
     const allCorefs = React.useRef<Mention[][]>([]);  // different mention representation (more efficient access to entire docs or clusters)
@@ -91,6 +92,12 @@ function MainPageContent() {
     const [value, setValue] = React.useState(0);
     const handleChange = (event: React.SyntheticEvent, newValue: number) => {
         setValue(newValue);
+    };
+
+
+    const  changeChosenDocument = (newDocument: any) => {
+        setChosenDocument(newDocument);
+        console.log(newDocument);
     };
 
     React.useEffect(() => {
@@ -268,6 +275,7 @@ function MainPageContent() {
                                             <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
                                                 <Tab label="Text" {...a11yProps(0)} />
                                                 <Tab label="Documents" {...a11yProps(1)} />
+                                                <Tab label="Statistics" {...a11yProps(2)} />
                                             </Tabs>
                                         </Box>
                                         <TabPanel value={value} index={0}>
@@ -276,6 +284,7 @@ function MainPageContent() {
                                             <Text
                                                 sendCorefClusterToParent={sendCorefClustersToMainPage}
                                                 sendCorefTextToParent={sendCorefTextToMainPage}
+                                                changeChosenDocument={changeChosenDocument}
                                             />
 
 
@@ -284,8 +293,14 @@ function MainPageContent() {
                                             {/* Documents */}
                                             <Documents
                                                 sendCorefClusterToParent={sendCorefClustersToMainPage}
-                                                sendCorefTextToParent={sendCorefTextToMainPage}>
+                                                sendCorefTextToParent={sendCorefTextToMainPage}
+                                                changeChosenDocument={changeChosenDocument}
+                                                chosenDocument={chosenDocument}
+                                                >
                                             </Documents>                                        
+                                        </TabPanel>
+                                        <TabPanel value={value} index={2}>
+                                            {/* Statistics */}                                      
                                         </TabPanel>
                                     </Box>
                                 </Paper>

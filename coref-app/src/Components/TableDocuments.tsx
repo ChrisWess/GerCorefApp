@@ -30,6 +30,7 @@ function Table(props: any) {
 
             props.sendCorefClusterToParent(data.clusters)
             props.sendCorefTextToParent(data.tokens)
+            props.changeChosenDocument(el);
         }
         catch (error) {
             if (axios.isAxiosError(error)) {
@@ -45,11 +46,11 @@ function Table(props: any) {
     //TODO: rewrite it more clear, without 2 lists and if 
     if (Object.keys(props.tableData).length != 0) {
         let arr = Array.from(Object.keys(props.tableData));
-
         const tableBody = arr.map((el: any, index) => (
-            <div key={index}>
-                <ListItemButton>
-                    <ListItemText onClick={() => handleClick(el)}>{el}</ListItemText>
+            <div key = {index}>
+                <ListItemButton style = {index === arr.indexOf(props.chosenDocument) ?
+                        { backgroundColor: 'lightGray' } : {}}>
+                    <ListItemText  style={{ lineHeight: 1, margin: 0 }} onClick={() => handleClick(el)}> {el} </ListItemText>
                 </ListItemButton>
                 <Divider />
             </div>
