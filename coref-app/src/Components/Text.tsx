@@ -24,6 +24,7 @@ export default function Text(props: any) {
             console.log(JSON.stringify(data, null, 4));
             props.sendCorefClusterToParent(data.clusters)
             props.sendCorefTextToParent(data.tokens)
+            props.changeChosenDocument(null);
         }
         catch (error) {
             if (axios.isAxiosError(error)) {
