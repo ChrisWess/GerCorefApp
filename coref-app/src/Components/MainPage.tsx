@@ -64,15 +64,14 @@ function a11yProps(index: number) {
 const theme = createTheme();
 
 function MainPageContent() {
-    const [corefClusters, setCorefClusters] = React.useState(["Nothing"]);
+    const [corefClusters, setCorefClusters] = React.useState<number[][][]>([]);
     const [corefText, setCorefText] = React.useState(["No Document"]);
     const [selectedCoref, setSelectedCoref] = React.useState<number[]>([]);
     const [clusterColor, setClusterColor] = React.useState<string>("black");
     const [currentMention, setCurrentMention] = React.useState<Mention | undefined>(undefined);
     const [chosenDocument, setChosenDocument] = React.useState([null]);
 
-    const allCorefsMapped = React.useRef<Map<string, Mention>>(new Map<string, Mention>());
-    const allCorefs = React.useRef<Mention[][]>([]);  // different mention representation (more efficient access to entire docs or clusters)
+    const allCorefs = React.useRef<Mention[][]>([]);
     const wordArr = React.useRef<string[]>([]);
     const wordFlags = React.useRef<boolean[]>([]);
     const markedWord = React.useRef<number[]>([])
@@ -224,13 +223,14 @@ function MainPageContent() {
                                     <CorefView
                                         selectedCoref={selectedCoref}
                                         wordArr={wordArr}
-                                        allCorefsMapped={allCorefsMapped}
+                                        corefClusters={corefClusters}
                                         allCorefs={allCorefs}
                                         clusterColor={clusterColor}
                                         markedWord={markedWord}
                                         currentMention={currentMention}
                                         handleSelectCoref={setSelectedCoref}
                                         setCurrentMention={setCurrentMention}
+                                        setCorefClusters={sendCorefClustersToMainPage}
                                     />
                                 </Paper>
                             </Grid>
@@ -248,7 +248,6 @@ function MainPageContent() {
                                     <MainView
                                         txt={corefText}
                                         clust={corefClusters}
-                                        allCorefsMapped={allCorefsMapped}
                                         allCorefs={allCorefs}
                                         wordArr={wordArr}
                                         wordFlags={wordFlags}

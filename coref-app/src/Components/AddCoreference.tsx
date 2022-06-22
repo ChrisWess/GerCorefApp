@@ -1,7 +1,6 @@
 import * as React from 'react';
 import {MutableRefObject} from "react";
-import {Mention} from "./MainView";
-import {addNewCoref} from "./CorefView";
+import {clearPrevMarking, Mention} from "./MainView";
 import "./AddCoreference.css"
 import {Button} from "@mui/material";
 
@@ -9,17 +8,19 @@ import {Button} from "@mui/material";
 interface AddCoreferenceProps {
     selectedCoref: number[]
     currentMention: Mention | undefined
+    corefClusters: number[][][]
     wordArr: MutableRefObject<string[]>
-    allCorefsMapped: MutableRefObject<Map<string, Mention>>
     allCorefs: MutableRefObject<Mention[][]>
     markedWord: MutableRefObject<number[]>
     handleSelectCoref: Function;
     setCurrentMention: Function
+    setCorefClusters: Function
 }
 
-const AddCoreference: React.FC<AddCoreferenceProps> = ({ selectedCoref, currentMention, wordArr,
-                                                           allCorefsMapped, allCorefs, markedWord,
-                                                           handleSelectCoref, setCurrentMention}) => {
+const AddCoreference: React.FC<AddCoreferenceProps> = ({ selectedCoref, currentMention, corefClusters,
+                                                           wordArr, allCorefs,
+                                                           markedWord, handleSelectCoref, setCurrentMention,
+                                                           setCorefClusters }) => {
 
     function dropdown() {
         document.getElementById("myDropdown")!.classList.toggle("show");
@@ -41,11 +42,49 @@ const AddCoreference: React.FC<AddCoreferenceProps> = ({ selectedCoref, currentM
 
     function addCoref(clusterId: number) {
         return function () {
-            let mention: Mention = addNewCoref(clusterId, allCorefs, wordArr.current, markedWord.current)!
+            let idxStart: number = markedWord.current[0]
+            let clusterIdx: number = clusterId - 1
+            let mentionIdx: number
+            if (clusterId > corefClusters.length) {
+                corefClusters.push([])
+                allCorefs.current.push([])
+                mentionIdx = 0
+            } else {
+                let cluster: number[][] = corefClusters[clusterIdx]
+                mentionIdx = cluster.length
+                for (let i = 0; i < cluster.length; i++) {
+                    if (cluster[i][0] >= idxStart) {
+                        mentionIdx = i
+                        break
+                    }
+                }
+            }
+            let corefId = `d1c${clusterIdx}m${mentionIdx}`
+            let newMention: Mention
+            if (markedWord.current.length === 1) {
+                newMention = {
+                    id: corefId,
+                    content: wordArr.current[idxStart],
+                    selectionRange: [idxStart, idxStart + 1],
+                    documentIdx: 0, clusterIdx: clusterIdx, mentionIdx: mentionIdx
+                }
+            } else {
+                newMention = {
+                    id: corefId,
+                    content: wordArr.current.slice(idxStart, markedWord.current[1]).join(" "),
+                    selectionRange: markedWord.current,
+                    documentIdx: 0, clusterIdx: clusterIdx, mentionIdx: mentionIdx
+                }
+            }
+            clearPrevMarking(markedWord.current)
             markedWord.current = []
-            allCorefsMapped.current.set(mention.id, mention)
-            setCurrentMention(mention)
-            handleSelectCoref(mention.selectionRange)
+            // TODO: set color of selected text
+            // TODO: couple setSelectedCoref with setClusterColor (call both in one function)
+            allCorefs.current[clusterIdx].splice(mentionIdx, 0, newMention)
+            setCurrentMention(newMention)
+            handleSelectCoref(newMention.selectionRange)
+            corefClusters[clusterIdx].splice(mentionIdx, 0, [newMention.selectionRange[0], newMention.selectionRange[1] - 1])
+            setCorefClusters(corefClusters)
         }
     }
 
