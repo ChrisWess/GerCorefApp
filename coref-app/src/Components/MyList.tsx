@@ -8,14 +8,13 @@ import {clearPrevMarking, Mention} from "./MainView";
 
 interface MyListProps {
     currentMention: Mention | undefined
-    currentCluster: MutableRefObject<Mention[]>
     allCorefs: MutableRefObject<Mention[][]>
     markedWord: MutableRefObject<number[]>
     handleSelectCoref: Function;
     setCurrentMention: Function
 }
 
-const MyList: React.FC<MyListProps> = ({ currentMention, currentCluster,
+const MyList: React.FC<MyListProps> = ({ currentMention, allCorefs,
                                            markedWord, handleSelectCoref, setCurrentMention }) => {
 
     const handleClick = (mention: Mention) => {
@@ -28,7 +27,8 @@ const MyList: React.FC<MyListProps> = ({ currentMention, currentCluster,
 
     const listItems = () => {
         if (currentMention) {
-            return currentCluster.current.map((mention) => (
+            let currentCluster: Mention[] = allCorefs.current[currentMention.clusterIdx]
+            return currentCluster.map((mention) => (
                                     <ListItemButton id={"corefitem-" + mention.id} onClick={handleClick(mention)}>
                                         <ListItemText primary={mention.content} />
                                     </ListItemButton>
