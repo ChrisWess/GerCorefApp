@@ -1,7 +1,8 @@
-import React, {MutableRefObject, useEffect, useState} from 'react';
+import React, {MutableRefObject, useState} from 'react';
 import "./MainView.css"
-import Paper from '@mui/material/Paper';
 import {Divider, List, ListItem,ListItemIcon, Pagination} from "@mui/material";
+const _ = require('lodash');
+
 
 export type Mention = {
     id: string;
@@ -107,97 +108,133 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
     wordFlags.current = []
 
     //Puts Text in one long Array instead of one array for each sentence.
-    let buffer: JSX.Element[] = new Array<JSX.Element>()
+    let buffer: JSX.Element[][] = new Array<JSX.Element[]>()
+    // TODO: sentence offsets can be used also in text selection (don't allow marking over sentences this way)
+    let sentenceOffsets: number[] = [0]
     for (let i = 0; i < txt.length; i++) {
+        let sentence: JSX.Element[] = []
         for (let j = 0; j < txt[i].length; j++) {
             let token: string = txt[i][j];
             if (token.match(/[.,:!?]/)) {  // check for punctuation
-                buffer.push(<abbr id={'w' + wordArr.current.length}>{token}</abbr>)
+                sentence.push(<abbr id={'w' + wordArr.current.length}>{token}</abbr>)
                 wordFlags.current.push(false)
             } else {
-                buffer.push(<abbr id={'w' + wordArr.current.length} className="wregular" onClick={wordClickEvent}>{" " + token}</abbr>)
+                sentence.push(<abbr id={'w' + wordArr.current.length} className="wregular" onClick={wordClickEvent}>{" " + token}</abbr>)
                 wordFlags.current.push(true)
             }
             wordArr.current.push(token)
         }
+        buffer.push(sentence)
+        sentenceOffsets.push(sentenceOffsets[i] + txt[i].length)
     }
 
+    let getSentenceIdx = function(tokenIdx: number) {
+        for(let i = 0; i < sentenceOffsets.length - 2; i++) {
+            if (sentenceOffsets[i] <= tokenIdx && tokenIdx < sentenceOffsets[i + 1]) {
+                return i
+            }
+        }
+        return sentenceOffsets.length - 2
+    };
+
+    let flattenedClust = []
+    let clustCopy = _.cloneDeep(clust);
+    let deletedCumulated: number[][] = Array(buffer.length).fill(null).map(
+        (value, index) => Array(buffer[index].length).fill(0))
     allCorefs.current = []
-    let delOps: number[] = Array(wordArr.current.length).fill(0)
     for (let i = 0; i < clust.length; i++) {
+        allCorefs.current.push(Array<Mention>(clust[i].length))
         for (let j = 0; j < clust[i].length; j++) {
+            // Create a flattened array of clusters
+            if (flattenedClust.length === 0) {
+                let cluster = clustCopy[i][j]
+                cluster.push(i, j)
+                flattenedClust.push(cluster)
+            } else {
+                let currLen = flattenedClust.length
+                for(let k = 0; k < currLen - 1; k++) {
+                    let cluster = clustCopy[i][j]
+                    if (flattenedClust[k][0] <= cluster[0] && cluster[0] < flattenedClust[k + 1][0]) {
+                        cluster.push(i, j)
+                        if (flattenedClust[k][0] == cluster[0] && flattenedClust[k][1] >= cluster[1]) {
+                            // TODO: correctly sort end indices, too
+                            flattenedClust.splice(k + 2, 0, cluster)
+                        } else {
+                            flattenedClust.splice(k + 1, 0, cluster)
+                        }
+                        break
+                    }
+                }
+                if (flattenedClust.length === currLen) {
+                    let cluster = clustCopy[i][j]
+                    cluster.push(i, j)
+                    flattenedClust.push(cluster)
+                }
+            }
+
+            // Create a look-up for deleted JSX elements in the buffer (resulting from splicing)
             let mentionIdxEnd = clust[i][j][1]
             let numRemove = mentionIdxEnd - clust[i][j][0]
-            delOps[mentionIdxEnd] += numRemove
+            if (numRemove > 0) {
+                let sentIdx = getSentenceIdx(mentionIdxEnd)!
+                let sentence: number[] = deletedCumulated[sentIdx]
+                for (let k = mentionIdxEnd - sentenceOffsets[sentIdx]; k < sentence.length; k++) {
+                    sentence[k] += numRemove
+                }
+            }
         }
     }
-    let deletedCumulated: number[] = []
-    let currentDels = 0
-    for (let i = 0; i < delOps.length; i++) {
-        deletedCumulated.push(currentDels)
-        currentDels += delOps[i]
-    }
-    console.log(deletedCumulated)
-    let currentIndexOfCoref = 1;
+    console.log(flattenedClust)
+
     //for each coref cluster it puts an html element in front of its first word and behind its last word
     //from big to small seems to handle overlapping corefs better
-    for (let i = 0; i < clust.length; i++) {
-        let cluster: Mention[] = []
-        currentIndexOfCoref = i+1;
-        for (let j = 0; j < clust[i].length; j++) {
-            let mentionIdxStart = clust[i][j][0]
-            let mentionIdxEnd = clust[i][j][1]
-            let coref = wordArr.current.slice(mentionIdxStart, mentionIdxEnd + 1).join(" ")
-            let corefId = `d1c${i}m${j}`
-            let mention: Mention = {
-                id: corefId,
-                content: coref,
-                selectionRange: [mentionIdxStart, mentionIdxEnd + 1],
-                documentIdx: 0, clusterIdx: i, mentionIdx: j
-            }
-            cluster.push(mention)
-            // TODO: make mouseover event that shows a small prompt with information at the mouse pointer
-            if (mentionIdxStart === mentionIdxEnd) {
-                buffer.splice(mentionIdxStart - deletedCumulated[mentionIdxStart], 1,
-                <b id={corefId} className={"cr cr-" + currentIndexOfCoref} onClick={corefClickEvent}><abbr id={"w" + mentionIdxStart}><a id={"w" + mentionIdxStart}
-                href="#d1c1m1">[</a>{wordArr.current[mentionIdxStart]}<a id={"w" + mentionIdxStart} href="#d1c1m1">]</a><sub id={"w" + mentionIdxStart}>
-                {currentIndexOfCoref}</sub></abbr></b>);
-            } else {
-                // TODO: implement correct handling of overlapping coreferences
-                let mentionSlice: JSX.Element[] = buffer.slice(mentionIdxStart + 1 - deletedCumulated[mentionIdxStart],
-                                                               mentionIdxEnd - deletedCumulated[mentionIdxStart])
-                buffer.splice(mentionIdxStart - deletedCumulated[mentionIdxStart], mentionIdxEnd + 1 - mentionIdxStart,
-                <b id={corefId} className={"cr cr-" + currentIndexOfCoref} onClick={corefClickEvent}><abbr id={"w" + mentionIdxStart}>{" "}<a id={"w" + mentionIdxStart}
-                href="#d1c1m1">[</a>{wordArr.current[mentionIdxStart]}</abbr>
-                    {mentionSlice.map((elem, index) => (
-                                    <abbr id={'w' + (mentionIdxStart + index + 1)}>{" " + wordArr.current[mentionIdxStart + index + 1]}</abbr>
-                                  ))}
-                    <abbr id={"w" + mentionIdxEnd}>{" " + wordArr.current[mentionIdxEnd]}<a id={"w" + mentionIdxEnd}
-                href="#d1c1m1">]</a><sub id={"w" + mentionIdxEnd}>{currentIndexOfCoref}</sub></abbr></b>);
-            }
+    for (let i = 0; i < flattenedClust.length; i++) {
+        let mentionIdxStart = flattenedClust[i][0]
+        let mentionIdxEnd = flattenedClust[i][1]
+        let clusterIdx = flattenedClust[i][2]
+        let currentIndexOfCoref = clusterIdx + 1;
+        let mentionIdx = flattenedClust[i][3]
+        let coref = wordArr.current.slice(mentionIdxStart, mentionIdxEnd + 1).join(" ")
+        let corefId = `d1c${clusterIdx}m${mentionIdx}`
+        allCorefs.current[clusterIdx][mentionIdx] = {
+            id: corefId,
+            content: coref,
+            selectionRange: [mentionIdxStart, mentionIdxEnd + 1],
+            documentIdx: 0, clusterIdx: clusterIdx, mentionIdx: mentionIdx
         }
-        allCorefs.current.push(cluster)
-    }
 
-    // TODO: correctly split into sentences
-    let sentenceIndices: number[] = [0];
-    for (let i = 0; i < buffer.length; i++) {
-        let wordIdx = i + deletedCumulated[i]
-        if (!wordFlags.current[wordIdx]) {
-            sentenceIndices.push(i + 1)
+        // TODO: make mouseover event that shows a small prompt with information at the mouse pointer
+        let sentenceIdx: number = getSentenceIdx(mentionIdxEnd)!
+        let sentBuffer: JSX.Element[] = buffer[sentenceIdx]
+        let deleted = deletedCumulated[sentenceIdx]
+        let startIdxInSentence = mentionIdxStart - sentenceOffsets[sentenceIdx]
+        let shiftedStartIdx = startIdxInSentence - deleted[startIdxInSentence]
+        if (mentionIdxStart === mentionIdxEnd) {
+            sentBuffer.splice(shiftedStartIdx, 1,
+            <b id={corefId} className={"cr cr-" + currentIndexOfCoref} onClick={corefClickEvent}><abbr id={"w" + mentionIdxStart}><a id={"w" + mentionIdxStart}
+            href="#d1c1m1">[</a>{wordArr.current[mentionIdxStart]}<a id={"w" + mentionIdxStart} href="#d1c1m1">]</a><sub id={"w" + mentionIdxStart}>
+            {currentIndexOfCoref}</sub></abbr></b>);
+        } else {
+            // TODO: implement correct handling of overlapping coreferences
+            //   => check if any mentionIdxRanges overlap (can be done on the "clust" array) &
+            //      make a function that makes the correct JSXElement for these overlapping corefs.
+            //      (also use the entire span of the overlapping annotations to set deletedCumulated)
+            let endIdxInSentence = mentionIdxEnd - sentenceOffsets[sentenceIdx]
+            let mentionSlice: JSX.Element[] = sentBuffer.slice(shiftedStartIdx + 1,
+                                                               endIdxInSentence - deleted[startIdxInSentence])
+            sentBuffer.splice(shiftedStartIdx, mentionIdxEnd + 1 - mentionIdxStart,
+            <b id={corefId} className={"cr cr-" + currentIndexOfCoref} onClick={corefClickEvent}><abbr id={"w" + mentionIdxStart}>{" "}<a id={"w" + mentionIdxStart}
+            href="#d1c1m1">[</a>{wordArr.current[mentionIdxStart]}</abbr>
+                {mentionSlice.map((elem, index) => (
+                                <abbr id={'w' + (mentionIdxStart + index + 1)}>{" " + wordArr.current[mentionIdxStart + index + 1]}</abbr>
+                              ))}
+                <abbr id={"w" + mentionIdxEnd}>{" " + wordArr.current[mentionIdxEnd]}<a id={"w" + mentionIdxEnd}
+            href="#d1c1m1">]</a><sub id={"w" + mentionIdxEnd}>{currentIndexOfCoref}</sub></abbr></b>);
         }
     }
-    sentenceIndices.pop()
-    console.log(sentenceIndices)
-
-    let sentenceArray: JSX.Element[][] = []
-    for (let i = 0; i < sentenceIndices.length - 1; i++) {
-        sentenceArray.push(buffer.slice(sentenceIndices[i], sentenceIndices[i + 1]))
-    }
-    sentenceArray.push(buffer.slice(sentenceIndices[sentenceIndices.length - 1]))
 
     //Decide which Items are to be displayed on this page
-    const currentItems = sentenceArray.slice(indexOfFirstItem, indexOfLastItem);
+    const currentItems = buffer.slice(indexOfFirstItem, indexOfLastItem);
     const sentenceList = currentItems.map((d, index) => <ListItem divider key={index}>
         <ListItemIcon>
             {index+indexOfFirstItem+1}
@@ -218,7 +255,7 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
                 </article>
             </div>
             <Pagination
-                count={Math.ceil(sentenceArray.length / itemsPerPage)}
+                count={Math.ceil(buffer.length / itemsPerPage)}
                 onChange={(event,page) => setCurrentPage(page)}
                 style={{marginLeft: "auto", marginRight: "auto"}}
             />

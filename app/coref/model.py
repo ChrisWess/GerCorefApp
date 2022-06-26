@@ -1,11 +1,12 @@
 import itertools
 import logging
 import io
+import spacy
 from collections import defaultdict
 
 import torch
 from transformers import BertTokenizer
-from transformers.models.bert import BasicTokenizer
+# from transformers.models.bert import BasicTokenizer
 
 from app.coref.base import util
 from app.coref.base.preprocess import get_document
@@ -49,22 +50,15 @@ class ProdCorefModel:
         self.model.load_state_dict(torch.load(model_path, map_location=self.device))
         logger.info(f'Loaded model from {model_path}')
         self.model.eval()
-        self.basic_tokenizer = BasicTokenizer(do_lower_case=False)
+        # python -m spacy download de_core_news_md
+        self.spacy_tok = spacy.load("de_core_news_md")
+        # self.basic_tokenizer = BasicTokenizer(do_lower_case=False)
         self.tokenizer = BertTokenizer.from_pretrained(self.config['bert_tokenizer_name'])
         self.tensorizer.long_doc_strategy = "keep"
 
     def text_to_token_list(self, text):
-        words = self.basic_tokenizer.tokenize(text)
-        out = []
-        sentence = []
-        for word in words:
-            sentence.append(word)
-            if word in SENTENCE_ENDERS:
-                out.append(sentence)
-                sentence = []
-        if len(sentence) > 0:
-            out.append(sentence)
-        return out
+        doc = self.spacy_tok(text)
+        return [[token.text for token in sent] for sent in doc.sents]
 
     def preprocess(self, data):
         """
