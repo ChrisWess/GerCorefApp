@@ -1,6 +1,6 @@
 import * as React from 'react';
 import {MutableRefObject} from "react";
-import {clearPrevMarking, Mention} from "./MainView";
+import {Mention} from "./MainView";
 import "./AddCoreference.css"
 import {Button} from "@mui/material";
 
@@ -12,14 +12,13 @@ interface AddCoreferenceProps {
     wordArr: MutableRefObject<string[]>
     allCorefs: MutableRefObject<Mention[][]>
     markedWord: MutableRefObject<number[]>
-    handleSelectCoref: Function;
-    setCurrentMention: Function
+    setNewCorefSelection: Function
     setCorefClusters: Function
 }
 
 const AddCoreference: React.FC<AddCoreferenceProps> = ({ selectedCoref, currentMention, corefClusters,
                                                            wordArr, allCorefs,
-                                                           markedWord, handleSelectCoref, setCurrentMention,
+                                                           markedWord, setNewCorefSelection,
                                                            setCorefClusters }) => {
 
     function dropdown() {
@@ -76,13 +75,8 @@ const AddCoreference: React.FC<AddCoreferenceProps> = ({ selectedCoref, currentM
                     documentIdx: 0, clusterIdx: clusterIdx, mentionIdx: mentionIdx
                 }
             }
-            clearPrevMarking(markedWord.current)
-            markedWord.current = []
-            // TODO: set color of selected text
-            // TODO: couple setSelectedCoref with setClusterColor (call both in one function)
+            setNewCorefSelection(newMention)
             allCorefs.current[clusterIdx].splice(mentionIdx, 0, newMention)
-            setCurrentMention(newMention)
-            handleSelectCoref(newMention.selectionRange)
             corefClusters[clusterIdx].splice(mentionIdx, 0, [newMention.selectionRange[0], newMention.selectionRange[1] - 1])
             setCorefClusters(corefClusters)
         }

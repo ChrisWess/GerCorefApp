@@ -3,7 +3,8 @@ import List from '@mui/material/List';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import {MutableRefObject} from "react";
-import {clearPrevMarking, Mention} from "./MainView";
+import {Mention} from "./MainView";
+import {clearPrevMarking} from "./MainPage";
 
 
 interface MyListProps {
