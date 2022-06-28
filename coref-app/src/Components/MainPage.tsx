@@ -9,11 +9,12 @@ import Paper from '@mui/material/Paper';
 import Link from '@mui/material/Link';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
-import MainView, {Mention, clearPrevMarking} from "./MainView";
+import MainView, {Mention, parseMentionId} from "./MainView";
 import Documents from "./Documents";
 import CorefView from "./CorefView";
 import Text from "./Text";
 import ResponsiveAppBar from "./ResponsiveAppBar";
+
 
 function Copyright(props: any) {
     return (
@@ -60,12 +61,29 @@ function a11yProps(index: number) {
 }
 
 
+export const clearPrevMarking = function(markedWord: number[]) {
+    if (markedWord.length === 1) {
+        let prev = document.getElementById("w" + markedWord[0])
+        if (prev) {  // && prev.classList.contains("wregular")
+            prev.style.backgroundColor = "transparent"
+        }
+    } else if (markedWord.length === 2) {
+        for (let i = markedWord[0]; i < markedWord[1]; i++) {
+            let prev = document.getElementById("w" + i)
+            if (prev) {  // && prev.classList.contains("wregular")
+                prev.style.backgroundColor = "transparent"
+            }
+        }
+    }
+};
+
+
 //unused, possibly usable to create a color theme to improve visuals
 const theme = createTheme();
 
 function MainPageContent() {
     const [corefClusters, setCorefClusters] = React.useState<number[][][]>([]);
-    const [corefText, setCorefText] = React.useState(["No Document"]);
+    const [corefText, setCorefText] = React.useState<string[][]>([]);
     const [selectedCoref, setSelectedCoref] = React.useState<number[]>([]);
     const [clusterColor, setClusterColor] = React.useState<string>("black");
     const [currentMention, setCurrentMention] = React.useState<Mention | undefined>(undefined);
@@ -73,7 +91,7 @@ function MainPageContent() {
 
     const allCorefs = React.useRef<Mention[][]>([]);
     const wordArr = React.useRef<string[]>([]);
-    const wordFlags = React.useRef<boolean[]>([]);
+    const wordFlags = React.useRef<(boolean | null)[]>([]);
     const markedWord = React.useRef<number[]>([])
 
     //Functions used by Child-Component "Text" to send the received data to the
@@ -86,6 +104,77 @@ function MainPageContent() {
         console.log(messages)
         setCorefText(messages);
     };
+
+    const getStyle = function(element: any, property: string) {
+        return window.getComputedStyle ? window.getComputedStyle(element, null).getPropertyValue(property) :
+            element.style[property.replace(/-([a-z])/g, function (g) { return g[1].toUpperCase(); })];
+    };
+
+    const getMentionFromId = function(mentionId: string, allCorefs: Mention[][]) {
+        let mentionLoc = parseMentionId(mentionId)
+        return allCorefs[mentionLoc.clusterIdx][mentionLoc.mentionIdx]
+    }
+
+    const setNewCorefSelection = (value: any) => {
+        clearPrevMarking(markedWord.current)
+        markedWord.current = []
+        let mention: Mention
+        if (!value) {
+            setCurrentMention(undefined)
+            setSelectedCoref([])
+            setClusterColor("black")
+        } else if ('mentionIdx' in value) {
+            mention = value
+            setCurrentMention(mention)
+            setSelectedCoref(mention.selectionRange)
+            let className = 'cr-' + (mention.clusterIdx + 1)
+            let element: HTMLElement | null = document.querySelector(className)
+            if (element) {
+                setClusterColor(getComputedStyle(element).backgroundColor)
+            } else {
+                // hacky way to get the correct background color from CSS sheet for new clusters
+                element = document.createElement('b')
+                element.textContent = '.'
+                element.className = 'cr-' + (mention.clusterIdx + 1)
+                document.body.appendChild(element)
+                console.log(getComputedStyle(element).backgroundColor)
+                setClusterColor(getComputedStyle(element).backgroundColor)
+                document.body.removeChild(element)
+            }
+        } else {
+            mention = getMentionFromId(value.currentTarget.id, allCorefs.current)
+            setCurrentMention(mention)
+            setSelectedCoref(mention.selectionRange)
+            setClusterColor(getStyle(value.currentTarget, "background-color"))
+        }
+    }
+
+    const markWords = (markRange: number[], value: any) => {
+        clearPrevMarking(markedWord.current)
+        if (markRange.length === 1) {
+            if (!value) {
+                value = document.getElementById("w" + markRange[0])
+            }
+            value.style.backgroundColor = "yellow";
+            setSelectedCoref([markRange[0], markRange[0] + 1])
+            markedWord.current = markRange
+        } else {
+            if (markRange[0] + 1 === markRange[1]) {
+                markedWord.current = [markRange[0]]
+            } else {
+                markedWord.current = markRange
+            }
+            for (let i = markRange[0]; i < markRange[1]; i++) {
+                let prev = document.getElementById("w" + i)
+                if (prev) {
+                    prev.style.backgroundColor = "yellow"
+                }
+            }
+            setSelectedCoref(markRange)
+        }
+        setClusterColor("yellow")
+        setCurrentMention(undefined)
+    }
 
     //For Tabs
     const [value, setValue] = React.useState(0);
@@ -120,16 +209,10 @@ function MainPageContent() {
                             startOffset = Math.min(selection.anchorOffset, selection.focusOffset)
                             endOffset = Math.max(selection.anchorOffset, selection.focusOffset)
                             let word: string = words[startWordIdx]
-                            let isWord: boolean = wordFlags.current[startWordIdx]
+                            let isWord: boolean = !!wordFlags.current[startWordIdx]
                             // offset needs to start at 1, because there is always a space at 0
                             if (startOffset <= 1 && isWord && endOffset === word.length + 1) {
-                                clearPrevMarking(markedWord.current)
-                                markedWord.current = [startWordIdx]
-                                // @ts-ignore
-                                value.style.backgroundColor = "yellow";
-                                setClusterColor("yellow")
-                                setSelectedCoref([startWordIdx, startWordIdx + 1])
-                                setCurrentMention(undefined)
+                                markWords([startWordIdx], undefined)
                                 selection.empty()
                             }
                             return
@@ -144,9 +227,9 @@ function MainPageContent() {
                             endOffset = selection.focusOffset
                         }
                         let result: number[] = []
-                        let wordFlagsSlice: boolean[] = wordFlags.current.slice(startWordIdx, endWordIdx + 1)
+                        let wordFlagsSlice: (boolean | null)[] = wordFlags.current.slice(startWordIdx, endWordIdx + 1)
                         for (let i = 1; i < wordFlagsSlice.length - 1; i++) {
-                            if (!wordFlagsSlice[i]) {
+                            if (wordFlagsSlice[i] === false) {
                                 return
                             }
                         }
@@ -167,21 +250,7 @@ function MainPageContent() {
                             result.push(endWordIdx)
                         }
                         if (result[1] > result[0]) {
-                            clearPrevMarking(markedWord.current)
-                            if (result[0] + 1 === result[1]) {
-                                markedWord.current = [result[0]]
-                            } else {
-                                markedWord.current = result
-                            }
-                            for (let i = result[0]; i < result[1]; i++) {
-                                let prev = document.getElementById("w" + i)
-                                if (prev) {
-                                    prev.style.backgroundColor = "yellow"
-                                }
-                            }
-                            setClusterColor("yellow")
-                            setSelectedCoref(result)
-                            setCurrentMention(undefined)
+                            markWords(result, undefined)
                             selection.empty()
                         }
                     }
@@ -231,6 +300,7 @@ function MainPageContent() {
                                         handleSelectCoref={setSelectedCoref}
                                         setCurrentMention={setCurrentMention}
                                         setCorefClusters={sendCorefClustersToMainPage}
+                                        setNewCorefSelection={setNewCorefSelection}
                                     />
                                 </Paper>
                             </Grid>
@@ -251,10 +321,8 @@ function MainPageContent() {
                                         allCorefs={allCorefs}
                                         wordArr={wordArr}
                                         wordFlags={wordFlags}
-                                        markedWord={markedWord}
-                                        setSelectedCoref={setSelectedCoref}
-                                        setClusterColor={setClusterColor}
-                                        setCurrentMention={setCurrentMention}
+                                        setNewCorefSelection={setNewCorefSelection}
+                                        markWords={markWords}
                                     ></MainView>
                                 </Paper>
                             </Grid>

@@ -16,6 +16,7 @@ interface CorefViewProps {
     handleSelectCoref: Function;
     setCurrentMention: Function
     setCorefClusters: Function
+    setNewCorefSelection: Function
 }
 
 export const getCluster = function(mention: Mention, allCorefs: Mention[][]) {
@@ -25,11 +26,19 @@ export const getCluster = function(mention: Mention, allCorefs: Mention[][]) {
 
 const CorefView: React.FC<CorefViewProps> = ({ selectedCoref, wordArr, corefClusters,
                                                  allCorefs, clusterColor, markedWord,
-                                                 currentMention, handleSelectCoref, setCurrentMention, setCorefClusters }) => {
+                                                 currentMention, handleSelectCoref, setCurrentMention, setCorefClusters,
+                                                 setNewCorefSelection}) => {
     const theme = useTheme();
 
-    // TODO: top button: open a popup window that lets you select the cluster that you want to assign the selection (marked word)
-    //  as a new coreference to
+    const deleteCoref = function() {
+        let clusterIdx = currentMention!.clusterIdx
+        corefClusters[clusterIdx].splice(currentMention!.mentionIdx, 1)
+        if (corefClusters[clusterIdx].length === 0) {
+            corefClusters.splice(clusterIdx, 1)
+        }
+        setCorefClusters(corefClusters)
+        setNewCorefSelection(undefined)
+    }
 
     return (
         <>
@@ -55,10 +64,10 @@ const CorefView: React.FC<CorefViewProps> = ({ selectedCoref, wordArr, corefClus
                 wordArr={wordArr}
                 allCorefs={allCorefs}
                 markedWord={markedWord}
-                handleSelectCoref={handleSelectCoref}
-                setCurrentMention={setCurrentMention}
+                setNewCorefSelection={setNewCorefSelection}
                 setCorefClusters={setCorefClusters}/>
-            <Button variant="outlined" style={{margin: 5, textTransform: "none", width: "97%"}} disabled={!currentMention}>
+            <Button variant="outlined" style={{margin: 5, textTransform: "none", width: "97%"}} disabled={!currentMention}
+                    onClick={deleteCoref}>
                 Delete Coreference
             </Button>
 
