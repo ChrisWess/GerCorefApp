@@ -30,12 +30,12 @@ const MyList: React.FC<MyListProps> = ({ currentMention, allCorefs,
         if (currentMention) {
             let currentCluster: Mention[] = allCorefs.current[currentMention.clusterIdx]
             return currentCluster.map((mention) => (
-                                    <ListItemButton id={"corefitem-" + mention.id} onClick={handleClick(mention)}>
-                                        <ListItemText primary={mention.content} />
+                                    <ListItemButton key={"corefitem-" + mention.id} id={"corefitem-" + mention.id} onClick={handleClick(mention)}>
+                                        <ListItemText key={"corefcontent-" + mention.id} primary={mention.content} />
                                     </ListItemButton>
                                   ))
         } else {
-            return <ListItemButton id="corefitemNA" disabled={true}>
+            return <ListItemButton key="corefitemNA" id="corefitemNA" disabled={true}>
                     <ListItemText primary="N/A" />
                 </ListItemButton>
         }

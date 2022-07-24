@@ -44,63 +44,7 @@ export const getSentenceIdx = function(tokenIdx: number, sentenceOffsets: number
     return sentenceOffsets.length - 2
 };
 
-
-const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
-                                               wordArr, wordFlags,
-                                               setNewCorefSelection, markWords }) => {
-
-    //For Pagination
-    const [listItem, setListItems] = useState([]);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage, setItemsPerPage] = useState(15);
-    const indexOfLastItem = currentPage*itemsPerPage;
-    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-
-    const selectNewCorefEvent = function(value: any) {
-        setNewCorefSelection(value)
-    };
-
-    const wordClickEvent = function(value: any) {
-        let wid = parseInt(value.currentTarget.id.substring(1))
-        markWords([wid], value.currentTarget)
-    };
-
-    //State before anything is sent to the API
-    if(txt.length === 0)
-        return <h1>No Document yet</h1>
-
-    //console.log("Cluster:")
-    //console.log(clust)
-    //console.log("Tokens:")
-    //console.log(txt)
-
-    wordArr.current = []
-    wordFlags.current = []
-
-    //Puts Text in one long Array instead of one array for each sentence.
-    let buffer: JSX.Element[][] = new Array<JSX.Element[]>()
-    let sentenceOffsets: number[] = [0]
-    for (let i = 0; i < txt.length; i++) {
-        let sentence: JSX.Element[] = []
-        for (let j = 0; j < txt[i].length; j++) {
-            let token: string = txt[i][j];
-            if (token.match(/^[.,:!?]$/)) {  // check for punctuation
-                sentence.push(<abbr id={'w' + wordArr.current.length}>{token}</abbr>)
-                if (token === '.' && j !== txt[i].length - 1) {
-                    wordFlags.current.push(null)
-                } else {
-                    wordFlags.current.push(false)
-                }
-            } else {
-                sentence.push(<abbr id={'w' + wordArr.current.length} className="wregular" onClick={wordClickEvent}>{" " + token}</abbr>)
-                wordFlags.current.push(true)
-            }
-            wordArr.current.push(token)
-        }
-        buffer.push(sentence)
-        sentenceOffsets.push(sentenceOffsets[i] + txt[i].length)
-    }
-
+function flattenClust(buffer: any, clust: any, allCorefs: any, sentenceOffsets: any){
     let flattenedClust = []
     let clustCopy = _.cloneDeep(clust);
     let deletedCumulated: number[][] = Array(buffer.length).fill(null).map(
@@ -148,9 +92,70 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
             }
         }
     }
+    return [flattenedClust, deletedCumulated]
+}
+
+
+const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
+                                               wordArr, wordFlags,
+                                               setNewCorefSelection, markWords }) => {
+
+    //For Pagination
+    const [listItem, setListItems] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage, setItemsPerPage] = useState(15);
+    const indexOfLastItem = currentPage*itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+
+    const selectNewCorefEvent = function(value: any) {
+        setNewCorefSelection(value)
+    };
+
+    const wordClickEvent = function(value: any) {
+        let wid = parseInt(value.currentTarget.id.substring(1))
+        markWords([wid], value.currentTarget)
+    };
+
+    //State before anything is sent to the API
+    if(txt.length === 0)
+        return <h1>No Document yet</h1>
+
+    wordArr.current = []
+    wordFlags.current = []
+
+    //Puts Text in array of sentences, each word wrapped in <abbr> element.
+    let buffer: JSX.Element[][] = new Array<JSX.Element[]>()
+    let sentenceOffsets: number[] = [0]
+    for (let i = 0; i < txt.length; i++) {
+        let sentence: JSX.Element[] = []
+        for (let j = 0; j < txt[i].length; j++) {
+            let token: string = txt[i][j];
+            let currentId = 'w' + wordArr.current.length;
+            if (token.match(/^[.,:!?]$/)) {  // check for punctuation
+                sentence.push(<abbr key={currentId} id={currentId}>{token}</abbr>)
+                if (token === '.' && j !== txt[i].length - 1) {
+                    wordFlags.current.push(null)
+                } else {
+                    wordFlags.current.push(false)
+                }
+            } else {
+                sentence.push(<abbr key={currentId} id={currentId} className="wregular" onClick={wordClickEvent}>{" " + token}</abbr>)
+                wordFlags.current.push(true)
+            }
+            wordArr.current.push(token)
+        }
+        buffer.push(sentence)
+        sentenceOffsets.push(sentenceOffsets[i] + txt[i].length)
+    }
+
+    //not sure what this does lol
+    let results = flattenClust(buffer, clust,allCorefs,sentenceOffsets);
+    let flattenedClust = results[0]
+    let deletedCumulated = results[1]
 
     //for each coref cluster it puts an html element in front of its first word and behind its last word
-    //from big to small seems to handle overlapping corefs better
+    //
+    // !! overlapping corefs cause many errors, also when trying to make new overlapping corefs !!
     for (let i = 0; i < flattenedClust.length; i++) {
         let mentionIdxStart = flattenedClust[i][0]
         let mentionIdxEnd = flattenedClust[i][1]
@@ -172,10 +177,11 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
         let deleted = deletedCumulated[sentenceIdx]
         let startIdxInSentence = mentionIdxStart - sentenceOffsets[sentenceIdx]
         let shiftedStartIdx = startIdxInSentence - deleted[startIdxInSentence]
+        let id = "w" + mentionIdxStart;
         if (mentionIdxStart === mentionIdxEnd) {
             sentBuffer.splice(shiftedStartIdx, 1,
-            <b id={corefId} className={"cr cr-" + currentIndexOfCoref} onClick={selectNewCorefEvent}><abbr id={"w" + mentionIdxStart}><a id={"w" + mentionIdxStart}
-            href="#d1c1m1">[</a>{wordArr.current[mentionIdxStart]}<a id={"w" + mentionIdxStart} href="#d1c1m1">]</a><sub id={"w" + mentionIdxStart}>
+            <b key={corefId} id={corefId} className={"cr cr-" + currentIndexOfCoref} onClick={selectNewCorefEvent}><abbr key={id+"-1"} id={id}><a key={id+"-2"} id={id}
+            href="#d1c1m1">[</a>{wordArr.current[mentionIdxStart]}<a key={id+"-4"} id={id} href="#d1c1m1">]</a><sub key={id+"-5"} id={id}>
             {currentIndexOfCoref}</sub></abbr></b>);
         } else {
             // TODO: implement correct handling of overlapping coreferences
@@ -185,26 +191,30 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
             let endIdxInSentence = mentionIdxEnd - sentenceOffsets[sentenceIdx]
             let mentionSlice: JSX.Element[] = sentBuffer.slice(shiftedStartIdx + 1,
                                                                endIdxInSentence - deleted[startIdxInSentence])
+            let id1 = "w" + mentionIdxEnd;
             sentBuffer.splice(shiftedStartIdx, mentionIdxEnd + 1 - mentionIdxStart,
-            <b id={corefId} className={"cr cr-" + currentIndexOfCoref} onClick={selectNewCorefEvent}><abbr id={"w" + mentionIdxStart}>{" "}<a id={"w" + mentionIdxStart}
+            <b key={corefId} id={corefId} className={"cr cr-" + currentIndexOfCoref} onClick={selectNewCorefEvent}><abbr key={id+"-1"} id={id}>{" "}<a key={id+"-2"} id={id}
             href="#d1c1m1">[</a>{wordArr.current[mentionIdxStart]}</abbr>
                 {mentionSlice.map((elem, index) => (
-                                <abbr id={'w' + (mentionIdxStart + index + 1)}>{" " + wordArr.current[mentionIdxStart + index + 1]}</abbr>
+                                <abbr key={'w' + (mentionIdxStart + index + 1)+"-1"} id={'w' + (mentionIdxStart + index + 1)}>{" " + wordArr.current[mentionIdxStart + index + 1]}</abbr>
                               ))}
-                <abbr id={"w" + mentionIdxEnd}>{" " + wordArr.current[mentionIdxEnd]}<a id={"w" + mentionIdxEnd}
-            href="#d1c1m1">]</a><sub id={"w" + mentionIdxEnd}>{currentIndexOfCoref}</sub></abbr></b>);
+                <abbr key={id1+"-1"} id={id1}>{" " + wordArr.current[mentionIdxEnd]}<a key={id1+"-2"} id={id1}
+            href="#d1c1m1">]</a><sub key={id1+"-3"} id={id1}>{currentIndexOfCoref}</sub></abbr></b>);
         }
     }
 
     //Decide which Items are to be displayed on this page
     const currentItems = buffer.slice(indexOfFirstItem, indexOfLastItem);
-    const sentenceList = currentItems.map((d, index) => <ListItem divider key={index}>
-        <ListItemIcon>
-            {index+indexOfFirstItem+1}
-        </ListItemIcon>
-            <div>{d}</div>
-            <Divider />
-        </ListItem>
+    const sentenceList = currentItems.map((d, index) =>
+        <React.Fragment key={index}>
+            <ListItem divider key={index+".1"}>
+                <ListItemIcon key={index+".2"}>
+                    {index+indexOfFirstItem+1}
+                </ListItemIcon>
+                <div key={index+".3"}>{d}</div>
+                <Divider key={index+".4"} />
+            </ListItem>
+        </React.Fragment>
     );
     //
 
@@ -212,7 +222,7 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
         <>
             <div style={{height:720}}>
                 <article id="docView">
-                        <List className="pagination">
+                        <List className="pagination" key={"mainList"}>
                                 {sentenceList}
                         </List>
                 </article>

@@ -88,9 +88,9 @@ const AddCoreference: React.FC<AddCoreferenceProps> = ({ selectedCoref, currentM
                     disabled={!!currentMention || selectedCoref.length == 0}
                     style={{margin: 5, textTransform: "none", width: "97%"}}>Add new Coreference</Button>
             <div id="myDropdown" className="dropdown-content">
-                <a onClick={addCoref(allCorefs.current.length + 1)}>New Cluster</a>
+                <a key={"newCluster"} onClick={addCoref(allCorefs.current.length + 1)}>New Cluster</a>
                 {allCorefs.current.map((mentions, index) =>
-                    (<a onClick={addCoref(index + 1)}>Cluster {index + 1}</a>))}
+                    (<a key={"Cluster-"+index+1} onClick={addCoref(index + 1)}>Cluster {index + 1}</a>))}
             </div>
         </span>
     );
