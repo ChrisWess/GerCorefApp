@@ -17,6 +17,7 @@ interface CorefViewProps {
     setCurrentMention: Function
     setCorefClusters: Function
     setNewCorefSelection: Function
+    addCoref: Function
 }
 
 export const getCluster = function(mention: Mention, allCorefs: Mention[][]) {
@@ -27,7 +28,7 @@ export const getCluster = function(mention: Mention, allCorefs: Mention[][]) {
 const CorefView: React.FC<CorefViewProps> = ({ selectedCoref, wordArr, corefClusters,
                                                  allCorefs, clusterColor, markedWord,
                                                  currentMention, handleSelectCoref, setCurrentMention, setCorefClusters,
-                                                 setNewCorefSelection}) => {
+                                                 setNewCorefSelection, addCoref}) => {
     const theme = useTheme();
 
     const deleteCoref = function() {
@@ -65,7 +66,8 @@ const CorefView: React.FC<CorefViewProps> = ({ selectedCoref, wordArr, corefClus
                 allCorefs={allCorefs}
                 markedWord={markedWord}
                 setNewCorefSelection={setNewCorefSelection}
-                setCorefClusters={setCorefClusters}/>
+                setCorefClusters={setCorefClusters}
+                addCoref={addCoref}/>
             <Button variant="outlined" style={{margin: 5, textTransform: "none", width: "97%"}} disabled={!currentMention}
                     onClick={deleteCoref}>
                 Delete Coreference

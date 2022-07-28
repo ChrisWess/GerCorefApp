@@ -14,12 +14,14 @@ interface AddCoreferenceProps {
     markedWord: MutableRefObject<number[]>
     setNewCorefSelection: Function
     setCorefClusters: Function
+    addCoref: Function
 }
 
 const AddCoreference: React.FC<AddCoreferenceProps> = ({ selectedCoref, currentMention, corefClusters,
                                                            wordArr, allCorefs,
                                                            markedWord, setNewCorefSelection,
-                                                           setCorefClusters }) => {
+                                                           setCorefClusters, addCoref}) => {
+
 
     function dropdown() {
         document.getElementById("myDropdown")!.classList.toggle("show");
@@ -39,47 +41,8 @@ const AddCoreference: React.FC<AddCoreferenceProps> = ({ selectedCoref, currentM
       }
     }
 
-    function addCoref(clusterId: number) {
-        return function () {
-            let idxStart: number = markedWord.current[0]
-            let clusterIdx: number = clusterId - 1
-            let mentionIdx: number
-            if (clusterId > corefClusters.length) {
-                corefClusters.push([])
-                allCorefs.current.push([])
-                mentionIdx = 0
-            } else {
-                let cluster: number[][] = corefClusters[clusterIdx]
-                mentionIdx = cluster.length
-                for (let i = 0; i < cluster.length; i++) {
-                    if (cluster[i][0] >= idxStart) {
-                        mentionIdx = i
-                        break
-                    }
-                }
-            }
-            let corefId = `d1c${clusterIdx}m${mentionIdx}`
-            let newMention: Mention
-            if (markedWord.current.length === 1) {
-                newMention = {
-                    id: corefId,
-                    content: wordArr.current[idxStart],
-                    selectionRange: [idxStart, idxStart + 1],
-                    documentIdx: 0, clusterIdx: clusterIdx, mentionIdx: mentionIdx
-                }
-            } else {
-                newMention = {
-                    id: corefId,
-                    content: wordArr.current.slice(idxStart, markedWord.current[1]).join(" "),
-                    selectionRange: markedWord.current,
-                    documentIdx: 0, clusterIdx: clusterIdx, mentionIdx: mentionIdx
-                }
-            }
-            setNewCorefSelection(newMention)
-            allCorefs.current[clusterIdx].splice(mentionIdx, 0, newMention)
-            corefClusters[clusterIdx].splice(mentionIdx, 0, [newMention.selectionRange[0], newMention.selectionRange[1] - 1])
-            setCorefClusters(corefClusters)
-        }
+    function shortCutAddCoref() {
+        console.log("succesfully invoked")
     }
 
     return (

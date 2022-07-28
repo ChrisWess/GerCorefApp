@@ -1,6 +1,7 @@
 import React, {MutableRefObject, useState} from 'react';
 import "./MainView.css"
 import {Divider, List, ListItem,ListItemIcon, Pagination} from "@mui/material";
+import set = Reflect.set;
 const _ = require('lodash');
 
 
@@ -22,6 +23,7 @@ interface MainViewProps {
     wordFlags: MutableRefObject<(boolean | null)[]>
     setNewCorefSelection: Function
     markWords: Function
+    keyShortcutExecuted: Function
 }
 
 export const parseMentionId = function(mentionId: string) {
@@ -98,7 +100,9 @@ function flattenClust(buffer: any, clust: any, allCorefs: any, sentenceOffsets: 
 
 const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
                                                wordArr, wordFlags,
-                                               setNewCorefSelection, markWords }) => {
+                                               setNewCorefSelection, markWords, keyShortcutExecuted }) => {
+
+
 
     //For Pagination
     const [listItem, setListItems] = useState([]);
@@ -106,6 +110,40 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
     const [itemsPerPage, setItemsPerPage] = useState(15);
     const indexOfLastItem = currentPage*itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+
+
+    //functions for editing shortcuts: "a" activates shortcut, subsequent number is recorded and saved in current input
+    //input is processed and cleared when "a" is released (currentInput and setInput).
+    //
+    const [currentInput, setInput] = useState("");
+    const [listenToKeyboard, toggleListener] = useState(false);
+
+    function isProcessable(key: string){
+        let processableKeys = ["0","1","2","3","4","5","6","7","8","9","d","n","c"]
+        return processableKeys.includes(key)
+    }
+
+    const deactivateListener = (e: React.KeyboardEvent<HTMLImageElement>) => {
+        if(e.key === "a"){
+            toggleListener(false)
+            console.log(currentInput)
+            keyShortcutExecuted(currentInput)
+            setInput("")
+        }
+    };
+
+    const processKey = (e: React.KeyboardEvent<HTMLImageElement>) => {
+        let key = e.key
+        if(key === "a"){
+            toggleListener(true)
+        }
+        if(listenToKeyboard){
+            if (isProcessable(key)) {
+                setInput(currentInput + key)
+            }
+        }
+    };
+    //
 
     const selectNewCorefEvent = function(value: any) {
         setNewCorefSelection(value)
@@ -152,6 +190,9 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
     let results = flattenClust(buffer, clust,allCorefs,sentenceOffsets);
     let flattenedClust = results[0]
     let deletedCumulated = results[1]
+    console.log(clust)
+    console.log(flattenedClust)
+    console.log(deletedCumulated)
 
     //for each coref cluster it puts an html element in front of its first word and behind its last word
     //
@@ -220,7 +261,7 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
 
     return (
         <>
-            <div style={{height:720}}>
+            <div style={{height:720}}  onKeyUp={deactivateListener} onKeyPress={processKey} tabIndex={1}>
                 <article id="docView">
                         <List className="pagination" key={"mainList"}>
                                 {sentenceList}

@@ -78,6 +78,7 @@ export const clearPrevMarking = function(markedWord: number[]) {
 };
 
 
+
 //unused, possibly usable to create a color theme to improve visuals
 const theme = createTheme();
 
@@ -93,6 +94,56 @@ function MainPageContent() {
     const wordArr = React.useRef<string[]>([]);
     const wordFlags = React.useRef<(boolean | null)[]>([]);
     const markedWord = React.useRef<number[]>([])
+
+    function addCoref(clusterId: number) {
+        return function () {
+            let idxStart: number = markedWord.current[0]
+            let clusterIdx: number = clusterId - 1
+            let mentionIdx: number
+            if (clusterId > corefClusters.length) {
+                corefClusters.push([])
+                allCorefs.current.push([])
+                mentionIdx = 0
+            } else {
+                let cluster: number[][] = corefClusters[clusterIdx]
+                mentionIdx = cluster.length
+                for (let i = 0; i < cluster.length; i++) {
+                    if (cluster[i][0] >= idxStart) {
+                        mentionIdx = i
+                        break
+                    }
+                }
+            }
+            let corefId = `d1c${clusterIdx}m${mentionIdx}`
+            let newMention: Mention
+            if (markedWord.current.length === 1) {
+                newMention = {
+                    id: corefId,
+                    content: wordArr.current[idxStart],
+                    selectionRange: [idxStart, idxStart + 1],
+                    documentIdx: 0, clusterIdx: clusterIdx, mentionIdx: mentionIdx
+                }
+            } else {
+                newMention = {
+                    id: corefId,
+                    content: wordArr.current.slice(idxStart, markedWord.current[1]).join(" "),
+                    selectionRange: markedWord.current,
+                    documentIdx: 0, clusterIdx: clusterIdx, mentionIdx: mentionIdx
+                }
+            }
+            setNewCorefSelection(newMention)
+            allCorefs.current[clusterIdx].splice(mentionIdx, 0, newMention)
+            corefClusters[clusterIdx].splice(mentionIdx, 0, [newMention.selectionRange[0], newMention.selectionRange[1] - 1])
+            setCorefClusters(corefClusters)
+        }
+    }
+
+    //for the key-shortcuts used in MainView
+    //todo: use above addCoref function to assign the new cluster
+    const keyShortcutExecuted = (newCoref: string) => {
+        console.log("keyshortCutInvoked:"+newCoref)
+    };
+    //
 
     //Functions used by Child-Component "Text" to send the received data to the
     // main page. Maybe 1 function to send both would be enough
@@ -301,6 +352,7 @@ function MainPageContent() {
                                         setCurrentMention={setCurrentMention}
                                         setCorefClusters={sendCorefClustersToMainPage}
                                         setNewCorefSelection={setNewCorefSelection}
+                                        addCoref={addCoref}
                                     />
                                 </Paper>
                             </Grid>
@@ -323,6 +375,7 @@ function MainPageContent() {
                                         wordFlags={wordFlags}
                                         setNewCorefSelection={setNewCorefSelection}
                                         markWords={markWords}
+                                        keyShortcutExecuted={keyShortcutExecuted}
                                     ></MainView>
                                 </Paper>
                             </Grid>
