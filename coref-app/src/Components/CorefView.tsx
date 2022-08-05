@@ -8,16 +8,14 @@ import AddCoreference from "./AddCoreference";
 interface CorefViewProps {
     selectedCoref: number[],
     wordArr: MutableRefObject<string[]>
-    corefClusters: number[][][]
     allCorefs: MutableRefObject<Mention[][]>
     clusterColor: string
     markedWord: MutableRefObject<number[]>
     currentMention: Mention | undefined
     handleSelectCoref: Function;
     setCurrentMention: Function
-    setCorefClusters: Function
-    setNewCorefSelection: Function
     addCoref: Function
+    deleteCoref: Function
 }
 
 export const getCluster = function(mention: Mention, allCorefs: Mention[][]) {
@@ -25,20 +23,14 @@ export const getCluster = function(mention: Mention, allCorefs: Mention[][]) {
     return allCorefs[mentionLoc.clusterIdx]
 }
 
-const CorefView: React.FC<CorefViewProps> = ({ selectedCoref, wordArr, corefClusters,
+const CorefView: React.FC<CorefViewProps> = ({ selectedCoref, wordArr,
                                                  allCorefs, clusterColor, markedWord,
-                                                 currentMention, handleSelectCoref, setCurrentMention, setCorefClusters,
-                                                 setNewCorefSelection, addCoref}) => {
+                                                 currentMention, handleSelectCoref, setCurrentMention,
+                                                 addCoref, deleteCoref}) => {
     const theme = useTheme();
 
-    const deleteCoref = function() {
-        let clusterIdx = currentMention!.clusterIdx
-        corefClusters[clusterIdx].splice(currentMention!.mentionIdx, 1)
-        if (corefClusters[clusterIdx].length === 0) {
-            corefClusters.splice(clusterIdx, 1)
-        }
-        setCorefClusters(corefClusters)
-        setNewCorefSelection(undefined)
+    function deleteC() {
+        deleteCoref()
     }
 
     return (
@@ -61,15 +53,10 @@ const CorefView: React.FC<CorefViewProps> = ({ selectedCoref, wordArr, corefClus
             <AddCoreference
                 selectedCoref={selectedCoref}
                 currentMention={currentMention}
-                corefClusters={corefClusters}
-                wordArr={wordArr}
                 allCorefs={allCorefs}
-                markedWord={markedWord}
-                setNewCorefSelection={setNewCorefSelection}
-                setCorefClusters={setCorefClusters}
                 addCoref={addCoref}/>
             <Button variant="outlined" style={{margin: 5, textTransform: "none", width: "97%"}} disabled={!currentMention}
-                    onClick={deleteCoref}>
+                    onClick={deleteC}>
                 Delete Coreference
             </Button>
 

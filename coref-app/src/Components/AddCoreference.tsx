@@ -8,19 +8,12 @@ import {Button} from "@mui/material";
 interface AddCoreferenceProps {
     selectedCoref: number[]
     currentMention: Mention | undefined
-    corefClusters: number[][][]
-    wordArr: MutableRefObject<string[]>
     allCorefs: MutableRefObject<Mention[][]>
-    markedWord: MutableRefObject<number[]>
-    setNewCorefSelection: Function
-    setCorefClusters: Function
     addCoref: Function
 }
 
-const AddCoreference: React.FC<AddCoreferenceProps> = ({ selectedCoref, currentMention, corefClusters,
-                                                           wordArr, allCorefs,
-                                                           markedWord, setNewCorefSelection,
-                                                           setCorefClusters, addCoref}) => {
+const AddCoreference: React.FC<AddCoreferenceProps> = ({ selectedCoref, currentMention,
+                                                           allCorefs, addCoref}) => {
 
 
     function dropdown() {

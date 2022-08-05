@@ -26,40 +26,40 @@ a[href]:hover {
     color: white;
 }
 
-b.cr {
+abbr.cr {
     padding-top: 7px;
     padding-bottom: 4px;
 }
 
-b.cr > b.cr {
+abbr.cr > abbr.cr {
     padding-top: 4px;
     padding-bottom: 2px;
 }
 
-b.cr > b.cr > b.cr {
+abbr.cr > abbr.cr > abbr.cr {
     padding-top: 0px;
     padding-bottom: 0px;
 }
 
-b.cr > a {
+abbr.cr > a {
     background-color: inherit;
     font-size: 1.5em;
 }
 
-b.cr > b.cr > a {
+abbr.cr > abbr.cr > a {
     font-size: 1.25em;
 }
 
-b.cr > b.cr > b.cr > a {
+abbr.cr > abbr.cr > abbr.cr > a {
     font-size: 1em;
 }
 
-header > span.legend > b.cr {
+header > span.legend > abbr.cr {
     padding-top: 0px;
     padding-bottom: 0px;
 }
 
-header > span.legend > b.cr > a {
+header > span.legend > abbr.cr > a {
     font-size: 1em;
 }
 
@@ -77,7 +77,7 @@ header > span.legend {
     text-align: right;
 }
 
-b.cr.cr-0 {
+abbr.cr.cr-0 {
     background-color: white;
 }
 
@@ -150,1026 +150,1026 @@ section > div > article + div {
     }
 }
 
-span.cr-1, b.cr-1 {
+span.cr-1, abbr.cr-1 {
     background-color: rgb(0, 255, 0);
 }
 
-span.cr-2, b.cr-2 {
+span.cr-2, abbr.cr-2 {
     background-color: rgb(185, 0, 255);
 }
 
-span.cr-3, b.cr-3 {
+span.cr-3, abbr.cr-3 {
     background-color: rgb(255, 52, 0);
 }
 
-span.cr-4, b.cr-4 {
+span.cr-4, abbr.cr-4 {
     background-color: rgb(27, 220, 255);
 }
 
-span.cr-5, b.cr-5 {
+span.cr-5, abbr.cr-5 {
     background-color: rgb(255, 232, 135);
 }
 
-span.cr-6, b.cr-6 {
+span.cr-6, abbr.cr-6 {
     background-color: rgb(255, 123, 181);
 }
 
-span.cr-7, b.cr-7 {
+span.cr-7, abbr.cr-7 {
     background-color: rgb(3, 128, 255);
 }
 
-span.cr-8, b.cr-8 {
+span.cr-8, abbr.cr-8 {
     background-color: rgb(32, 255, 176);
 }
 
-span.cr-9, b.cr-9 {
+span.cr-9, abbr.cr-9 {
     background-color: rgb(76, 153, 0);
 }
 
-span.cr-10, b.cr-10 {
+span.cr-10, abbr.cr-10 {
     background-color: rgb(255, 228, 229);
 }
 
-span.cr-11, b.cr-11 {
+span.cr-11, abbr.cr-11 {
     background-color: rgb(238, 255, 0);
 }
 
-span.cr-12, b.cr-12 {
+span.cr-12, abbr.cr-12 {
     background-color: rgb(254, 159, 0);
 }
 
-span.cr-13, b.cr-13 {
+span.cr-13, abbr.cr-13 {
     background-color: rgb(255, 0, 91);
 }
 
-span.cr-14, b.cr-14 {
+span.cr-14, abbr.cr-14 {
     background-color: rgb(255, 1, 203);
 }
 
-span.cr-15, b.cr-15 {
+span.cr-15, abbr.cr-15 {
     background-color: rgb(211, 178, 255);
 }
 
-span.cr-16, b.cr-16 {
+span.cr-16, abbr.cr-16 {
     background-color: rgb(160, 81, 204);
 }
 
-span.cr-17, b.cr-17 {
+span.cr-17, abbr.cr-17 {
     background-color: rgb(150, 225, 193);
 }
 
-span.cr-18, b.cr-18 {
+span.cr-18, abbr.cr-18 {
     background-color: rgb(182, 255, 129);
 }
 
-span.cr-19, b.cr-19 {
+span.cr-19, abbr.cr-19 {
     background-color: rgb(172, 161, 0);
 }
 
-span.cr-20, b.cr-20 {
+span.cr-20, abbr.cr-20 {
     background-color: rgb(17, 157, 233);
 }
 
-span.cr-21, b.cr-21 {
+span.cr-21, abbr.cr-21 {
     background-color: rgb(255, 124, 73);
 }
 
-span.cr-22, b.cr-22 {
+span.cr-22, abbr.cr-22 {
     background-color: rgb(8, 246, 106);
 }
 
-span.cr-23, b.cr-23 {
+span.cr-23, abbr.cr-23 {
     background-color: rgb(255, 0, 147);
 }
 
-span.cr-24, b.cr-24 {
+span.cr-24, abbr.cr-24 {
     background-color: rgb(102, 91, 255);
 }
 
-span.cr-25, b.cr-25 {
+span.cr-25, abbr.cr-25 {
     background-color: rgb(138, 229, 26);
 }
 
-span.cr-26, b.cr-26 {
+span.cr-26, abbr.cr-26 {
     background-color: rgb(1, 177, 90);
 }
 
-span.cr-27, b.cr-27 {
+span.cr-27, abbr.cr-27 {
     background-color: rgb(182, 214, 255);
 }
 
-span.cr-28, b.cr-28 {
+span.cr-28, abbr.cr-28 {
     background-color: rgb(0, 255, 244);
 }
 
-span.cr-29, b.cr-29 {
+span.cr-29, abbr.cr-29 {
     background-color: rgb(253, 255, 203);
 }
 
-span.cr-30, b.cr-30 {
+span.cr-30, abbr.cr-30 {
     background-color: rgb(255, 142, 243);
 }
 
-span.cr-31, b.cr-31 {
+span.cr-31, abbr.cr-31 {
     background-color: rgb(252, 176, 92);
 }
 
-span.cr-32, b.cr-32 {
+span.cr-32, abbr.cr-32 {
     background-color: rgb(199, 56, 163);
 }
 
-span.cr-33, b.cr-33 {
+span.cr-33, abbr.cr-33 {
     background-color: rgb(255, 214, 0);
 }
 
-span.cr-34, b.cr-34 {
+span.cr-34, abbr.cr-34 {
     background-color: rgb(233, 87, 255);
 }
 
-span.cr-35, b.cr-35 {
+span.cr-35, abbr.cr-35 {
     background-color: rgb(253, 180, 218);
 }
 
-span.cr-36, b.cr-36 {
+span.cr-36, abbr.cr-36 {
     background-color: rgb(222, 234, 85);
 }
 
-span.cr-37, b.cr-37 {
+span.cr-37, abbr.cr-37 {
     background-color: rgb(175, 219, 142);
 }
 
-span.cr-38, b.cr-38 {
+span.cr-38, abbr.cr-38 {
     background-color: rgb(225, 45, 47);
 }
 
-span.cr-39, b.cr-39 {
+span.cr-39, abbr.cr-39 {
     background-color: rgb(208, 255, 255);
 }
 
-span.cr-40, b.cr-40 {
+span.cr-40, abbr.cr-40 {
     background-color: rgb(134, 121, 220);
 }
 
-span.cr-41, b.cr-41 {
+span.cr-41, abbr.cr-41 {
     background-color: rgb(0, 200, 155);
 }
 
-span.cr-42, b.cr-42 {
+span.cr-42, abbr.cr-42 {
     background-color: rgb(255, 114, 0);
 }
 
-span.cr-43, b.cr-43 {
+span.cr-43, abbr.cr-43 {
     background-color: rgb(0, 189, 27);
 }
 
-span.cr-44, b.cr-44 {
+span.cr-44, abbr.cr-44 {
     background-color: rgb(255, 83, 133);
 }
 
-span.cr-45, b.cr-45 {
+span.cr-45, abbr.cr-45 {
     background-color: rgb(151, 192, 79);
 }
 
-span.cr-46, b.cr-46 {
+span.cr-46, abbr.cr-46 {
     background-color: rgb(153, 255, 186);
 }
 
-span.cr-47, b.cr-47 {
+span.cr-47, abbr.cr-47 {
     background-color: rgb(247, 203, 76);
 }
 
-span.cr-48, b.cr-48 {
+span.cr-48, abbr.cr-48 {
     background-color: rgb(149, 191, 0);
 }
 
-span.cr-49, b.cr-49 {
+span.cr-49, abbr.cr-49 {
     background-color: rgb(255, 0, 255);
 }
 
-span.cr-50, b.cr-50 {
+span.cr-50, abbr.cr-50 {
     background-color: rgb(255, 214, 158);
 }
 
-span.cr-51, b.cr-51 {
+span.cr-51, abbr.cr-51 {
     background-color: rgb(100, 237, 129);
 }
 
-span.cr-52, b.cr-52 {
+span.cr-52, abbr.cr-52 {
     background-color: rgb(197, 45, 194);
 }
 
-span.cr-53, b.cr-53 {
+span.cr-53, abbr.cr-53 {
     background-color: rgb(152, 121, 255);
 }
 
-span.cr-54, b.cr-54 {
+span.cr-54, abbr.cr-54 {
     background-color: rgb(81, 210, 211);
 }
 
-span.cr-55, b.cr-55 {
+span.cr-55, abbr.cr-55 {
     background-color: rgb(161, 64, 241);
 }
 
-span.cr-56, b.cr-56 {
+span.cr-56, abbr.cr-56 {
     background-color: rgb(137, 166, 255);
 }
 
-span.cr-57, b.cr-57 {
+span.cr-57, abbr.cr-57 {
     background-color: rgb(110, 205, 75);
 }
 
-span.cr-58, b.cr-58 {
+span.cr-58, abbr.cr-58 {
     background-color: rgb(210, 66, 5);
 }
 
-span.cr-59, b.cr-59 {
+span.cr-59, abbr.cr-59 {
     background-color: rgb(203, 149, 7);
 }
 
-span.cr-60, b.cr-60 {
+span.cr-60, abbr.cr-60 {
     background-color: rgb(245, 217, 255);
 }
 
-span.cr-61, b.cr-61 {
+span.cr-61, abbr.cr-61 {
     background-color: rgb(103, 255, 73);
 }
 
-span.cr-62, b.cr-62 {
+span.cr-62, abbr.cr-62 {
     background-color: rgb(231, 255, 146);
 }
 
-span.cr-63, b.cr-63 {
+span.cr-63, abbr.cr-63 {
     background-color: rgb(45, 254, 209);
 }
 
-span.cr-64, b.cr-64 {
+span.cr-64, abbr.cr-64 {
     background-color: rgb(207, 147, 255);
 }
 
-span.cr-65, b.cr-65 {
+span.cr-65, abbr.cr-65 {
     background-color: rgb(255, 94, 217);
 }
 
-span.cr-66, b.cr-66 {
+span.cr-66, abbr.cr-66 {
     background-color: rgb(17, 125, 221);
 }
 
-span.cr-67, b.cr-67 {
+span.cr-67, abbr.cr-67 {
     background-color: rgb(198, 193, 81);
 }
 
-span.cr-68, b.cr-68 {
+span.cr-68, abbr.cr-68 {
     background-color: rgb(230, 128, 35);
 }
 
-span.cr-69, b.cr-69 {
+span.cr-69, abbr.cr-69 {
     background-color: rgb(207, 255, 72);
 }
 
-span.cr-70, b.cr-70 {
+span.cr-70, abbr.cr-70 {
     background-color: rgb(91, 190, 240);
 }
 
-span.cr-71, b.cr-71 {
+span.cr-71, abbr.cr-71 {
     background-color: rgb(227, 148, 217);
 }
 
-span.cr-72, b.cr-72 {
+span.cr-72, abbr.cr-72 {
     background-color: rgb(227, 122, 255);
 }
 
-span.cr-73, b.cr-73 {
+span.cr-73, abbr.cr-73 {
     background-color: rgb(108, 206, 131);
 }
 
-span.cr-74, b.cr-74 {
+span.cr-74, abbr.cr-74 {
     background-color: rgb(213, 228, 207);
 }
 
-span.cr-75, b.cr-75 {
+span.cr-75, abbr.cr-75 {
     background-color: rgb(255, 83, 94);
 }
 
-span.cr-76, b.cr-76 {
+span.cr-76, abbr.cr-76 {
     background-color: rgb(194, 98, 195);
 }
 
-span.cr-77, b.cr-77 {
+span.cr-77, abbr.cr-77 {
     background-color: rgb(255, 85, 179);
 }
 
-span.cr-78, b.cr-78 {
+span.cr-78, abbr.cr-78 {
     background-color: rgb(213, 214, 0);
 }
 
-span.cr-79, b.cr-79 {
+span.cr-79, abbr.cr-79 {
     background-color: rgb(141, 217, 237);
 }
 
-span.cr-80, b.cr-80 {
+span.cr-80, abbr.cr-80 {
     background-color: rgb(135, 254, 108);
 }
 
-span.cr-81, b.cr-81 {
+span.cr-81, abbr.cr-81 {
     background-color: rgb(203, 253, 195);
 }
 
-span.cr-82, b.cr-82 {
+span.cr-82, abbr.cr-82 {
     background-color: rgb(0, 163, 45);
 }
 
-span.cr-83, b.cr-83 {
+span.cr-83, abbr.cr-83 {
     background-color: rgb(233, 0, 166);
 }
 
-span.cr-84, b.cr-84 {
+span.cr-84, abbr.cr-84 {
     background-color: rgb(221, 221, 150);
 }
 
-span.cr-85, b.cr-85 {
+span.cr-85, abbr.cr-85 {
     background-color: rgb(154, 255, 242);
 }
 
-span.cr-86, b.cr-86 {
+span.cr-86, abbr.cr-86 {
     background-color: rgb(12, 106, 254);
 }
 
-span.cr-87, b.cr-87 {
+span.cr-87, abbr.cr-87 {
     background-color: rgb(252, 223, 194);
 }
 
-span.cr-88, b.cr-88 {
+span.cr-88, abbr.cr-88 {
     background-color: rgb(255, 0, 39);
 }
 
-span.cr-89, b.cr-89 {
+span.cr-89, abbr.cr-89 {
     background-color: rgb(197, 5, 228);
 }
 
-span.cr-90, b.cr-90 {
+span.cr-90, abbr.cr-90 {
     background-color: rgb(170, 225, 79);
 }
 
-span.cr-91, b.cr-91 {
+span.cr-91, abbr.cr-91 {
     background-color: rgb(169, 181, 243);
 }
 
-span.cr-92, b.cr-92 {
+span.cr-92, abbr.cr-92 {
     background-color: rgb(255, 0, 119);
 }
 
-span.cr-93, b.cr-93 {
+span.cr-93, abbr.cr-93 {
     background-color: rgb(129, 255, 0);
 }
 
-span.cr-94, b.cr-94 {
+span.cr-94, abbr.cr-94 {
     background-color: rgb(76, 224, 198);
 }
 
-span.cr-95, b.cr-95 {
+span.cr-95, abbr.cr-95 {
     background-color: rgb(6, 205, 84);
 }
 
-span.cr-96, b.cr-96 {
+span.cr-96, abbr.cr-96 {
     background-color: rgb(204, 218, 231);
 }
 
-span.cr-97, b.cr-97 {
+span.cr-97, abbr.cr-97 {
     background-color: rgb(253, 188, 29);
 }
 
-span.cr-98, b.cr-98 {
+span.cr-98, abbr.cr-98 {
     background-color: rgb(96, 188, 1);
 }
 
-span.cr-99, b.cr-99 {
+span.cr-99, abbr.cr-99 {
     background-color: rgb(182, 102, 253);
 }
 
-span.cr-100, b.cr-100 {
+span.cr-100, abbr.cr-100 {
     background-color: rgb(181, 255, 160);
 }
 
-span.cr-101, b.cr-101 {
+span.cr-101, abbr.cr-101 {
     background-color: rgb(239, 113, 198);
 }
 
-span.cr-102, b.cr-102 {
+span.cr-102, abbr.cr-102 {
     background-color: rgb(4, 211, 135);
 }
 
-span.cr-103, b.cr-103 {
+span.cr-103, abbr.cr-103 {
     background-color: rgb(138, 214, 111);
 }
 
-span.cr-104, b.cr-104 {
+span.cr-104, abbr.cr-104 {
     background-color: rgb(187, 255, 0);
 }
 
-span.cr-105, b.cr-105 {
+span.cr-105, abbr.cr-105 {
     background-color: rgb(234, 22, 222);
 }
 
-span.cr-106, b.cr-106 {
+span.cr-106, abbr.cr-106 {
     background-color: rgb(255, 0, 66);
 }
 
-span.cr-107, b.cr-107 {
+span.cr-107, abbr.cr-107 {
     background-color: rgb(255, 231, 74);
 }
 
-span.cr-108, b.cr-108 {
+span.cr-108, abbr.cr-108 {
     background-color: rgb(90, 105, 225);
 }
 
-span.cr-109, b.cr-109 {
+span.cr-109, abbr.cr-109 {
     background-color: rgb(249, 200, 120);
 }
 
-span.cr-110, b.cr-110 {
+span.cr-110, abbr.cr-110 {
     background-color: rgb(152, 173, 35);
 }
 
-span.cr-111, b.cr-111 {
+span.cr-111, abbr.cr-111 {
     background-color: rgb(0, 215, 0);
 }
 
-span.cr-112, b.cr-112 {
+span.cr-112, abbr.cr-112 {
     background-color: rgb(0, 255, 143);
 }
 
-span.cr-113, b.cr-113 {
+span.cr-113, abbr.cr-113 {
     background-color: rgb(255, 92, 55);
 }
 
-span.cr-114, b.cr-114 {
+span.cr-114, abbr.cr-114 {
     background-color: rgb(255, 195, 255);
 }
 
-span.cr-115, b.cr-115 {
+span.cr-115, abbr.cr-115 {
     background-color: rgb(58, 243, 255);
 }
 
-span.cr-116, b.cr-116 {
+span.cr-116, abbr.cr-116 {
     background-color: rgb(193, 211, 115);
 }
 
-span.cr-117, b.cr-117 {
+span.cr-117, abbr.cr-117 {
     background-color: rgb(178, 60, 217);
 }
 
-span.cr-118, b.cr-118 {
+span.cr-118, abbr.cr-118 {
     background-color: rgb(236, 61, 141);
 }
 
-span.cr-119, b.cr-119 {
+span.cr-119, abbr.cr-119 {
     background-color: rgb(253, 174, 59);
 }
 
-span.cr-120, b.cr-120 {
+span.cr-120, abbr.cr-120 {
     background-color: rgb(114, 144, 254);
 }
 
-span.cr-121, b.cr-121 {
+span.cr-121, abbr.cr-121 {
     background-color: rgb(255, 250, 125);
 }
 
-span.cr-122, b.cr-122 {
+span.cr-122, abbr.cr-122 {
     background-color: rgb(228, 255, 174);
 }
 
-span.cr-123, b.cr-123 {
+span.cr-123, abbr.cr-123 {
     background-color: rgb(252, 255, 73);
 }
 
-span.cr-124, b.cr-124 {
+span.cr-124, abbr.cr-124 {
     background-color: rgb(203, 255, 229);
 }
 
-span.cr-125, b.cr-125 {
+span.cr-125, abbr.cr-125 {
     background-color: rgb(218, 186, 17);
 }
 
-span.cr-126, b.cr-126 {
+span.cr-126, abbr.cr-126 {
     background-color: rgb(118, 216, 164);
 }
 
-span.cr-127, b.cr-127 {
+span.cr-127, abbr.cr-127 {
     background-color: rgb(189, 139, 223);
 }
 
-span.cr-128, b.cr-128 {
+span.cr-128, abbr.cr-128 {
     background-color: rgb(171, 254, 87);
 }
 
-span.cr-129, b.cr-129 {
+span.cr-129, abbr.cr-129 {
     background-color: rgb(166, 108, 210);
 }
 
-span.cr-130, b.cr-130 {
+span.cr-130, abbr.cr-130 {
     background-color: rgb(144, 255, 212);
 }
 
-span.cr-131, b.cr-131 {
+span.cr-131, abbr.cr-131 {
     background-color: rgb(159, 223, 216);
 }
 
-span.cr-132, b.cr-132 {
+span.cr-132, abbr.cr-132 {
     background-color: rgb(105, 222, 60);
 }
 
-span.cr-133, b.cr-133 {
+span.cr-133, abbr.cr-133 {
     background-color: rgb(255, 86, 238);
 }
 
-span.cr-134, b.cr-134 {
+span.cr-134, abbr.cr-134 {
     background-color: rgb(217, 254, 118);
 }
 
-span.cr-135, b.cr-135 {
+span.cr-135, abbr.cr-135 {
     background-color: rgb(177, 158, 255);
 }
 
-span.cr-136, b.cr-136 {
+span.cr-136, abbr.cr-136 {
     background-color: rgb(123, 187, 255);
 }
 
-span.cr-137, b.cr-137 {
+span.cr-137, abbr.cr-137 {
     background-color: rgb(255, 151, 79);
 }
 
-span.cr-138, b.cr-138 {
+span.cr-138, abbr.cr-138 {
     background-color: rgb(249, 255, 248);
 }
 
-span.cr-139, b.cr-139 {
+span.cr-139, abbr.cr-139 {
     background-color: rgb(255, 153, 206);
 }
 
-span.cr-140, b.cr-140 {
+span.cr-140, abbr.cr-140 {
     background-color: rgb(214, 92, 215);
 }
 
-span.cr-141, b.cr-141 {
+span.cr-141, abbr.cr-141 {
     background-color: rgb(241, 166, 255);
 }
 
-span.cr-142, b.cr-142 {
+span.cr-142, abbr.cr-142 {
     background-color: rgb(203, 199, 47);
 }
 
-span.cr-143, b.cr-143 {
+span.cr-143, abbr.cr-143 {
     background-color: rgb(187, 221, 0);
 }
 
-span.cr-144, b.cr-144 {
+span.cr-144, abbr.cr-144 {
     background-color: rgb(125, 255, 166);
 }
 
-span.cr-145, b.cr-145 {
+span.cr-145, abbr.cr-145 {
     background-color: rgb(81, 235, 172);
 }
 
-span.cr-146, b.cr-146 {
+span.cr-146, abbr.cr-146 {
     background-color: rgb(255, 240, 0);
 }
 
-span.cr-147, b.cr-147 {
+span.cr-147, abbr.cr-147 {
     background-color: rgb(255, 202, 219);
 }
 
-span.cr-148, b.cr-148 {
+span.cr-148, abbr.cr-148 {
     background-color: rgb(126, 187, 47);
 }
 
-span.cr-149, b.cr-149 {
+span.cr-149, abbr.cr-149 {
     background-color: rgb(210, 184, 237);
 }
 
-span.cr-150, b.cr-150 {
+span.cr-150, abbr.cr-150 {
     background-color: rgb(214, 35, 145);
 }
 
-span.cr-151, b.cr-151 {
+span.cr-151, abbr.cr-151 {
     background-color: rgb(235, 106, 34);
 }
 
-span.cr-152, b.cr-152 {
+span.cr-152, abbr.cr-152 {
     background-color: rgb(226, 39, 19);
 }
 
-span.cr-153, b.cr-153 {
+span.cr-153, abbr.cr-153 {
     background-color: rgb(87, 183, 80);
 }
 
-span.cr-154, b.cr-154 {
+span.cr-154, abbr.cr-154 {
     background-color: rgb(26, 158, 255);
 }
 
-span.cr-155, b.cr-155 {
+span.cr-155, abbr.cr-155 {
     background-color: rgb(254, 89, 22);
 }
 
-span.cr-156, b.cr-156 {
+span.cr-156, abbr.cr-156 {
     background-color: rgb(129, 88, 233);
 }
 
-span.cr-157, b.cr-157 {
+span.cr-157, abbr.cr-157 {
     background-color: rgb(131, 95, 213);
 }
 
-span.cr-158, b.cr-158 {
+span.cr-158, abbr.cr-158 {
     background-color: rgb(33, 225, 66);
 }
 
-span.cr-159, b.cr-159 {
+span.cr-159, abbr.cr-159 {
     background-color: rgb(184, 229, 116);
 }
 
-span.cr-160, b.cr-160 {
+span.cr-160, abbr.cr-160 {
     background-color: rgb(250, 65, 106);
 }
 
-span.cr-161, b.cr-161 {
+span.cr-161, abbr.cr-161 {
     background-color: rgb(255, 98, 80);
 }
 
-span.cr-162, b.cr-162 {
+span.cr-162, abbr.cr-162 {
     background-color: rgb(225, 191, 89);
 }
 
-span.cr-163, b.cr-163 {
+span.cr-163, abbr.cr-163 {
     background-color: rgb(185, 117, 241);
 }
 
-span.cr-164, b.cr-164 {
+span.cr-164, abbr.cr-164 {
     background-color: rgb(205, 229, 185);
 }
 
-span.cr-165, b.cr-165 {
+span.cr-165, abbr.cr-165 {
     background-color: rgb(216, 3, 179);
 }
 
-span.cr-166, b.cr-166 {
+span.cr-166, abbr.cr-166 {
     background-color: rgb(204, 170, 45);
 }
 
-span.cr-167, b.cr-167 {
+span.cr-167, abbr.cr-167 {
     background-color: rgb(139, 245, 255);
 }
 
-span.cr-168, b.cr-168 {
+span.cr-168, abbr.cr-168 {
     background-color: rgb(194, 214, 90);
 }
 
-span.cr-169, b.cr-169 {
+span.cr-169, abbr.cr-169 {
     background-color: rgb(216, 136, 0);
 }
 
-span.cr-170, b.cr-170 {
+span.cr-170, abbr.cr-170 {
     background-color: rgb(40, 164, 0);
 }
 
-span.cr-171, b.cr-171 {
+span.cr-171, abbr.cr-171 {
     background-color: rgb(253, 137, 9);
 }
 
-span.cr-172, b.cr-172 {
+span.cr-172, abbr.cr-172 {
     background-color: rgb(236, 219, 90);
 }
 
-span.cr-173, b.cr-173 {
+span.cr-173, abbr.cr-173 {
     background-color: rgb(214, 122, 232);
 }
 
-span.cr-174, b.cr-174 {
+span.cr-174, abbr.cr-174 {
     background-color: rgb(0, 255, 86);
 }
 
-span.cr-175, b.cr-175 {
+span.cr-175, abbr.cr-175 {
     background-color: rgb(156, 139, 255);
 }
 
-span.cr-176, b.cr-176 {
+span.cr-176, abbr.cr-176 {
     background-color: rgb(255, 253, 163);
 }
 
-span.cr-177, b.cr-177 {
+span.cr-177, abbr.cr-177 {
     background-color: rgb(162, 222, 42);
 }
 
-span.cr-178, b.cr-178 {
+span.cr-178, abbr.cr-178 {
     background-color: rgb(232, 31, 71);
 }
 
-span.cr-179, b.cr-179 {
+span.cr-179, abbr.cr-179 {
     background-color: rgb(247, 236, 255);
 }
 
-span.cr-180, b.cr-180 {
+span.cr-180, abbr.cr-180 {
     background-color: rgb(0, 186, 255);
 }
 
-span.cr-181, b.cr-181 {
+span.cr-181, abbr.cr-181 {
     background-color: rgb(0, 198, 219);
 }
 
-span.cr-182, b.cr-182 {
+span.cr-182, abbr.cr-182 {
     background-color: rgb(0, 208, 111);
 }
 
-span.cr-183, b.cr-183 {
+span.cr-183, abbr.cr-183 {
     background-color: rgb(255, 123, 246);
 }
 
-span.cr-184, b.cr-184 {
+span.cr-184, abbr.cr-184 {
     background-color: rgb(80, 113, 215);
 }
 
-span.cr-185, b.cr-185 {
+span.cr-185, abbr.cr-185 {
     background-color: rgb(230, 174, 69);
 }
 
-span.cr-186, b.cr-186 {
+span.cr-186, abbr.cr-186 {
     background-color: rgb(134, 235, 112);
 }
 
-span.cr-187, b.cr-187 {
+span.cr-187, abbr.cr-187 {
     background-color: rgb(165, 159, 236);
 }
 
-span.cr-188, b.cr-188 {
+span.cr-188, abbr.cr-188 {
     background-color: rgb(93, 208, 113);
 }
 
-span.cr-189, b.cr-189 {
+span.cr-189, abbr.cr-189 {
     background-color: rgb(238, 224, 173);
 }
 
-span.cr-190, b.cr-190 {
+span.cr-190, abbr.cr-190 {
     background-color: rgb(163, 232, 167);
 }
 
-span.cr-191, b.cr-191 {
+span.cr-191, abbr.cr-191 {
     background-color: rgb(221, 0, 255);
 }
 
-span.cr-192, b.cr-192 {
+span.cr-192, abbr.cr-192 {
     background-color: rgb(100, 255, 126);
 }
 
-span.cr-193, b.cr-193 {
+span.cr-193, abbr.cr-193 {
     background-color: rgb(185, 66, 180);
 }
 
-span.cr-194, b.cr-194 {
+span.cr-194, abbr.cr-194 {
     background-color: rgb(255, 249, 219);
 }
 
-span.cr-195, b.cr-195 {
+span.cr-195, abbr.cr-195 {
     background-color: rgb(179, 205, 56);
 }
 
-span.cr-196, b.cr-196 {
+span.cr-196, abbr.cr-196 {
     background-color: rgb(23, 143, 255);
 }
 
-span.cr-197, b.cr-197 {
+span.cr-197, abbr.cr-197 {
     background-color: rgb(255, 100, 158);
 }
 
-span.cr-198, b.cr-198 {
+span.cr-198, abbr.cr-198 {
     background-color: rgb(223, 91, 197);
 }
 
-span.cr-199, b.cr-199 {
+span.cr-199, abbr.cr-199 {
     background-color: rgb(115, 160, 0);
 }
 
-span.cr-200, b.cr-200 {
+span.cr-200, abbr.cr-200 {
     background-color: rgb(204, 70, 255);
 }
 
-span.cr-201, b.cr-201 {
+span.cr-201, abbr.cr-201 {
     background-color: rgb(189, 232, 255);
 }
 
-span.cr-202, b.cr-202 {
+span.cr-202, abbr.cr-202 {
     background-color: rgb(0, 189, 229);
 }
 
-span.cr-203, b.cr-203 {
+span.cr-203, abbr.cr-203 {
     background-color: rgb(219, 131, 220);
 }
 
-span.cr-204, b.cr-204 {
+span.cr-204, abbr.cr-204 {
     background-color: rgb(100, 103, 242);
 }
 
-span.cr-205, b.cr-205 {
+span.cr-205, abbr.cr-205 {
     background-color: rgb(215, 81, 228);
 }
 
-span.cr-206, b.cr-206 {
+span.cr-206, abbr.cr-206 {
     background-color: rgb(101, 231, 21);
 }
 
-span.cr-207, b.cr-207 {
+span.cr-207, abbr.cr-207 {
     background-color: rgb(205, 205, 237);
 }
 
-span.cr-208, b.cr-208 {
+span.cr-208, abbr.cr-208 {
     background-color: rgb(154, 255, 146);
 }
 
-span.cr-209, b.cr-209 {
+span.cr-209, abbr.cr-209 {
     background-color: rgb(164, 52, 255);
 }
 
-span.cr-210, b.cr-210 {
+span.cr-210, abbr.cr-210 {
     background-color: rgb(35, 237, 144);
 }
 
-span.cr-211, b.cr-211 {
+span.cr-211, abbr.cr-211 {
     background-color: rgb(114, 255, 232);
 }
 
-span.cr-212, b.cr-212 {
+span.cr-212, abbr.cr-212 {
     background-color: rgb(7, 224, 217);
 }
 
-span.cr-213, b.cr-213 {
+span.cr-213, abbr.cr-213 {
     background-color: rgb(237, 69, 184);
 }
 
-span.cr-214, b.cr-214 {
+span.cr-214, abbr.cr-214 {
     background-color: rgb(255, 145, 225);
 }
 
-span.cr-215, b.cr-215 {
+span.cr-215, abbr.cr-215 {
     background-color: rgb(113, 217, 255);
 }
 
-span.cr-216, b.cr-216 {
+span.cr-216, abbr.cr-216 {
     background-color: rgb(150, 90, 255);
 }
 
-span.cr-217, b.cr-217 {
+span.cr-217, abbr.cr-217 {
     background-color: rgb(133, 214, 58);
 }
 
-span.cr-218, b.cr-218 {
+span.cr-218, abbr.cr-218 {
     background-color: rgb(239, 213, 138);
 }
 
-span.cr-219, b.cr-219 {
+span.cr-219, abbr.cr-219 {
     background-color: rgb(198, 30, 212);
 }
 
-span.cr-220, b.cr-220 {
+span.cr-220, abbr.cr-220 {
     background-color: rgb(145, 255, 69);
 }
 
-span.cr-221, b.cr-221 {
+span.cr-221, abbr.cr-221 {
     background-color: rgb(0, 244, 47);
 }
 
-span.cr-222, b.cr-222 {
+span.cr-222, abbr.cr-222 {
     background-color: rgb(203, 229, 165);
 }
 
-span.cr-223, b.cr-223 {
+span.cr-223, abbr.cr-223 {
     background-color: rgb(179, 195, 0);
 }
 
-span.cr-224, b.cr-224 {
+span.cr-224, abbr.cr-224 {
     background-color: rgb(226, 7, 116);
 }
 
-span.cr-225, b.cr-225 {
+span.cr-225, abbr.cr-225 {
     background-color: rgb(84, 226, 86);
 }
 
-span.cr-226, b.cr-226 {
+span.cr-226, abbr.cr-226 {
     background-color: rgb(57, 191, 57);
 }
 
-span.cr-227, b.cr-227 {
+span.cr-227, abbr.cr-227 {
     background-color: rgb(146, 211, 88);
 }
 
-span.cr-228, b.cr-228 {
+span.cr-228, abbr.cr-228 {
     background-color: rgb(116, 136, 228);
 }
 
-span.cr-229, b.cr-229 {
+span.cr-229, abbr.cr-229 {
     background-color: rgb(224, 223, 114);
 }
 
-span.cr-230, b.cr-230 {
+span.cr-230, abbr.cr-230 {
     background-color: rgb(123, 225, 209);
 }
 
-span.cr-231, b.cr-231 {
+span.cr-231, abbr.cr-231 {
     background-color: rgb(81, 173, 49);
 }
 
-span.cr-232, b.cr-232 {
+span.cr-232, abbr.cr-232 {
     background-color: rgb(231, 0, 96);
 }
 
-span.cr-233, b.cr-233 {
+span.cr-233, abbr.cr-233 {
     background-color: rgb(236, 58, 255);
 }
 
-span.cr-234, b.cr-234 {
+span.cr-234, abbr.cr-234 {
     background-color: rgb(218, 166, 229);
 }
 
-span.cr-235, b.cr-235 {
+span.cr-235, abbr.cr-235 {
     background-color: rgb(196, 227, 223);
 }
 
-span.cr-236, b.cr-236 {
+span.cr-236, abbr.cr-236 {
     background-color: rgb(209, 250, 27);
 }
 
-span.cr-237, b.cr-237 {
+span.cr-237, abbr.cr-237 {
     background-color: rgb(184, 255, 213);
 }
 
-span.cr-238, b.cr-238 {
+span.cr-238, abbr.cr-238 {
     background-color: rgb(198, 242, 147);
 }
 
-span.cr-239, b.cr-239 {
+span.cr-239, abbr.cr-239 {
     background-color: rgb(191, 94, 231);
 }
 
-span.cr-240, b.cr-240 {
+span.cr-240, abbr.cr-240 {
     background-color: rgb(87, 151, 234);
 }
 
-span.cr-241, b.cr-241 {
+span.cr-241, abbr.cr-241 {
     background-color: rgb(255, 155, 45);
 }
 
-span.cr-242, b.cr-242 {
+span.cr-242, abbr.cr-242 {
     background-color: rgb(232, 255, 218);
 }
 
-span.cr-243, b.cr-243 {
+span.cr-243, abbr.cr-243 {
     background-color: rgb(255, 59, 200);
 }
 
-span.cr-244, b.cr-244 {
+span.cr-244, abbr.cr-244 {
     background-color: rgb(136, 233, 143);
 }
 
-span.cr-245, b.cr-245 {
+span.cr-245, abbr.cr-245 {
     background-color: rgb(91, 235, 190);
 }
 
-span.cr-246, b.cr-246 {
+span.cr-246, abbr.cr-246 {
     background-color: rgb(74, 203, 0);
 }
 
-span.cr-247, b.cr-247 {
+span.cr-247, abbr.cr-247 {
     background-color: rgb(161, 208, 114);
 }
 
-span.cr-248, b.cr-248 {
+span.cr-248, abbr.cr-248 {
     background-color: rgb(159, 241, 99);
 }
 
-span.cr-249, b.cr-249 {
+span.cr-249, abbr.cr-249 {
     background-color: rgb(199, 231, 63);
 }
 
-span.cr-250, b.cr-250 {
+span.cr-250, abbr.cr-250 {
     background-color: rgb(255, 65, 74);
 }
 
-span.cr-251, b.cr-251 {
+span.cr-251, abbr.cr-251 {
     background-color: rgb(180, 255, 59);
 }
 
-span.cr-252, b.cr-252 {
+span.cr-252, abbr.cr-252 {
     background-color: rgb(97, 255, 99);
 }
 
-span.cr-253, b.cr-253 {
+span.cr-253, abbr.cr-253 {
     background-color: rgb(218, 64, 193);
 }
 
-span.cr-254, b.cr-254 {
+span.cr-254, abbr.cr-254 {
     background-color: rgb(203, 204, 255);
 }
 
-span.cr-255, b.cr-255 {
+span.cr-255, abbr.cr-255 {
     background-color: rgb(202, 255, 98);
 }
 
-span.cr-256, b.cr-256 {
+span.cr-256, abbr.cr-256 {
     background-color: rgb(223, 223, 219);
 }

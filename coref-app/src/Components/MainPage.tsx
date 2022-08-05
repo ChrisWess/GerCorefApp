@@ -138,12 +138,74 @@ function MainPageContent() {
         }
     }
 
+    function corefShort(clusterId: number) {
+        let idxStart: number = markedWord.current[0]
+        let clusterIdx: number = clusterId - 1
+        let mentionIdx: number
+        if (clusterId > corefClusters.length) {
+            corefClusters.push([])
+            allCorefs.current.push([])
+            mentionIdx = 0
+        } else {
+            let cluster: number[][] = corefClusters[clusterIdx]
+            mentionIdx = cluster.length
+            for (let i = 0; i < cluster.length; i++) {
+                if (cluster[i][0] >= idxStart) {
+                    mentionIdx = i
+                    break
+                }
+            }
+        }
+        let corefId = `d1c${clusterIdx}m${mentionIdx}`
+        let newMention: Mention
+        if (markedWord.current.length === 1) {
+            newMention = {
+                id: corefId,
+                content: wordArr.current[idxStart],
+                selectionRange: [idxStart, idxStart + 1],
+                documentIdx: 0, clusterIdx: clusterIdx, mentionIdx: mentionIdx
+            }
+        } else {
+            newMention = {
+                id: corefId,
+                content: wordArr.current.slice(idxStart, markedWord.current[1]).join(" "),
+                selectionRange: markedWord.current,
+                documentIdx: 0, clusterIdx: clusterIdx, mentionIdx: mentionIdx
+            }
+        }
+        setNewCorefSelection(newMention)
+        allCorefs.current[clusterIdx].splice(mentionIdx, 0, newMention)
+        corefClusters[clusterIdx].splice(mentionIdx, 0, [newMention.selectionRange[0], newMention.selectionRange[1] - 1])
+        setCorefClusters(corefClusters)
+    }
+
+    const deleteCoref = function() {
+        let clusterIdx = currentMention!.clusterIdx
+        corefClusters[clusterIdx].splice(currentMention!.mentionIdx, 1)
+        if (corefClusters[clusterIdx].length === 0) {
+            corefClusters.splice(clusterIdx, 1)
+        }
+        setCorefClusters(corefClusters)
+        setNewCorefSelection(undefined)
+    }
+
     //for the key-shortcuts used in MainView
     //todo: use above addCoref function to assign the new cluster
     const keyShortcutExecuted = (newCoref: string) => {
+        let clusterId = parseInt(newCoref)
+        if (isNaN(clusterId)) {
+            if (newCoref === "d") {
+                deleteCoref()
+            } else if (newCoref === "n") {
+                corefShort(allCorefs.current.length + 1)
+            } else if (newCoref === "c") {
+
+            }
+        } else {
+            corefShort(clusterId)
+        }
         console.log("keyshortCutInvoked:"+newCoref)
-    };
-    //
+    }
 
     //Functions used by Child-Component "Text" to send the received data to the
     // main page. Maybe 1 function to send both would be enough
@@ -184,7 +246,7 @@ function MainPageContent() {
                 setClusterColor(getComputedStyle(element).backgroundColor)
             } else {
                 // hacky way to get the correct background color from CSS sheet for new clusters
-                element = document.createElement('b')
+                element = document.createElement('abbr')
                 element.textContent = '.'
                 element.className = 'cr-' + (mention.clusterIdx + 1)
                 document.body.appendChild(element)
@@ -196,7 +258,7 @@ function MainPageContent() {
             mention = getMentionFromId(value.currentTarget.id, allCorefs.current)
             setCurrentMention(mention)
             setSelectedCoref(mention.selectionRange)
-            setClusterColor(getStyle(value.currentTarget, "background-color"))
+            setClusterColor(getStyle(value.currentTarget.children[0], "background-color"))
         }
     }
 
@@ -343,16 +405,14 @@ function MainPageContent() {
                                     <CorefView
                                         selectedCoref={selectedCoref}
                                         wordArr={wordArr}
-                                        corefClusters={corefClusters}
                                         allCorefs={allCorefs}
                                         clusterColor={clusterColor}
                                         markedWord={markedWord}
                                         currentMention={currentMention}
                                         handleSelectCoref={setSelectedCoref}
                                         setCurrentMention={setCurrentMention}
-                                        setCorefClusters={sendCorefClustersToMainPage}
-                                        setNewCorefSelection={setNewCorefSelection}
                                         addCoref={addCoref}
+                                        deleteCoref={deleteCoref}
                                     />
                                 </Paper>
                             </Grid>
