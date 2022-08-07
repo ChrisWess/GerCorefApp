@@ -150,7 +150,7 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
 
     function corefShort(clusterId: number) {
         let idxStart: number = markedWord.current[0]
-        let clusterIdx: number = clusterId - 1
+        let clusterIdx: number = Math.min(clusterId - 1, allCorefs.current.length);
         let mentionIdx: number
         if (clusterId > corefClusters.length) {
             corefClusters.push([])
@@ -200,8 +200,11 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
     }
 
     //for the key-shortcuts used in MainView
-    //todo: use above addCoref function to assign the new cluster
+    //todo: implement the "c", handle overwrite of current cluster (leads to error atm)
     const keyShortcutExecuted = (newCoref: string) => {
+        if (newCoref === "") {
+            return;
+        }
         let clusterId = parseInt(newCoref)
         if (isNaN(clusterId)) {
             if (newCoref === "d") {
@@ -211,11 +214,15 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
                 corefShort(allCorefs.current.length + 1)
                 callSnackbar("new cluster created", "top", "info")
             } else if (newCoref === "c") {
-
+                callSnackbar("Not Yet Implemented", "top", "info")
+            }
+            else {
+                callSnackbar("No such command: "+newCoref, "top", "warning")
             }
         } else {
+
             corefShort(clusterId)
-            callSnackbar(newCoref, "top", "normal")
+            callSnackbar("Added to Cluster: "+newCoref, "top", "normal")
         }
         console.log("keyshortCutInvoked:"+newCoref)
     }
