@@ -14,6 +14,8 @@ import Documents from "./Documents";
 import CorefView from "./CorefView";
 import Text from "./Text";
 import ResponsiveAppBar from "./ResponsiveAppBar";
+import ShortcutSnackbar from "./ShortcutSnackbar";
+import {useRef} from "react";
 
 
 function Copyright(props: any) {
@@ -28,6 +30,14 @@ function Copyright(props: any) {
         </Typography>
     );
 }
+
+//For Snackbar
+//Allows use of snackbar: use "callSnackbar" with the inputs message, position and type
+// see "ShortcutSnackbar.tsx"
+interface SnackbarProps {
+    callSnackbar: Function;
+}
+
 //For Tabs
 interface TabPanelProps {
     children?: React.ReactNode;
@@ -82,7 +92,7 @@ export const clearPrevMarking = function(markedWord: number[]) {
 //unused, possibly usable to create a color theme to improve visuals
 const theme = createTheme();
 
-function MainPageContent() {
+export default function MainPage({callSnackbar}: SnackbarProps) {
     const [corefClusters, setCorefClusters] = React.useState<number[][][]>([]);
     const [corefText, setCorefText] = React.useState<string[][]>([]);
     const [selectedCoref, setSelectedCoref] = React.useState<number[]>([]);
@@ -196,13 +206,16 @@ function MainPageContent() {
         if (isNaN(clusterId)) {
             if (newCoref === "d") {
                 deleteCoref()
+                callSnackbar("deleted coreference", "top", "info")
             } else if (newCoref === "n") {
                 corefShort(allCorefs.current.length + 1)
+                callSnackbar("new cluster created", "top", "info")
             } else if (newCoref === "c") {
 
             }
         } else {
             corefShort(clusterId)
+            callSnackbar(newCoref, "top", "normal")
         }
         console.log("keyshortCutInvoked:"+newCoref)
     }
@@ -494,8 +507,4 @@ function MainPageContent() {
             </Box>
         </ThemeProvider>
     );
-}
-
-export default function MainPage() {
-    return <MainPageContent />;
 }
