@@ -2,8 +2,8 @@ import React, {MutableRefObject, useState} from 'react';
 import "./MainView.css"
 import {Divider, List, ListItem,ListItemIcon, Pagination} from "@mui/material";
 import set = Reflect.set;
+import HoverBox from "./HoverBox";
 const _ = require('lodash');
-
 
 export type Mention = {
     id: string;
@@ -111,7 +111,6 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
     const indexOfLastItem = currentPage*itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
 
-
     //functions for editing shortcuts: "a" activates shortcut, subsequent number is recorded and saved in current input
     //input is processed and cleared when "a" is released (currentInput and setInput).
     //
@@ -119,7 +118,7 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
     const [listenToKeyboard, toggleListener] = useState(false);
 
     function isProcessable(key: string){
-        let processableKeys = ["0","1","2","3","4","5","6","7","8","9","d","n","c"]
+        let processableKeys = ["0","1","2","3","4","5","6","7","8","9","d","n","c","v"]
         return processableKeys.includes(key)
     }
 
@@ -147,6 +146,10 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
 
     const selectNewCorefEvent = function(value: any) {
         setNewCorefSelection(value)
+    };
+
+    const hoverEvent = function(word: any, clust: any) {
+        console.log(word+" and "+clust);
     };
 
     const wordClickEvent = function(value: any) {
@@ -221,9 +224,22 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
         let id = "w" + mentionIdxStart;
         if (mentionIdxStart === mentionIdxEnd) {
             sentBuffer.splice(shiftedStartIdx, 1,
-            <b key={corefId} id={corefId} onClick={selectNewCorefEvent}>{" "}<abbr key={id+"-1"} id={id} className={"cr cr-" + currentIndexOfCoref}><a key={id+"-2"} id={id}
-            href="#d1c1m1">[</a>{wordArr.current[mentionIdxStart]}<a key={id+"-4"} id={id} href="#d1c1m1">]</a><sub key={id+"-5"} id={id}>
-            {currentIndexOfCoref}</sub></abbr></b>);
+            <b key={corefId}
+               id={corefId}
+               onClick={selectNewCorefEvent}>
+                                                {" "}
+                                                <abbr
+                                                    key={id+"-1"}
+                                                    id={id}
+                                                    className={"cr cr-" + currentIndexOfCoref}>
+                                                                    <a key={id+"-2"} id={id} href="#d1c1m1">[</a>
+                                                    <HoverBox
+                                                    word={wordArr.current[mentionIdxStart]}
+                                                    cluster={currentIndexOfCoref}/>
+                                                                    <a key={id+"-4"} id={id} href="#d1c1m1">]</a>
+                                                    <sub key={id+"-5"} id={id}>{currentIndexOfCoref}</sub>
+                                                </abbr>
+            </b>);
         } else {
             // TODO: implement correct handling of overlapping coreferences
             //   => check if any mentionIdxRanges overlap (can be done on the "flattenedClust" array) &
@@ -275,6 +291,6 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
             />
         </>
     );
-}
+};
 
 export default MainView;

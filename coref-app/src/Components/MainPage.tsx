@@ -18,6 +18,7 @@ import ShortcutSnackbar from "./ShortcutSnackbar";
 import {useRef} from "react";
 
 
+
 function Copyright(props: any) {
     return (
         <Typography variant="body2" color="text.secondary" align="center" {...props}>
@@ -99,6 +100,9 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
     const [clusterColor, setClusterColor] = React.useState<string>("black");
     const [currentMention, setCurrentMention] = React.useState<Mention | undefined>(undefined);
     const [chosenDocument, setChosenDocument] = React.useState([null]);
+
+    //currently on the "c" button for the shortcuts
+    const [shortcutSaved, setShortcutSaved] = React.useState<number>(0);
 
     const allCorefs = React.useRef<Mention[][]>([]);
     const wordArr = React.useRef<string[]>([]);
@@ -200,7 +204,8 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
     }
 
     //for the key-shortcuts used in MainView
-    //todo: implement the "c", handle overwrite of current cluster (leads to error atm)
+    //todo: handle overwrite of current cluster (leads to error atm)
+    //todo: fix error:  when words are selected by pressing their "[]" the main view gets unselected and shortcuts stop working
     const keyShortcutExecuted = (newCoref: string) => {
         if (newCoref === "") {
             return;
@@ -214,7 +219,15 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
                 corefShort(allCorefs.current.length + 1)
                 callSnackbar("new cluster created", "top", "info")
             } else if (newCoref === "c") {
-                callSnackbar("Not Yet Implemented", "top", "info")
+                if(currentMention){
+                    setShortcutSaved(currentMention.clusterIdx+1)
+                    callSnackbar("Current copy: Coref cluster Nr."+(currentMention.clusterIdx+1), "top", "info")
+                }
+                else{
+                    callSnackbar("Please select a word with an assigned coref cluster to copy!", "top", "warning")
+                }
+            } else if (newCoref === "v") {
+                corefShort(shortcutSaved)
             }
             else {
                 callSnackbar("No such command: "+newCoref, "top", "warning")
