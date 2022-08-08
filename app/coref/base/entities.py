@@ -23,7 +23,7 @@ class IncrementalEntities:
         self.emb = torch.tensor([]).to(device)
         self.count = torch.tensor([]).to(device)
         # From class to correct entity
-        self.class_gold_entity = {} # [class: gold_entity]
+        self.class_gold_entity = {}  # [class: gold_entity]
         self.mention_distance = torch.tensor([]).to(device)
         self.sentence_distance = torch.tensor([]).to(device)
         self.mention_to_cluster_id = {}
@@ -48,8 +48,8 @@ class IncrementalEntities:
         for i, distance in enumerate(self.mention_distance.clone()):
             distance = distance.item()
             if (
-                distance > self.conf["unconditional_eviction_limit"]
-                or (distance > self.conf["singleton_eviction_limit"] and self.count[i - offset] == 1)
+                    distance > self.conf["unconditional_eviction_limit"]
+                    or (distance > self.conf["singleton_eviction_limit"] and self.count[i - offset] == 1)
             ) and len(self) > 1:
                 if evict_to is not None:
                     evict_to._add_entity(
@@ -62,26 +62,26 @@ class IncrementalEntities:
                         mention_distance=self.mention_distance[i - offset].to(evict_to.device),
                     )
                 self.emb = torch.cat(
-                    [self.emb[: i - offset], self.emb[i + 1 - offset :]], 0
+                    [self.emb[: i - offset], self.emb[i + 1 - offset:]], 0
                 ).to(self.device)
                 self.sentence_distance = torch.cat(
                     [
                         self.sentence_distance[: i - offset],
-                        self.sentence_distance[i + 1 - offset :],
+                        self.sentence_distance[i + 1 - offset:],
                     ],
                     0,
                 ).to(self.device)
                 self.count = torch.cat(
                     [
                         self.count[: i - offset],
-                        self.count[i + 1 - offset :],
+                        self.count[i + 1 - offset:],
                     ],
                     0,
                 ).to(self.device)
                 self.mention_distance = torch.cat(
                     [
                         self.mention_distance[: i - offset],
-                        self.mention_distance[i + 1 - offset :],
+                        self.mention_distance[i + 1 - offset:],
                     ],
                     0,
                 ).to(self.device)
@@ -149,7 +149,7 @@ class IncrementalEntities:
                 span_start += offset
                 span_end += offset
                 self.mention_to_cluster_id[(span_start, span_end)] = (
-                    self.emb.shape[0] - 1
+                        self.emb.shape[0] - 1
                 )
 
     def add_entity(self, emb, gold_class, span_start, span_end, offset):
@@ -157,14 +157,14 @@ class IncrementalEntities:
         self.mention_distance += 1
 
     def update_entity(
-        self,
-        cluster_to_update,
-        emb,
-        gold_class,
-        span_start,
-        span_end,
-        update_gate,
-        offset=0,
+            self,
+            cluster_to_update,
+            emb,
+            gold_class,
+            span_start,
+            span_end,
+            update_gate,
+            offset=0,
     ):
         span_start += offset
         span_end += offset
@@ -177,8 +177,8 @@ class IncrementalEntities:
         # High values in update gate mean the old representation is mostly replaced
         self.emb = self.emb.clone()
         self.emb[cluster_to_update] = (
-            update_gate * emb
-            + (torch.tensor(1) - update_gate) * self.emb[cluster_to_update].clone()
+                update_gate * emb
+                + (torch.tensor(1) - update_gate) * self.emb[cluster_to_update].clone()
         )
         self.count[cluster_to_update] += 1
         self.mention_distance[cluster_to_update] = 0
@@ -212,8 +212,9 @@ class IncrementalEntities:
         if remove_singletons:
             counter = Counter(self.mention_to_cluster_id.values())
             non_singletons = set(value for value, count in counter.items() if count > 1)
-            cluster_mapping = {v:k for k,v in enumerate(non_singletons)}
-            mention_to_cluster_id = {k: cluster_mapping[v] for k, v in self.mention_to_cluster_id.items() if v in non_singletons}
+            cluster_mapping = {v: k for k, v in enumerate(non_singletons)}
+            mention_to_cluster_id = {k: cluster_mapping[v] for k, v in self.mention_to_cluster_id.items() if
+                                     v in non_singletons}
         else:
             mention_to_cluster_id = self.mention_to_cluster_id
         if len(mention_to_cluster_id) == 0:

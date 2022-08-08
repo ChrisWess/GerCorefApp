@@ -6,7 +6,7 @@ from collections.abc import Iterable
 import numpy as np
 import torch.nn.init as init
 from torch import Tensor
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 
 from app.coref.base import util
 from app.coref.base.entities import IncrementalEntities, GoldLabelStrategy
@@ -108,7 +108,8 @@ class CorefModel(nn.Module):
         init.normal_(emb.weight, std=std)
         return emb
 
-    def make_linear(self, in_features, out_features, bias=True, std=0.02):
+    @staticmethod
+    def make_linear(in_features, out_features, bias=True, std=0.02):
         linear = nn.Linear(in_features, out_features, bias)
         init.normal_(linear.weight, std=std)
         if bias:
@@ -618,7 +619,7 @@ class IncrementalCorefModel(CorefModel):
                 entities, new_cpu_entities, loss = res
                 total_loss = loss + total_loss
             else:
-                entities, new_cpu_entities = res
+                entities, new_cpu_entities, probs = res
             cpu_entities.extend(new_cpu_entities)
         cpu_entities.extend(entities)
         starts, ends, mention_to_cluster_id, predicted_clusters = cpu_entities.get_result(
@@ -633,7 +634,7 @@ class IncrementalCorefModel(CorefModel):
         if do_loss:
             return out, loss
         else:
-            return out
+            return out, probs
 
     def get_predictions_incremental_internal(self, input_ids, input_mask, speaker_ids, sentence_len, genre, sentence_map,
                                              is_training, gold_starts=None, gold_ends=None, gold_mention_cluster_map=None,
@@ -652,6 +653,7 @@ class IncrementalCorefModel(CorefModel):
 
         num_words = mention_doc.shape[0]
 
+        curr_clusters = probs = None
         if do_loss:
             gold_info = {
                 'gold_starts': gold_starts,
@@ -660,6 +662,8 @@ class IncrementalCorefModel(CorefModel):
             }
             labels_for_starts = {(s.item(), e.item()): v.item() for s, e, v in zip(gold_starts, gold_ends, gold_mention_cluster_map)}
         else:
+            curr_clusters = []
+            probs = defaultdict(list)
             gold_info = None
             labels_for_starts = {}
 
@@ -687,6 +691,10 @@ class IncrementalCorefModel(CorefModel):
             if len(entities) == 0:
                 # No need to do the whole similarity computation, this is the first mention
                 entities.add_entity(emb, gold_class, span_start, span_end, offset=offset)
+                if not do_loss:
+                    # The first mention has only the possibility to create a new (first) cluster => prob = 100%
+                    probs[1].append([1])
+                    curr_clusters.append(1)
             else:
                 if conf['evict']:
                     entities.evict(evict_to=cpu_entities)
@@ -725,6 +733,17 @@ class IncrementalCorefModel(CorefModel):
                     cluster_to_update = index_to_update - 2
                 else:
                     cluster_to_update = index_to_update - 1
+
+                if not do_loss:
+                    # retrieve cluster probabilities
+                    cluster = index_to_update.item() - 1
+                    if cluster == -1:
+                        new_clust = curr_clusters[-1] + 1
+                        curr_clusters.append(new_clust)
+                        probs[new_clust].append(dist.tolist())
+                    elif cluster > 0:
+                        # cluster 0 are only candidates (other numbers are actual clusters)
+                        probs[cluster].append(dist.tolist())
                 weights = scores.squeeze()
                 if weights.ndim == 2:
                     weights = weights.T
@@ -792,4 +811,4 @@ class IncrementalCorefModel(CorefModel):
         if do_loss:
             return entities, cpu_entities, cpu_loss
         else:
-            return entities, cpu_entities
+            return entities, cpu_entities, dict(probs)

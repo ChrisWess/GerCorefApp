@@ -55,6 +55,7 @@ class ProdCorefModel:
         # self.basic_tokenizer = BasicTokenizer(do_lower_case=False)
         self.tokenizer = BertTokenizer.from_pretrained(self.config['bert_tokenizer_name'])
         self.tensorizer.long_doc_strategy = "keep"
+        self.probs = None
 
     def text_to_token_list(self, text):
         doc = self.spacy_tok(text)
@@ -161,7 +162,7 @@ class ProdCorefModel:
         in_data, token_map, tokenized_sentences = self.preprocess(data)
         marshalled_data = [d.to(self.device) for d in in_data]
         with torch.no_grad():
-            results = self.model(*marshalled_data, **kwargs)
+            results, self.probs = self.model(*marshalled_data, **kwargs)
         return self.postprocess(results, token_map, tokenized_sentences, output_mode)
 
 

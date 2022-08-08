@@ -4,6 +4,12 @@ from app import application
 from app.coref.model import model
 
 
+@application.route('/confidences', methods=['GET'])
+@cross_origin()
+def get_confidences():
+    return model.probs
+
+
 @application.route('/model', methods=['POST'])
 @cross_origin()
 def model_predict():
