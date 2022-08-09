@@ -9,43 +9,33 @@ interface HoverBoxProps {
 
 const HoverBox: React.FC<HoverBoxProps> = ({word, cluster}) => {
 
+    const textStyle = {
+        fontSize: '14pt'
+    }
+
     const hoverStyle = {
-        position: 'fixed',
-        top: '0px',
-        left: '0px',
+        position: 'absolute',
         overflow: 'visible',
         display: 'inline-block',
         wrap: "nowrap",
         textOverflow: 'ellipsis',
         whitespace: 'nowrap',
         alignCenter: 'float',
-        marginBottom: '8px',
+        marginTop: '-30px',
+        marginLeft: '-15px',
+        borderRadius: '25px',
+        border: '2px solid #000000',
+        backgroundColor: '#FFFF88',
+        fontSize: '14pt'
     }
 
     const [hover, setHover] = useState(false)
-    const [style, setStyle] = useState(hoverStyle)
 
     const normalStyle = {
         display: 'none'
     }
 
     const onMouseEnter = (e: any) => {
-        const x = (e.clientX - 30) + 'px';
-        const y = (e.clientY - 50) + 'px';
-        const currentStyle = {
-            position: 'fixed',
-            top: y,
-            left: x,
-            overflow: 'visible',
-            display: 'inline-block',
-            wrap: "nowrap",
-            textOverflow: 'ellipsis',
-            whitespace: 'nowrap',
-            alignCenter: 'float',
-            marginBottom: '8px',
-        }
-        console.log(x + y)
-        setStyle(currentStyle)
         setHover(true)
     }
 
@@ -55,8 +45,8 @@ const HoverBox: React.FC<HoverBoxProps> = ({word, cluster}) => {
 
     return (
         <a>
-            <a style={hover ? style : normalStyle}>({word}, {cluster})</a>
-            <a onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>{word}</a>
+            <a style={hover ? hoverStyle : normalStyle}>{word}, {cluster}</a>
+            <a style={textStyle} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>{word}</a>
         </a>
     )
 }
