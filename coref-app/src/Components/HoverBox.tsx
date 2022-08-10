@@ -44,10 +44,10 @@ const HoverBox: React.FC<HoverBoxProps> = ({word, cluster}) => {
     }
 
     return (
-        <a>
+        <>
             <a style={hover ? hoverStyle : normalStyle}>{word}, {cluster}</a>
             <a style={textStyle} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>{word}</a>
-        </a>
+        </>
     )
 }
 export default HoverBox;

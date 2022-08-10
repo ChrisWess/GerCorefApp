@@ -211,26 +211,33 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
             return;
         }
         let clusterId = parseInt(newCoref)
+        let finalCluster = clusterId;
+        let snackbarText = "FEHLER";
+
         if (isNaN(clusterId)) {
-            if (newCoref === "d") {
-                deleteCoref()
-                callSnackbar("deleted coreference", "top", "info")
-            } else if (newCoref === "n") {
-                corefShort(allCorefs.current.length + 1)
-                callSnackbar("new cluster created", "top", "info")
-            } else if (newCoref === "c") {
-                if(currentMention){
-                    setShortcutSaved(currentMention.clusterIdx+1)
-                    callSnackbar("Current copy: Coref cluster Nr."+(currentMention.clusterIdx+1), "top", "info")
-                }
-                else{
-                    callSnackbar("Please select a word with an assigned coref cluster to copy!", "top", "warning")
-                }
-            } else if (newCoref === "v") {
-                corefShort(shortcutSaved)
-            }
-            else {
-                callSnackbar("No such command: "+newCoref, "top", "warning")
+            switch (newCoref) {
+                case "d":
+                    deleteCoref()
+                    callSnackbar("deleted coreference", "top", "info")
+                    break;
+                case "n":
+                    corefShort(allCorefs.current.length + 1)
+                    callSnackbar("new cluster created", "top", "info")
+                    break;
+                case "c":
+                    if (currentMention) {
+                        setShortcutSaved(currentMention.clusterIdx + 1)
+                        callSnackbar("Current copy: Coref cluster Nr." + (currentMention.clusterIdx + 1), "top", "info")
+                    } else {
+                        callSnackbar("Please select a word with an assigned coref cluster to copy!", "top", "warning")
+                    }
+                    break;
+                case "v":
+                    corefShort(shortcutSaved)
+                    break;
+                default:
+                    callSnackbar("No such command: " + newCoref, "top", "warning")
+                    break;
             }
         } else {
 

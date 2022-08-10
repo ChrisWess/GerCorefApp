@@ -193,9 +193,9 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
     let results = flattenClust(buffer, clust,allCorefs,sentenceOffsets);
     let flattenedClust = results[0]
     let deletedCumulated = results[1]
-    console.log(clust)
-    console.log(flattenedClust)
-    console.log(deletedCumulated)
+    //console.log(clust)
+    //console.log(flattenedClust)
+    //console.log(deletedCumulated)
 
     //for each coref cluster it puts an html element in front of its first word and behind its last word
     //
