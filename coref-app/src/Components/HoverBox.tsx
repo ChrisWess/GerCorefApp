@@ -5,9 +5,10 @@ import MainView, {Mention} from "./MainView";
 interface HoverBoxProps {
     word: any
     cluster: number
+    hovertoggle: boolean
 }
 
-const HoverBox: React.FC<HoverBoxProps> = ({word, cluster}) => {
+const HoverBox: React.FC<HoverBoxProps> = ({word, cluster, hovertoggle}) => {
 
     const textStyle = {
         fontSize: '14pt'
@@ -36,7 +37,9 @@ const HoverBox: React.FC<HoverBoxProps> = ({word, cluster}) => {
     }
 
     const onMouseEnter = (e: any) => {
-        setHover(true)
+        if(hovertoggle){
+            setHover(true)
+        }
     }
 
     const onMouseLeave = () => {

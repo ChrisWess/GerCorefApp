@@ -16,6 +16,7 @@ import Text from "./Text";
 import ResponsiveAppBar from "./ResponsiveAppBar";
 import ShortcutSnackbar from "./ShortcutSnackbar";
 import {useRef} from "react";
+import set = Reflect.set;
 
 
 
@@ -100,6 +101,8 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
     const [clusterColor, setClusterColor] = React.useState<string>("black");
     const [currentMention, setCurrentMention] = React.useState<Mention | undefined>(undefined);
     const [chosenDocument, setChosenDocument] = React.useState([null]);
+
+    const [hovertoggle, setHovertoggle] = React.useState(true);
 
     //currently on the "c" button for the shortcuts
     const [shortcutSaved, setShortcutSaved] = React.useState<number>(0);
@@ -453,6 +456,8 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
                                         setCurrentMention={setCurrentMention}
                                         addCoref={addCoref}
                                         deleteCoref={deleteCoref}
+                                        hovertoggle={hovertoggle}
+                                        setHovertoggle={setHovertoggle}
                                     />
                                 </Paper>
                             </Grid>
@@ -476,6 +481,7 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
                                         setNewCorefSelection={setNewCorefSelection}
                                         markWords={markWords}
                                         keyShortcutExecuted={keyShortcutExecuted}
+                                        hovertoggle={hovertoggle}
                                     ></MainView>
                                 </Paper>
                             </Grid>

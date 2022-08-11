@@ -24,6 +24,7 @@ interface MainViewProps {
     setNewCorefSelection: Function
     markWords: Function
     keyShortcutExecuted: Function
+    hovertoggle: boolean
 }
 
 export const parseMentionId = function(mentionId: string) {
@@ -100,7 +101,7 @@ function flattenClust(buffer: any, clust: any, allCorefs: any, sentenceOffsets: 
 
 const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
                                                wordArr, wordFlags,
-                                               setNewCorefSelection, markWords, keyShortcutExecuted }) => {
+                                               setNewCorefSelection, markWords, keyShortcutExecuted, hovertoggle}) => {
 
 
 
@@ -235,7 +236,8 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
                                                                     <a key={id+"-2"} id={id} href="#d1c1m1">[</a>
                                                     <HoverBox
                                                     word={wordArr.current[mentionIdxStart]}
-                                                    cluster={currentIndexOfCoref}/>
+                                                    cluster={currentIndexOfCoref}
+                                                    hovertoggle={hovertoggle}/>
                                                                     <a key={id+"-4"} id={id} href="#d1c1m1">]</a>
                                                     <sub key={id+"-5"} id={id}>{currentIndexOfCoref}</sub>
                                                 </abbr>
