@@ -31,6 +31,7 @@ const HoverBox: React.FC<HoverBoxProps> = ({word, cluster, hovertoggle}) => {
         //border: '2px solid #000000',
         backgroundColor: '#FFFF88',
         fontSize: '12pt',
+        zIndex: '100',
         boxShadow: '1px 1px 5px'
     }
 

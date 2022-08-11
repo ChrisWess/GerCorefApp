@@ -139,7 +139,7 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
         }
         if(listenToKeyboard){
             if (isProcessable(key)) {
-                setInput(key)
+                setInput(currentInput+key)
             }
         }
     };
@@ -274,11 +274,11 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
             </ListItem>
         </React.Fragment>
     );
-    //
+    //todo: fix problem with scrolling
 
     return (
         <>
-            <div style={{height:720}}  onKeyUp={deactivateListener} onKeyPress={processKey} tabIndex={1}>
+            <div style={{height:720, overflow: 'auto', paddingTop: '20px'}}  onKeyUp={deactivateListener} onKeyPress={processKey} tabIndex={1}>
                 <article id="docView">
                         <List className="pagination" key={"mainList"}>
                                 {sentenceList}

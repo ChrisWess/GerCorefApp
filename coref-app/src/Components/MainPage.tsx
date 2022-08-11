@@ -25,7 +25,7 @@ function Copyright(props: any) {
         <Typography variant="body2" color="text.secondary" align="center" {...props}>
             {'Copyright © '}
             <Link color="inherit" href="https://mui.com/">
-                Your Website
+                Coref-App
             </Link>{' '}
             {new Date().getFullYear()}
             {'.'}
@@ -213,6 +213,7 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
         if (newCoref === "") {
             return;
         }
+        console.log(newCoref)
         let clusterId = parseInt(newCoref)
         let finalCluster = clusterId;
         let snackbarText = "FEHLER";
