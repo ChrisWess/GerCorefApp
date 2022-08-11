@@ -216,7 +216,6 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
             documentIdx: 0, clusterIdx: clusterIdx, mentionIdx: mentionIdx
         }
 
-        // TODO: make mouseover event that shows a small prompt with information at the mouse pointer
         let sentenceIdx: number = getSentenceIdx(mentionIdxEnd, sentenceOffsets)!
         let sentBuffer: JSX.Element[] = buffer[sentenceIdx]
         let deleted = deletedCumulated[sentenceIdx]

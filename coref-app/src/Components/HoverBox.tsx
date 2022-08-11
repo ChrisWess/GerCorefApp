@@ -16,18 +16,22 @@ const HoverBox: React.FC<HoverBoxProps> = ({word, cluster, hovertoggle}) => {
 
     const hoverStyle = {
         position: 'absolute',
-        overflow: 'visible',
         display: 'inline-block',
-        wrap: "nowrap",
-        textOverflow: 'ellipsis',
-        whitespace: 'nowrap',
+        //wrap: "nowrap",
+        height: '25px',
+        width: '280px',
+        overflow: 'wrap',
+        textOverflow: 'wrap',
+        textAlign: 'center',
+        //whitespace: 'nowrap',
         alignCenter: 'float',
         marginTop: '-30px',
-        marginLeft: '-15px',
+        marginLeft: '-105px',
         borderRadius: '25px',
-        border: '2px solid #000000',
+        //border: '2px solid #000000',
         backgroundColor: '#FFFF88',
-        fontSize: '14pt'
+        fontSize: '12pt',
+        boxShadow: '1px 1px 5px'
     }
 
     const [hover, setHover] = useState(false)
@@ -46,9 +50,10 @@ const HoverBox: React.FC<HoverBoxProps> = ({word, cluster, hovertoggle}) => {
         setHover(false)
     }
 
+    //todo: change author to actual author
     return (
         <>
-            <a style={hover ? hoverStyle : normalStyle}>{word}, {cluster}</a>
+            <a style={hover ? hoverStyle : normalStyle}>Coref-Cluster: {cluster}  Author: {word}</a>
             <a style={textStyle} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>{word}</a>
         </>
     )
