@@ -236,7 +236,8 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
                     <HoverBox
                     word={wordArr.current[mentionIdxStart]}
                     cluster={currentIndexOfCoref}
-                    hovertoggle={hovertoggle}/>
+                    hovertoggle={hovertoggle}
+                    mention={wordArr.current[mentionIdxStart]}/>
                                     <a key={id+"-4"} id={id} href="#d1c1m1">]</a>
                     <sub key={id+"-5"} id={id}>{currentIndexOfCoref}</sub>
                 </abbr>
@@ -246,6 +247,42 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
             //   => check if any mentionIdxRanges overlap (can be done on the "flattenedClust" array) &
             //      make a function that makes the correct JSXElement for these overlapping corefs.
             //      (also use the entire span of the overlapping annotations to set deletedCumulated)
+
+            let endIdxInSentence = mentionIdxEnd - sentenceOffsets[sentenceIdx]
+            let mentionSlice: JSX.Element[] = sentBuffer.slice(shiftedStartIdx + 1,
+                endIdxInSentence - deleted[startIdxInSentence])
+            let id1 = "w" + mentionIdxEnd;
+
+            let finalCompleteMention = ""
+            for (let j = mentionIdxStart; j < mentionIdxEnd ; j++) {
+                finalCompleteMention+= wordArr.current[j]+' ';
+            }
+            finalCompleteMention += wordArr.current[mentionIdxEnd]
+
+            sentBuffer.splice(shiftedStartIdx, mentionIdxEnd + 1 - mentionIdxStart,
+                <b key={corefId} id={corefId} onClick={selectNewCorefEvent}>
+                    {" "}
+                    <abbr key={id+"-1"} id={id} className={"cr cr-" + currentIndexOfCoref}>
+                        <a key={id+"-2"} id={id} href="#d1c1m1">[</a>
+                        <HoverBox word={wordArr.current[mentionIdxStart]} cluster={currentIndexOfCoref} hovertoggle={hovertoggle} mention={finalCompleteMention}/>
+                    </abbr>
+                    {mentionSlice.map((elem, index) => (
+                        <abbr key={'w' + (mentionIdxStart + index + 1)+"-1"}
+                              id={'w' + (mentionIdxStart + index + 1)}
+                              className={"cr cr-" + currentIndexOfCoref}>
+                            {" "}
+                            <HoverBox word={wordArr.current[mentionIdxStart + index + 1]} cluster={currentIndexOfCoref} hovertoggle={hovertoggle} mention={finalCompleteMention}/>
+                        </abbr>
+                    ))}
+                    <abbr key={id1+"-1"} id={id1} className={"cr cr-" + currentIndexOfCoref}>
+                        {" "}
+                        <HoverBox word={wordArr.current[mentionIdxEnd]} cluster={currentIndexOfCoref} hovertoggle={hovertoggle} mention={finalCompleteMention}/>
+                        <a key={id1+"-2"} id={id1} href="#d1c1m1">]</a>
+                        <sub key={id1+"-3"} id={id1}>{currentIndexOfCoref}</sub>
+                    </abbr>
+                </b>);
+
+            /**
             let endIdxInSentence = mentionIdxEnd - sentenceOffsets[sentenceIdx]
             let mentionSlice: JSX.Element[] = sentBuffer.slice(shiftedStartIdx + 1,
                                                                endIdxInSentence - deleted[startIdxInSentence])
@@ -270,6 +307,7 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
                     <sub key={id1+"-3"} id={id1}>{currentIndexOfCoref}</sub>
                 </abbr>
             </b>);
+             */
         }
     }
 

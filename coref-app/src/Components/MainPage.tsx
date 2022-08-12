@@ -159,6 +159,7 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
         let idxStart: number = markedWord.current[0]
         let clusterIdx: number = Math.min(clusterId - 1, allCorefs.current.length);
         let mentionIdx: number
+        
         if (clusterId > corefClusters.length) {
             corefClusters.push([])
             allCorefs.current.push([])
@@ -213,10 +214,9 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
         if (newCoref === "") {
             return;
         }
+
         console.log(newCoref)
         let clusterId = parseInt(newCoref)
-        let finalCluster = clusterId;
-        let snackbarText = "FEHLER";
 
         if (isNaN(clusterId)) {
             switch (newCoref) {
@@ -244,9 +244,12 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
                     break;
             }
         } else {
-
-            corefShort(clusterId)
-            callSnackbar("Added to Cluster: "+newCoref, "top", "normal")
+            if(clusterId > allCorefs.current.length+1){
+                callSnackbar("No such Cluster: "+newCoref, "top", "error")
+            }else {
+                corefShort(clusterId)
+                callSnackbar("Added to Cluster: " + newCoref, "top", "normal")
+            }
         }
         console.log("keyshortCutInvoked:"+newCoref)
     }

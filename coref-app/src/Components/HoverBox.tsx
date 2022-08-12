@@ -4,13 +4,15 @@ import MainView, {Mention} from "./MainView";
 
 interface HoverBoxProps {
     word: any
+    mention: any
     cluster: number
     hovertoggle: boolean
 }
 
-const HoverBox: React.FC<HoverBoxProps> = ({word, cluster, hovertoggle}) => {
+const HoverBox: React.FC<HoverBoxProps> = ({word, mention, cluster, hovertoggle}) => {
 
     const textStyle = {
+        position: 'absolute',
         fontSize: '14pt'
     }
 
@@ -19,14 +21,14 @@ const HoverBox: React.FC<HoverBoxProps> = ({word, cluster, hovertoggle}) => {
         display: 'inline-block',
         //wrap: "nowrap",
         height: '25px',
-        width: '280px',
-        overflow: 'wrap',
-        textOverflow: 'wrap',
-        textAlign: 'center',
-        //whitespace: 'nowrap',
+        width: 'fit-content',
+        overflow: 'nowrap',
+        textOverflow: 'nowrap',
+        whitespace: 'nowrap',
         alignCenter: 'float',
         marginTop: '-30px',
-        marginLeft: '-105px',
+        float: 'center',
+        marginLeft: '-10px',
         borderRadius: '25px',
         //border: '2px solid #000000',
         backgroundColor: '#FFFF88',
@@ -54,8 +56,8 @@ const HoverBox: React.FC<HoverBoxProps> = ({word, cluster, hovertoggle}) => {
     //todo: change author to actual author
     return (
         <>
-            <a style={hover ? hoverStyle : normalStyle}>Coref-Cluster: {cluster}  Author: {word}</a>
-            <a style={textStyle} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>{word}</a>
+            <a style={hover ? hoverStyle : normalStyle}>Coref-Cluster: {cluster}  Author: {mention}</a>
+            <a style={{fontSize: '1em', color: 'none', padding: '0px 2px 0px 2px', marginTop: '6px',  zIndex: '1'}} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>{word}</a>
         </>
     )
 }
