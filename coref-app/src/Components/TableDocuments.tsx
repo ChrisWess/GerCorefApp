@@ -31,6 +31,8 @@ function Table(props: any) {
             props.sendCorefClusterToParent(data.clusters)
             props.sendCorefTextToParent(data.tokens)
             props.changeChosenDocument(el);
+            props.allCorefs.current = []
+            props.retrieveConfidences()
         }
         catch (error) {
             if (axios.isAxiosError(error)) {
@@ -41,7 +43,7 @@ function Table(props: any) {
                 return 'An unexpected error occurred';
             }
         }
-    };
+    }
 
     //TODO: rewrite it more clear, without 2 lists and if 
     if (Object.keys(props.tableData).length != 0) {

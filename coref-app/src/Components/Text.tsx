@@ -1,7 +1,8 @@
-import React, {useState} from 'react';
+import React, {MutableRefObject, useState} from 'react';
 import { useTheme } from '@mui/material/styles';
 import {Button, TextField} from "@mui/material";
 import axios from 'axios';
+import {Mention} from "./MainView";
 
 export default function Text(props: any) {
     const theme = useTheme();
@@ -25,6 +26,8 @@ export default function Text(props: any) {
             props.sendCorefClusterToParent(data.clusters)
             props.sendCorefTextToParent(data.tokens)
             props.changeChosenDocument(null);
+            props.allCorefs.current = []
+            props.retrieveConfidences()
         }
         catch (error) {
             if (axios.isAxiosError(error)) {

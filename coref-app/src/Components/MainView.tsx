@@ -12,6 +12,7 @@ export type Mention = {
     documentIdx: number
     clusterIdx: number
     mentionIdx: number
+    autoCreated: boolean
     createdByUser?: string;  // TODO: or id (number)?
 }
 
@@ -52,9 +53,11 @@ function flattenClust(buffer: any, clust: any, allCorefs: any, sentenceOffsets: 
     let clustCopy = _.cloneDeep(clust);
     let deletedCumulated: number[][] = Array(buffer.length).fill(null).map(
         (value, index) => Array(buffer[index].length).fill(0))
-    allCorefs.current = []
+    let isNewDoc: boolean = allCorefs.current.length === 0
     for (let i = 0; i < clust.length; i++) {
-        allCorefs.current.push(Array<Mention>(clust[i].length))
+        if (isNewDoc) {
+            allCorefs.current.push(Array<Mention>())
+        }
         for (let j = 0; j < clust[i].length; j++) {
             // Create a flattened array of clusters
             if (flattenedClust.length === 0) {
@@ -191,7 +194,7 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
     }
 
     //not sure what this does lol
-    let results = flattenClust(buffer, clust,allCorefs,sentenceOffsets);
+    let results = flattenClust(buffer, clust, allCorefs, sentenceOffsets);
     let flattenedClust = results[0]
     let deletedCumulated = results[1]
     //console.log(clust)
@@ -209,13 +212,16 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
         let mentionIdx = flattenedClust[i][3]
         let coref = wordArr.current.slice(mentionIdxStart, mentionIdxEnd + 1).join(" ")
         let corefId = `d1c${clusterIdx}m${mentionIdx}`
-        allCorefs.current[clusterIdx][mentionIdx] = {
-            id: corefId,
-            content: coref,
-            selectionRange: [mentionIdxStart, mentionIdxEnd + 1],
-            documentIdx: 0, clusterIdx: clusterIdx, mentionIdx: mentionIdx
+        let cluster: Mention[] = allCorefs.current[clusterIdx]
+        if (mentionIdx >= cluster.length) {
+            cluster[mentionIdx] = {
+                id: corefId,
+                content: coref,
+                selectionRange: [mentionIdxStart, mentionIdxEnd + 1],
+                documentIdx: 0, clusterIdx: clusterIdx, mentionIdx: mentionIdx,
+                autoCreated: true
+            }
         }
-
         let sentenceIdx: number = getSentenceIdx(mentionIdxEnd, sentenceOffsets)!
         let sentBuffer: JSX.Element[] = buffer[sentenceIdx]
         let deleted = deletedCumulated[sentenceIdx]

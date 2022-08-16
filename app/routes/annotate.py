@@ -17,6 +17,7 @@ def model_predict():
     output_mode = "json_small"
     if 'output_mode' in args and args['output_mode'] == 'long':
         output_mode = "json"
+    # TODO: save prediction and probs in DB (referenced with doc id)
     return model.predict(args["text"], output_mode)
 
 

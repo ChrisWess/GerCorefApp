@@ -1,7 +1,8 @@
-import React from 'react';
+import React, {MutableRefObject} from 'react';
 import axios from 'axios';
 import { Button } from "@mui/material";
 import Table from "./TableDocuments";
+import {Mention} from "./MainView";
 
 
 interface MyProps {
@@ -9,6 +10,8 @@ interface MyProps {
     sendCorefTextToParent: any,
     changeChosenDocument: any,
     chosenDocument: any
+    allCorefs: MutableRefObject<Mention[][]>
+    retrieveConfidences: Function
     children: any
 };
 type MyState = { selectedFile: any, nameWasChanged: boolean, newName: string };
@@ -92,6 +95,8 @@ class Documents extends React.Component<MyProps, MyState>{
                 } else {
                     this.props.changeChosenDocument(this.state.newName);
                 }
+                this.props.allCorefs.current = []
+                this.props.retrieveConfidences()
             }
             catch (error) {
                 if (axios.isAxiosError(error)) {
@@ -121,6 +126,8 @@ class Documents extends React.Component<MyProps, MyState>{
                     sendCorefTextToParent={this.props.sendCorefTextToParent}
                     changeChosenDocument={this.props.changeChosenDocument}
                     chosenDocument={this.props.chosenDocument}
+                    allCorefs={this.props.allCorefs}
+                    retrieveConfidences={this.props.retrieveConfidences}
                 >
                 </Table>
                 <Button variant="outlined" style={{ margin: 5, textTransform: "none", width: "97%" }} disabled>

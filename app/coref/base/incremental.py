@@ -740,10 +740,10 @@ class IncrementalCorefModel(CorefModel):
                     if cluster == -1:
                         new_clust = curr_clusters[-1] + 1
                         curr_clusters.append(new_clust)
-                        probs[new_clust].append(dist.tolist())
+                        probs[new_clust].append(dist.squeeze().tolist())
                     elif cluster > 0:
                         # cluster 0 are only candidates (other numbers are actual clusters)
-                        probs[cluster].append(dist.tolist())
+                        probs[cluster].append(dist.squeeze().tolist())
                 weights = scores.squeeze()
                 if weights.ndim == 2:
                     weights = weights.T

@@ -17,6 +17,8 @@ import ResponsiveAppBar from "./ResponsiveAppBar";
 import ShortcutSnackbar from "./ShortcutSnackbar";
 import {useRef} from "react";
 import set = Reflect.set;
+import Statistics from "./Statistics";
+import axios from "axios";
 
 
 
@@ -46,6 +48,7 @@ interface TabPanelProps {
     index: number;
     value: number;
 }
+
 function TabPanel(props: TabPanelProps) {
     const { children, value, index, ...other } = props;
 
@@ -65,6 +68,7 @@ function TabPanel(props: TabPanelProps) {
         </div>
     );
 }
+
 function a11yProps(index: number) {
     return {
         id: `simple-tab-${index}`,
@@ -72,6 +76,11 @@ function a11yProps(index: number) {
     };
 }
 
+export type ConfidenceValues = {
+    newClusterProb: number;
+    noClusterProb: number;
+    clusterProbs: number[]
+}
 
 export const clearPrevMarking = function(markedWord: number[]) {
     if (markedWord.length === 1) {
@@ -101,6 +110,7 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
     const [clusterColor, setClusterColor] = React.useState<string>("black");
     const [currentMention, setCurrentMention] = React.useState<Mention | undefined>(undefined);
     const [chosenDocument, setChosenDocument] = React.useState([null]);
+    const [confidences, setConfidences] = React.useState<ConfidenceValues[][]>([]);
 
     const [hovertoggle, setHovertoggle] = React.useState(true);
 
@@ -138,14 +148,16 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
                     id: corefId,
                     content: wordArr.current[idxStart],
                     selectionRange: [idxStart, idxStart + 1],
-                    documentIdx: 0, clusterIdx: clusterIdx, mentionIdx: mentionIdx
+                    documentIdx: 0, clusterIdx: clusterIdx, mentionIdx: mentionIdx,
+                    autoCreated: false
                 }
             } else {
                 newMention = {
                     id: corefId,
                     content: wordArr.current.slice(idxStart, markedWord.current[1]).join(" "),
                     selectionRange: markedWord.current,
-                    documentIdx: 0, clusterIdx: clusterIdx, mentionIdx: mentionIdx
+                    documentIdx: 0, clusterIdx: clusterIdx, mentionIdx: mentionIdx,
+                    autoCreated: false
                 }
             }
             setNewCorefSelection(newMention)
@@ -180,14 +192,16 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
                 id: corefId,
                 content: wordArr.current[idxStart],
                 selectionRange: [idxStart, idxStart + 1],
-                documentIdx: 0, clusterIdx: clusterIdx, mentionIdx: mentionIdx
+                documentIdx: 0, clusterIdx: clusterIdx, mentionIdx: mentionIdx,
+                autoCreated: false
             }
         } else {
             newMention = {
                 id: corefId,
                 content: wordArr.current.slice(idxStart, markedWord.current[1]).join(" "),
                 selectionRange: markedWord.current,
-                documentIdx: 0, clusterIdx: clusterIdx, mentionIdx: mentionIdx
+                documentIdx: 0, clusterIdx: clusterIdx, mentionIdx: mentionIdx,
+                autoCreated: false
             }
         }
         setNewCorefSelection(newMention)
@@ -331,6 +345,47 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
         }
         setClusterColor("yellow")
         setCurrentMention(undefined)
+    }
+
+    async function retrieveConfidences() {
+        try{
+            const { data } = await axios.get(
+                `http://127.0.0.1:5000/confidences`,
+                {
+                    headers: {
+                        'Access-Control-Allow-Origin': '*',
+                        'Content-Type': 'application/json',
+                        Accept: 'application/json',
+                    },
+                },
+            );
+            console.log(JSON.stringify(data, null, 4));
+            data[1][0].push(0)
+            let keys = Object.keys(data)
+            let confids: ConfidenceValues[][] = []
+            for (let i = 0; i < keys.length; i++) {
+                let probsList: ConfidenceValues[] = []
+                let clust = data[keys[i]]
+                for (let j = 0; j < clust.length; j++) {
+                    probsList.push({
+                        newClusterProb: clust[j][0] * 100.0,
+                        noClusterProb: clust[j][1] * 100.0,
+                        clusterProbs: clust[j].slice(2).map((x: number) => x * 100.0)
+                    })
+                }
+                confids.push(probsList)
+            }
+            setConfidences(confids)
+        }
+        catch (error) {
+            if (axios.isAxiosError(error)) {
+                console.log('error message: ', error.message);
+                return error.message;
+            } else {
+                console.log('unexpected error: ', error);
+                return 'An unexpected error occurred';
+            }
+        }
     }
 
     //For Tabs
@@ -512,6 +567,8 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
                                                 sendCorefClusterToParent={sendCorefClustersToMainPage}
                                                 sendCorefTextToParent={sendCorefTextToMainPage}
                                                 changeChosenDocument={changeChosenDocument}
+                                                allCorefs={allCorefs}
+                                                retrieveConfidences={retrieveConfidences}
                                             />
 
 
@@ -523,11 +580,17 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
                                                 sendCorefTextToParent={sendCorefTextToMainPage}
                                                 changeChosenDocument={changeChosenDocument}
                                                 chosenDocument={chosenDocument}
+                                                allCorefs={allCorefs}
+                                                retrieveConfidences={retrieveConfidences}
                                                 >
                                             </Documents>                                        
                                         </TabPanel>
                                         <TabPanel value={value} index={2}>
-                                            {/* Statistics */}                                      
+                                            <Statistics
+                                                currentMention={currentMention}
+                                                confidences={confidences}
+                                                allCorefs={allCorefs}
+                                            ></Statistics>
                                         </TabPanel>
                                     </Box>
                                 </Paper>
