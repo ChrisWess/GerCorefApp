@@ -161,7 +161,14 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
                 }
             }
             setNewCorefSelection(newMention)
-            allCorefs.current[clusterIdx].splice(mentionIdx, 0, newMention)
+            let cluster: Mention[] = allCorefs.current[clusterIdx]
+            cluster.splice(mentionIdx, 0, newMention)
+            for (let i = mentionIdx + 1; i < cluster.length; i++) {
+                let m: Mention = cluster[i]
+                let newMentionIdx: number = m.mentionIdx + 1
+                m.mentionIdx = newMentionIdx
+                m.id = `d1c${clusterIdx}m${newMentionIdx}`
+            }
             corefClusters[clusterIdx].splice(mentionIdx, 0, [newMention.selectionRange[0], newMention.selectionRange[1] - 1])
             setCorefClusters(corefClusters)
         }
@@ -206,16 +213,32 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
             }
         }
         setNewCorefSelection(newMention)
-        allCorefs.current[clusterIdx].splice(mentionIdx, 0, newMention)
+        let cluster: Mention[] = allCorefs.current[clusterIdx]
+        cluster.splice(mentionIdx, 0, newMention)
+        for (let i = mentionIdx + 1; i < cluster.length; i++) {
+            let m: Mention = cluster[i]
+            let newMentionIdx: number = m.mentionIdx + 1
+            m.mentionIdx = newMentionIdx
+            m.id = `d1c${clusterIdx}m${newMentionIdx}`
+        }
         corefClusters[clusterIdx].splice(mentionIdx, 0, [newMention.selectionRange[0], newMention.selectionRange[1] - 1])
         setCorefClusters(corefClusters)
     }
 
     const deleteCoref = function() {
         let clusterIdx = currentMention!.clusterIdx
-        corefClusters[clusterIdx].splice(currentMention!.mentionIdx, 1)
+        let mentionIdx = currentMention!.mentionIdx
+        corefClusters[clusterIdx].splice(mentionIdx, 1)
         if (corefClusters[clusterIdx].length === 0) {
             corefClusters.splice(clusterIdx, 1)
+        }
+        let cluster: Mention[] = allCorefs.current[clusterIdx]
+        cluster.splice(mentionIdx, 1)
+        for (let i = mentionIdx; i < cluster.length; i++) {
+            let m: Mention = cluster[i]
+            let newMentionIdx: number = m.mentionIdx - 1
+            m.mentionIdx = newMentionIdx
+            m.id = `d1c${clusterIdx}m${newMentionIdx}`
         }
         setCorefClusters(corefClusters)
         setNewCorefSelection(undefined)
