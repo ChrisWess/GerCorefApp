@@ -1,9 +1,8 @@
 import bcrypt
 from flask import request
 
-from app import application
-from app.db.dao.user_dao import UserDao
-from app.db.models.user import User, UserRole
+from app import application, users
+from app.db.models.user import User
 
 
 @application.route('/user/create', methods=['GET', 'POST'])
@@ -12,14 +11,18 @@ def create_user():
         args = request.json
         password = args["password"]
         hashed_password = bcrypt.hashpw(password.encode('utf8'), bcrypt.gensalt())
-        user = User(name=args["name"], email=args["email"], password=hashed_password, role=UserRole.USER)
-        UserDao.insert(user)
-        return "OK"
+        # TODO: ensure email is unique
+        user = User(name=args["name"], email=args["email"], password=hashed_password)
+        user = dict(user)
+        del user['id']
+        result = users.insert_one(user)  # save doc
+        user['_id'] = result.inserted_id
+        print("User inserted:", result.inserted_id)
+        return user
 
 
 @application.route('/user/find-by-email', methods=['POST'])
 def find_user_by_email():
     if request.method == 'POST':
         args = request.json
-        user = UserDao.find_by_email(args["email"])
-        return user.email + " pass: " + user.password
+        return users.find_one({"email": args["email"]})

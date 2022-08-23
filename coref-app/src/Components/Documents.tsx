@@ -76,6 +76,10 @@ class Documents extends React.Component<MyProps, MyState>{
                 'myFile',
                 this.state.selectedFile !== null ? this.state.selectedFile : "",
             );
+            formData.append(
+            'docname',
+            'default_name'
+            );
 
             try {
                 const { data } = await axios.post(

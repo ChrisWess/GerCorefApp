@@ -226,6 +226,9 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
     }
 
     const deleteCoref = function() {
+        // TODO: implement versioning of the documents in order to keep track of previous annotation states
+        //  (model inference should create a new version => if a coreference, that was created by the model,
+        //  is deleted and re-added, the system should still be able to show the plots afterwards)
         let clusterIdx = currentMention!.clusterIdx
         let mentionIdx = currentMention!.mentionIdx
         corefClusters[clusterIdx].splice(mentionIdx, 1)

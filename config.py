@@ -8,7 +8,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 class Common:
     DEBUG = True
     WTF_CSRF_ENABLED = True
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    DB_NAME = "corefdb"
 
     UNAUTHORIZED_MESSAGE = "You don't have authorization to perform this action."
 
@@ -19,7 +19,7 @@ class Common:
 # Debug specific configurations
 class Debug(Common):
     # Enter your local database name
-    SQLALCHEMY_DATABASE_URI = 'mysql://root@localhost:3306/sampledb'
+    MONGODB_DATABASE_URI = "mongodb://localhost:27017/" + Common.DB_NAME
 
 
 # Production specific configurations
@@ -27,5 +27,5 @@ class Production(Common):
     DEBUG = False
     env = os.environ
     # Database configuration
-    SQLALCHEMY_DATABASE_URI = 'mysql://' + str(env.get('DB_USER')) + ':' + str(env.get('DB_PASS')) + '@' + \
-                              str(env.get('DB_HOST')) + '/' + str(env.get('DB_SCHEMA'))
+    MONGODB_DATABASE_URI = 'mongodb://' + str(env.get('DB_USER')) + ':' + str(env.get('DB_PASS')) + '@' + \
+                           str(env.get('DB_HOST')) + '/' + str(env.get('DB_SCHEMA'))

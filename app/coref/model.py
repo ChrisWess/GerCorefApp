@@ -55,7 +55,6 @@ class ProdCorefModel:
         # self.basic_tokenizer = BasicTokenizer(do_lower_case=False)
         self.tokenizer = BertTokenizer.from_pretrained(self.config['bert_tokenizer_name'])
         self.tensorizer.long_doc_strategy = "keep"
-        self.probs = None
 
     def text_to_token_list(self, text):
         doc = self.spacy_tok(text)
@@ -143,8 +142,7 @@ class ProdCorefModel:
                             break
                     lines.append(line)
                     total_word_id += 1
-            lines = {'output': lines}
-            return lines
+            return {'tokens': tokenized_sentences, 'clusters': lines}
         else:
             predicted_clusters_words = []
             for cluster in predicted_clusters:
@@ -162,8 +160,13 @@ class ProdCorefModel:
         in_data, token_map, tokenized_sentences = self.preprocess(data)
         marshalled_data = [d.to(self.device) for d in in_data]
         with torch.no_grad():
-            results, self.probs = self.model(*marshalled_data, **kwargs)
-        return self.postprocess(results, token_map, tokenized_sentences, output_mode)
+            results, probs = self.model(*marshalled_data, **kwargs)
+        result = self.postprocess(results, token_map, tokenized_sentences, output_mode)
+        if isinstance(result, dict):
+            result['probs'] = probs
+            return result
+        else:
+            return {'clusters': result, 'probs': probs}
 
 
 model = ProdCorefModel("app/coref/base/model_saves/model_droc_incremental_no_segment_distance_May02_17-32-58_1800.bin")

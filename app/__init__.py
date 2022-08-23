@@ -2,7 +2,7 @@ import os
 
 from flask import Flask
 from flask_login import LoginManager
-from flask_sqlalchemy import SQLAlchemy
+from flask_pymongo import PyMongo
 
 import config
 
@@ -17,9 +17,13 @@ else:
     config = config.Debug
     application.config.from_object('config.Debug')
     print('App is running in debug mode.')
+application.config["MONGO_URI"] = config.MONGODB_DATABASE_URI
 
-# SQLAlchemy database
-sql_db = SQLAlchemy(application)
+# MongoDB database
+client = PyMongo(application)  # username='username', password='password'
+# Initialize mongodb collections
+users = client.db.users
+docs = client.db.docs
 
 # Login manager settings
 login_manager = LoginManager()

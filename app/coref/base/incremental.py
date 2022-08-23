@@ -6,7 +6,7 @@ from collections.abc import Iterable
 import numpy as np
 import torch.nn.init as init
 from torch import Tensor
-from collections import OrderedDict, defaultdict
+from collections import OrderedDict
 
 from app.coref.base import util
 from app.coref.base.entities import IncrementalEntities, GoldLabelStrategy
@@ -663,7 +663,7 @@ class IncrementalCorefModel(CorefModel):
             labels_for_starts = {(s.item(), e.item()): v.item() for s, e, v in zip(gold_starts, gold_ends, gold_mention_cluster_map)}
         else:
             curr_clusters = []
-            probs = defaultdict(list)
+            probs = []
             gold_info = None
             labels_for_starts = {}
 
@@ -693,7 +693,7 @@ class IncrementalCorefModel(CorefModel):
                 entities.add_entity(emb, gold_class, span_start, span_end, offset=offset)
                 if not do_loss:
                     # The first mention has only the possibility to create a new (first) cluster => prob = 100%
-                    probs[1].append([1])
+                    probs.append([[1.]])
                     curr_clusters.append(1)
             else:
                 if conf['evict']:
@@ -740,10 +740,10 @@ class IncrementalCorefModel(CorefModel):
                     if cluster == -1:
                         new_clust = curr_clusters[-1] + 1
                         curr_clusters.append(new_clust)
-                        probs[new_clust].append(dist.squeeze().tolist())
+                        probs.append([dist.squeeze().tolist()])
                     elif cluster > 0:
                         # cluster 0 are only candidates (other numbers are actual clusters)
-                        probs[cluster].append(dist.squeeze().tolist())
+                        probs[cluster - 1].append(dist.squeeze().tolist())
                 weights = scores.squeeze()
                 if weights.ndim == 2:
                     weights = weights.T
@@ -811,4 +811,4 @@ class IncrementalCorefModel(CorefModel):
         if do_loss:
             return entities, cpu_entities, cpu_loss
         else:
-            return entities, cpu_entities, dict(probs)
+            return entities, cpu_entities, probs

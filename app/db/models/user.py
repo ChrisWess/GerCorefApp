@@ -1,7 +1,5 @@
 from enum import Enum
-
-from app import sql_db
-from app.db.models.base_model import BaseModel
+from pydantic import BaseModel, Field
 
 
 class UserRole(Enum):
@@ -10,13 +8,25 @@ class UserRole(Enum):
 
 
 class User(BaseModel):
-    __hash__ = object.__hash__
+    id: str = Field(default=None, alias="_id")
+    name: str = Field()
+    email: str = Field()
+    password: str = Field()
+    role: UserRole = Field(default=UserRole.USER)
+    active: bool = Field(default=True)
 
-    name = sql_db.Column(sql_db.String(64))
-    email = sql_db.Column(sql_db.String(64), nullable=False, index=True, unique=True)
-    password = sql_db.Column(sql_db.String(64), nullable=False)
-    role = sql_db.Column(sql_db.Enum(UserRole), nullable=False, index=True)
-    active = sql_db.Column(sql_db.Boolean, default=True)
+    class Config:
+        allow_population_by_field_name = True
+        schema_extra = {
+            "example": {
+                "_id": "066de609-b04a-4b30-b46c-32537c7f1f6e",
+                "name": "Max Mustermann",
+                "email": "max.mustermann@email.de",
+                "password": "...",
+                "role": 1,
+                "active": True
+            }
+        }
 
     def __repr__(self):
         return '<User id:{}, name:{}, email:{}, role:{}>'.format(self.id, self.name, self.email, self.role)

@@ -13,7 +13,7 @@ export default function Text(props: any) {
         try{
             const { data } = await axios.post(
                 `http://127.0.0.1:5000/model`,
-                { "text":input },
+                { "text": input, "docname": "default_name" },
                 {
                     headers: {
                         'Access-Control-Allow-Origin': '*',

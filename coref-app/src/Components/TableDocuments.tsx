@@ -15,6 +15,10 @@ function Table(props: any) {
             'myFile',
             props.tableData[el],
         );
+        formData.append(
+            'docname',
+            'default_name'
+        );
 
         try {
             const { data } = await axios.post(
