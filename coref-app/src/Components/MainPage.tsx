@@ -296,14 +296,33 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
 
     //Functions used by Child-Component "Text" to send the received data to the
     // main page. Maybe 1 function to send both would be enough
-    const sendCorefClustersToMainPage = (cluster:any[]) => {
+    const sendCorefClustersToMainPage = (cluster: number[][][]) => {
         console.log(cluster)
         setCorefClusters(cluster);
     };
-    const sendCorefTextToMainPage = (messages:any[]) => {
+
+    const sendCorefTextToMainPage = (messages: string[][]) => {
         console.log(messages)
         setCorefText(messages);
     };
+
+    const sendConfidencesToMainPage = (probs: number[][][]) => {
+        probs[0][0].push(0)
+        let confids: ConfidenceValues[][] = []
+        for (let i = 0; i < probs.length; i++) {
+            let probsList: ConfidenceValues[] = []
+            let clust = probs[i]
+            for (let j = 0; j < clust.length; j++) {
+                probsList.push({
+                    newClusterProb: clust[j][0] * 100.0,
+                    noClusterProb: clust[j][1] * 100.0,
+                    clusterProbs: clust[j].slice(2).map((x: number) => x * 100.0)
+                })
+            }
+            confids.push(probsList)
+        }
+        setConfidences(confids)
+    }
 
     const getStyle = function(element: any, property: string) {
         return window.getComputedStyle ? window.getComputedStyle(element, null).getPropertyValue(property) :
@@ -374,47 +393,6 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
         }
         setClusterColor("yellow")
         setCurrentMention(undefined)
-    }
-
-    async function retrieveConfidences() {
-        try{
-            const { data } = await axios.get(
-                `http://127.0.0.1:5000/confidences`,
-                {
-                    headers: {
-                        'Access-Control-Allow-Origin': '*',
-                        'Content-Type': 'application/json',
-                        Accept: 'application/json',
-                    },
-                },
-            );
-            console.log(JSON.stringify(data, null, 4));
-            data[1][0].push(0)
-            let keys = Object.keys(data)
-            let confids: ConfidenceValues[][] = []
-            for (let i = 0; i < keys.length; i++) {
-                let probsList: ConfidenceValues[] = []
-                let clust = data[keys[i]]
-                for (let j = 0; j < clust.length; j++) {
-                    probsList.push({
-                        newClusterProb: clust[j][0] * 100.0,
-                        noClusterProb: clust[j][1] * 100.0,
-                        clusterProbs: clust[j].slice(2).map((x: number) => x * 100.0)
-                    })
-                }
-                confids.push(probsList)
-            }
-            setConfidences(confids)
-        }
-        catch (error) {
-            if (axios.isAxiosError(error)) {
-                console.log('error message: ', error.message);
-                return error.message;
-            } else {
-                console.log('unexpected error: ', error);
-                return 'An unexpected error occurred';
-            }
-        }
     }
 
     //For Tabs
@@ -597,7 +575,7 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
                                                 sendCorefTextToParent={sendCorefTextToMainPage}
                                                 changeChosenDocument={changeChosenDocument}
                                                 allCorefs={allCorefs}
-                                                retrieveConfidences={retrieveConfidences}
+                                                sendConfidencesToParent={sendConfidencesToMainPage}
                                             />
 
 
@@ -610,7 +588,7 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
                                                 changeChosenDocument={changeChosenDocument}
                                                 chosenDocument={chosenDocument}
                                                 allCorefs={allCorefs}
-                                                retrieveConfidences={retrieveConfidences}
+                                                sendConfidencesToParent={sendConfidencesToMainPage}
                                                 >
                                             </Documents>                                        
                                         </TabPanel>

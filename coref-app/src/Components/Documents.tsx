@@ -11,7 +11,7 @@ interface MyProps {
     changeChosenDocument: any,
     chosenDocument: any
     allCorefs: MutableRefObject<Mention[][]>
-    retrieveConfidences: Function
+    sendConfidencesToParent: Function
     children: any
 };
 type MyState = { selectedFile: any, nameWasChanged: boolean, newName: string };
@@ -92,7 +92,7 @@ class Documents extends React.Component<MyProps, MyState>{
                         },
                     },
                 );
-                this.props.sendCorefClusterToParent(data.clusters)
+                this.props.sendCorefClusterToParent(data.clust)
                 this.props.sendCorefTextToParent(data.tokens)
                 if (!this.state.nameWasChanged) {
                     this.props.changeChosenDocument(this.state.selectedFile['name']);
@@ -100,7 +100,7 @@ class Documents extends React.Component<MyProps, MyState>{
                     this.props.changeChosenDocument(this.state.newName);
                 }
                 this.props.allCorefs.current = []
-                this.props.retrieveConfidences()
+                this.props.sendConfidencesToParent(data.probs)
             }
             catch (error) {
                 if (axios.isAxiosError(error)) {
@@ -131,7 +131,7 @@ class Documents extends React.Component<MyProps, MyState>{
                     changeChosenDocument={this.props.changeChosenDocument}
                     chosenDocument={this.props.chosenDocument}
                     allCorefs={this.props.allCorefs}
-                    retrieveConfidences={this.props.retrieveConfidences}
+                    sendConfidencesToParent={this.props.sendConfidencesToParent}
                 >
                 </Table>
                 <Button variant="outlined" style={{ margin: 5, textTransform: "none", width: "97%" }} disabled>

@@ -23,11 +23,11 @@ export default function Text(props: any) {
                 },
             );
             console.log(JSON.stringify(data, null, 4));
-            props.sendCorefClusterToParent(data.clusters)
+            props.sendCorefClusterToParent(data.clust)
             props.sendCorefTextToParent(data.tokens)
             props.changeChosenDocument(null);
             props.allCorefs.current = []
-            props.retrieveConfidences()
+            props.sendConfidencesToParent(data.probs)
         }
         catch (error) {
             if (axios.isAxiosError(error)) {

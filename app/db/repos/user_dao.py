@@ -1,6 +1,5 @@
 from app import login_manager
 from app.db.models.user import User
-from pydantic_mongo import AbstractRepository
 
 from app import db
 
@@ -33,12 +32,4 @@ class UserDao(Dao):
     def delete_by_id(user_id):
         User.query.filter_by(id=user_id).delete()
 '''
-
-
-class UserRepository(AbstractRepository[User]):
-    class Meta:
-        collection_name = 'users'
-
-
-#users = UserRepository(database=db)
 

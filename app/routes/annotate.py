@@ -6,13 +6,14 @@ from app.db.models.doc import Document
 
 
 def insert_doc(pred, args):
+    # TODO: docname for a user must be unique
     annotated_by = [["TEMP"]]  # TODO: logged in user
     doc = Document(name=args["docname"], created_by="user", tokens=pred['tokens'],
                    clust=pred['clusters'], annotated_by=annotated_by, probs=pred['probs'])
     doc = dict(doc)
     del doc['id']
     result = docs.insert_one(doc)  # save doc
-    doc['_id'] = result.inserted_id
+    doc['_id'] = str(result.inserted_id)
     print("Doc inserted:", result.inserted_id)
     return doc
 
@@ -33,7 +34,7 @@ def model_predict():
 @application.route('/uploadfile', methods=['POST'])
 @cross_origin()
 def model_file():
-    args = request.json
+    args = request.form
     if "docname" not in args:
         abort(400)
     text = request.files.get("myFile").read().decode("utf-8")

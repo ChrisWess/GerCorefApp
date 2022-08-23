@@ -32,11 +32,11 @@ function Table(props: any) {
                 },
             );
 
-            props.sendCorefClusterToParent(data.clusters)
+            props.sendCorefClusterToParent(data.clust)
             props.sendCorefTextToParent(data.tokens)
             props.changeChosenDocument(el);
             props.allCorefs.current = []
-            props.retrieveConfidences()
+            props.sendConfidencesToParent(data.probs)
         }
         catch (error) {
             if (axios.isAxiosError(error)) {

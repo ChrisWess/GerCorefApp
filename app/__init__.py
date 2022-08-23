@@ -24,6 +24,7 @@ client = PyMongo(application)  # username='username', password='password'
 # Initialize mongodb collections
 users = client.db.users
 docs = client.db.docs
+# TODO: make db liveness check
 
 # Login manager settings
 login_manager = LoginManager()
