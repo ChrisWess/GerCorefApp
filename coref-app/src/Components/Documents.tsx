@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Button } from "@mui/material";
 import Table from "./TableDocuments";
 import {Mention} from "./MainView";
+import "./Documents.css"
 
 
 interface MyProps {
@@ -20,14 +21,42 @@ type dict = {
     [key: string]: any
 };
 
+// Close the dropdown if the user clicks outside of it
+window.onclick = function(event) {
+    // @ts-ignore
+    if (!event.target!.matches('.dropbtn')) {
+        let dropdowns = document.getElementsByClassName("dropdown-content");
+        for (let i = 0; i < dropdowns.length; i++) {
+            let openDropdown = dropdowns[i];
+            if (openDropdown.classList.contains('show')) {
+                openDropdown.classList.remove('show');
+            }
+        }
+    }
+}
+
+
+function onDownloadDocument(dataTypes: string) {
+    //todo: proper download Function
+    console.log(dataTypes)
+}
+
 class Documents extends React.Component<MyProps, MyState>{
 
     static allData: dict = new Object();
+    static supportedDataTypes = ["XML", "CoNLL 2000"];
 
     constructor(props: any) {
         super(props);
         this.state = { selectedFile: null, nameWasChanged: false, newName: "" };
     };
+
+
+    // On file download (click the download button)
+    onFileDownload = (event: any) => {
+        document.getElementById("documentsDropDown")!.classList.toggle("show");
+    };
+
 
     // On file select (from the pop up)
     onFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -136,8 +165,14 @@ class Documents extends React.Component<MyProps, MyState>{
                 </Table>
                 <Button variant="outlined" style={{ margin: 5, textTransform: "none", width: "97%" }} disabled>
                     Share selected document</Button>
-                <Button variant="outlined" style={{ margin: 5, textTransform: "none", width: "97%" }} disabled>
-                    Download annotated document</Button>
+                <span className="dropdown">
+                    <Button disabled={!this.props.chosenDocument} variant="outlined" style={{ margin: 5, textTransform: "none", width: "97%" }} onClick={this.onFileDownload} className="dropbtn">
+                        Download annotated document</Button>
+                    <div id="documentsDropDown" className="dropdown-content">
+                        {Documents.supportedDataTypes.map((dataTypes, index) =>
+                            (<a key={"DT-"+index+1} onClick={() => onDownloadDocument(dataTypes)}>{Documents.supportedDataTypes[index]}</a>))}
+                    </div>
+                </span>
                 <Button variant="outlined" style={{ margin: 5, textTransform: "none", width: "97%" }} disabled>
                     Submit annotation <br />(Submit for online learning)</Button>
             </div>

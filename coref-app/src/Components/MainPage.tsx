@@ -109,7 +109,7 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
     const [selectedCoref, setSelectedCoref] = React.useState<number[]>([]);
     const [clusterColor, setClusterColor] = React.useState<string>("black");
     const [currentMention, setCurrentMention] = React.useState<Mention | undefined>(undefined);
-    const [chosenDocument, setChosenDocument] = React.useState([null]);
+    const [chosenDocument, setChosenDocument] = React.useState(null);
     const [confidences, setConfidences] = React.useState<ConfidenceValues[][]>([]);
 
     const [hovertoggle, setHovertoggle] = React.useState(true);
@@ -251,7 +251,9 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
     //todo: handle overwrite of current cluster (leads to error atm)
     //todo: fix error:  when words are selected by pressing their "[]" the main view gets unselected and shortcuts stop working
     const keyShortcutExecuted = (newCoref: string) => {
-        if (newCoref === "") {
+
+        if (newCoref === "" || (!markedWord.current[0] && !currentMention)) {
+            callSnackbar("No words selected!", "top", "error")
             return;
         }
 
