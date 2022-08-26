@@ -41,7 +41,7 @@ window.onclick = function(event) {
 class Documents extends React.Component<MyProps, MyState>{
 
     static allData: dict = new Object();
-    static supportedDataTypes = ["XML", "CoNLL-2012"];
+    static supportedDataTypes = ["XML", "CoNLL-2012", "plaintext"];
 
     constructor(props: any) {
         super(props);
