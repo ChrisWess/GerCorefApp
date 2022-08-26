@@ -19,6 +19,7 @@ import {useRef} from "react";
 import set = Reflect.set;
 import Statistics from "./Statistics";
 import axios from "axios";
+import FileConverter from "./FileConverter";
 
 
 
@@ -121,6 +122,12 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
     const wordArr = React.useRef<string[]>([]);
     const wordFlags = React.useRef<(boolean | null)[]>([]);
     const markedWord = React.useRef<number[]>([])
+
+    function onDownloadDocument(dataType: string, documentName: string) {
+        let converter = new FileConverter()
+        console.log("directed to mainpage")
+        converter.convertFile(dataType ,documentName, corefClusters, corefText)
+    }
 
     function addCoref(clusterId: number) {
         return function () {
@@ -591,6 +598,7 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
                                                 chosenDocument={chosenDocument}
                                                 allCorefs={allCorefs}
                                                 sendConfidencesToParent={sendConfidencesToMainPage}
+                                                onDownloadDocument={onDownloadDocument}
                                                 >
                                             </Documents>                                        
                                         </TabPanel>

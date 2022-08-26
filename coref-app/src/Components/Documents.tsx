@@ -4,6 +4,8 @@ import { Button } from "@mui/material";
 import Table from "./TableDocuments";
 import {Mention} from "./MainView";
 import "./Documents.css"
+import "./FileConverter"
+import FileConverter from "./FileConverter";
 
 
 interface MyProps {
@@ -14,6 +16,7 @@ interface MyProps {
     allCorefs: MutableRefObject<Mention[][]>
     sendConfidencesToParent: Function
     children: any
+    onDownloadDocument: Function
 };
 type MyState = { selectedFile: any, nameWasChanged: boolean, newName: string };
 
@@ -35,16 +38,10 @@ window.onclick = function(event) {
     }
 }
 
-
-function onDownloadDocument(dataTypes: string) {
-    //todo: proper download Function
-    console.log(dataTypes)
-}
-
 class Documents extends React.Component<MyProps, MyState>{
 
     static allData: dict = new Object();
-    static supportedDataTypes = ["XML", "CoNLL 2000"];
+    static supportedDataTypes = ["XML", "CoNLL-2012"];
 
     constructor(props: any) {
         super(props);
@@ -170,7 +167,7 @@ class Documents extends React.Component<MyProps, MyState>{
                         Download annotated document</Button>
                     <div id="documentsDropDown" className="dropdown-content">
                         {Documents.supportedDataTypes.map((dataTypes, index) =>
-                            (<a key={"DT-"+index+1} onClick={() => onDownloadDocument(dataTypes)}>{Documents.supportedDataTypes[index]}</a>))}
+                            (<a key={"DT-"+index+1} onClick={() => this.props.onDownloadDocument(dataTypes, "TestName")}>{Documents.supportedDataTypes[index]}</a>))}
                     </div>
                 </span>
                 <Button variant="outlined" style={{ margin: 5, textTransform: "none", width: "97%" }} disabled>
