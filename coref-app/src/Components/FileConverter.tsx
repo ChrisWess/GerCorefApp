@@ -34,7 +34,41 @@ class FileConverter {
     }
 
      convertToCoNLL2012(name: string, clusts: any, tokens: any) {
-        const fileData = "TODO"
+
+        //get amount of tokens
+         let count = 0
+         for (let i = 0; i < tokens.length; i++) {
+             for (let j = 0; j < tokens[i].length; j++) {
+                count++;
+             }
+         }
+
+        let fileData = "#begin document ("+name+"); part 000\n";
+         const arr = new Array(count).fill("-");
+
+         for (let i = 0; i < clusts.length; i++) {
+             for (let j = 0; j < clusts[i].length; j++) {
+                 let x = ""
+                 let y = null
+                 clusts[i][j][0] === clusts[i][j][1] ? x = "("+(i+1)+")": (x = "("+(i+1), y = (i+1)+")")
+                 arr[clusts[i][j][0]] === "-" ? arr[clusts[i][j][0]] = x : arr[clusts[i][j][0]]+= "|" + x
+                 if(y){
+                     arr[clusts[i][j][1]] === "-" ? arr[clusts[i][j][1]] = y : arr[clusts[i][j][1]]+= "|" + y
+                 }
+             }
+         }
+         
+         count = 0
+         for (let i = 0; i < tokens.length; i++) {
+             for (let j = 0; j < tokens[i].length; j++) {
+                 fileData += name+"\t0\t"+j+"\t"+ tokens[i][j] +"\t\t-\t-\t-\t-\t-\t-\t*\t"+arr[count]+"\n"
+                 count++
+             }
+             fileData += "\n"
+         }
+
+         fileData += "#end document\n"
+
         const blob = new Blob([fileData], { type: "text/plain" });
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
