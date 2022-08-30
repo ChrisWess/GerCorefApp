@@ -56,7 +56,7 @@ const HoverBox: React.FC<HoverBoxProps> = ({word, mention, cluster, hovertoggle}
     //todo: change author to actual author
     return (
         <>
-            <a style={hover ? hoverStyle : normalStyle}>Coref-Cluster: {cluster}  Author: {mention}</a>
+            <a style={hover ? hoverStyle : normalStyle}>Coref-Cluster: {cluster}  Author: {mention.autoCreated ? "Machine" : "User"}</a>
             <a style={{fontSize: '1em', color: 'none', padding: '0px 2px 0px 2px', marginTop: '6px',  zIndex: '1'}} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>{word}</a>
         </>
     )

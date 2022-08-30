@@ -193,13 +193,9 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
         sentenceOffsets.push(sentenceOffsets[i] + txt[i].length)
     }
 
-    //not sure what this does lol
     let results = flattenClust(buffer, clust, allCorefs, sentenceOffsets);
     let flattenedClust = results[0]
     let deletedCumulated = results[1]
-    //console.log(clust)
-    //console.log(flattenedClust)
-    //console.log(deletedCumulated)
 
     //for each coref cluster it puts an html element in front of its first word and behind its last word
     //
@@ -243,7 +239,7 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
                     word={wordArr.current[mentionIdxStart]}
                     cluster={currentIndexOfCoref}
                     hovertoggle={hovertoggle}
-                    mention={wordArr.current[mentionIdxStart]}/>
+                    mention={cluster[mentionIdx]}/>
                                     <a key={id+"-4"} id={id} href="#d1c1m1">]</a>
                     <sub key={id+"-5"} id={id}>{currentIndexOfCoref}</sub>
                 </abbr>
@@ -259,30 +255,24 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
                 endIdxInSentence - deleted[startIdxInSentence])
             let id1 = "w" + mentionIdxEnd;
 
-            let finalCompleteMention = ""
-            for (let j = mentionIdxStart; j < mentionIdxEnd ; j++) {
-                finalCompleteMention+= wordArr.current[j]+' ';
-            }
-            finalCompleteMention += wordArr.current[mentionIdxEnd]
-
             sentBuffer.splice(shiftedStartIdx, mentionIdxEnd + 1 - mentionIdxStart,
                 <b key={corefId} id={corefId} onClick={selectNewCorefEvent}>
                     {" "}
                     <abbr key={id+"-1"} id={id} className={"cr cr-" + currentIndexOfCoref}>
                         <a key={id+"-2"} id={id} href="#d1c1m1">[</a>
-                        <HoverBox word={wordArr.current[mentionIdxStart]} cluster={currentIndexOfCoref} hovertoggle={hovertoggle} mention={finalCompleteMention}/>
+                        <HoverBox word={wordArr.current[mentionIdxStart]} cluster={currentIndexOfCoref} hovertoggle={hovertoggle} mention={cluster[mentionIdx]}/>
                     </abbr>
                     {mentionSlice.map((elem, index) => (
                         <abbr key={'w' + (mentionIdxStart + index + 1)+"-1"}
                               id={'w' + (mentionIdxStart + index + 1)}
                               className={"cr cr-" + currentIndexOfCoref}>
                             {" "}
-                            <HoverBox word={wordArr.current[mentionIdxStart + index + 1]} cluster={currentIndexOfCoref} hovertoggle={hovertoggle} mention={finalCompleteMention}/>
+                            <HoverBox word={wordArr.current[mentionIdxStart + index + 1]} cluster={currentIndexOfCoref} hovertoggle={hovertoggle} mention={cluster[mentionIdx]}/>
                         </abbr>
                     ))}
                     <abbr key={id1+"-1"} id={id1} className={"cr cr-" + currentIndexOfCoref}>
                         {" "}
-                        <HoverBox word={wordArr.current[mentionIdxEnd]} cluster={currentIndexOfCoref} hovertoggle={hovertoggle} mention={finalCompleteMention}/>
+                        <HoverBox word={wordArr.current[mentionIdxEnd]} cluster={currentIndexOfCoref} hovertoggle={hovertoggle} mention={cluster[mentionIdx]}/>
                         <a key={id1+"-2"} id={id1} href="#d1c1m1">]</a>
                         <sub key={id1+"-3"} id={id1}>{currentIndexOfCoref}</sub>
                     </abbr>
