@@ -38,7 +38,6 @@ export const parseMentionId = function(mentionId: string) {
     return {docIdx: docIdx, clusterIdx: clusterIdx, mentionIdx: mentionIdx}
 };
 
-
 export const getSentenceIdx = function(tokenIdx: number, sentenceOffsets: number[]) {
     for(let i = 0; i < sentenceOffsets.length - 2; i++) {
         if (sentenceOffsets[i] <= tokenIdx && tokenIdx < sentenceOffsets[i + 1]) {
@@ -59,7 +58,6 @@ function flattenClust(buffer: any, clust: any, allCorefs: any, sentenceOffsets: 
             allCorefs.current.push(Array<Mention>())
         }
         for (let j = 0; j < clust[i].length; j++) {
-            // Create a flattened array of clusters
             if (flattenedClust.length === 0) {
                 let cluster = clustCopy[i][j]
                 cluster.push(i, j)
@@ -152,10 +150,6 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
         setNewCorefSelection(value)
     };
 
-    const hoverEvent = function(word: any, clust: any) {
-        console.log(word+" and "+clust);
-    };
-
     const wordClickEvent = function(value: any) {
         let wid = parseInt(value.currentTarget.id.substring(1))
         markWords([wid], value.currentTarget)
@@ -163,7 +157,7 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
 
     //State before anything is sent to the API
     if(txt.length === 0)
-        return <h1>No Document yet</h1>
+        return <h1>no document</h1>
 
     wordArr.current = []
     wordFlags.current = []
@@ -277,35 +271,9 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
                         <sub key={id1+"-3"} id={id1}>{currentIndexOfCoref}</sub>
                     </abbr>
                 </b>);
-
-            /**
-            let endIdxInSentence = mentionIdxEnd - sentenceOffsets[sentenceIdx]
-            let mentionSlice: JSX.Element[] = sentBuffer.slice(shiftedStartIdx + 1,
-                                                               endIdxInSentence - deleted[startIdxInSentence])
-            let id1 = "w" + mentionIdxEnd;
-            sentBuffer.splice(shiftedStartIdx, mentionIdxEnd + 1 - mentionIdxStart,
-            <b key={corefId} id={corefId} onClick={selectNewCorefEvent}>
-                {" "}
-                <abbr key={id+"-1"} id={id} className={"cr cr-" + currentIndexOfCoref}>
-                    <a key={id+"-2"} id={id} href="#d1c1m1">[</a>
-                    {wordArr.current[mentionIdxStart]}
-                </abbr>
-                {mentionSlice.map((elem, index) => (
-                                <abbr key={'w' + (mentionIdxStart + index + 1)+"-1"}
-                                      id={'w' + (mentionIdxStart + index + 1)}
-                                      className={"cr cr-" + currentIndexOfCoref}>
-                                    {" " + wordArr.current[mentionIdxStart + index + 1]}
-                                </abbr>
-                              ))}
-                <abbr key={id1+"-1"} id={id1} className={"cr cr-" + currentIndexOfCoref}>
-                    {" " + wordArr.current[mentionIdxEnd]}
-                    <a key={id1+"-2"} id={id1} href="#d1c1m1">]</a>
-                    <sub key={id1+"-3"} id={id1}>{currentIndexOfCoref}</sub>
-                </abbr>
-            </b>);
-             */
         }
     }
+
 
     //Decide which Items are to be displayed on this page
     const currentItems = buffer.slice(indexOfFirstItem, indexOfLastItem);
