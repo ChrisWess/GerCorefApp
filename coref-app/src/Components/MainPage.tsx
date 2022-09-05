@@ -182,60 +182,65 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
     }
 
     function corefShort(clusterId: number) {
-        let idxStart: number = markedWord.current[0]
-        let clusterIdx: number = Math.min(clusterId - 1, allCorefs.current.length);
-        let mentionIdx: number
-        
-        if (clusterId > corefClusters.length) {
-            corefClusters.push([])
-            allCorefs.current.push([])
-            mentionIdx = 0
-        } else {
-            let cluster: number[][] = corefClusters[clusterIdx]
-            mentionIdx = cluster.length
-            for (let i = 0; i < cluster.length; i++) {
-                if (cluster[i][0] >= idxStart) {
-                    mentionIdx = i
-                    break
+        try {
+            let idxStart: number = markedWord.current[0]
+            let clusterIdx: number = Math.min(clusterId - 1, allCorefs.current.length);
+            let mentionIdx: number
+
+            if (clusterId > corefClusters.length) {
+                corefClusters.push([])
+                allCorefs.current.push([])
+                mentionIdx = 0
+            } else {
+                let cluster: number[][] = corefClusters[clusterIdx]
+                mentionIdx = cluster.length
+                for (let i = 0; i < cluster.length; i++) {
+                    if (cluster[i][0] >= idxStart) {
+                        mentionIdx = i
+                        break
+                    }
                 }
             }
-        }
-        let corefId = `d1c${clusterIdx}m${mentionIdx}`
-        let newMention: Mention
-        if (markedWord.current.length === 1) {
-            newMention = {
-                id: corefId,
-                content: wordArr.current[idxStart],
-                selectionRange: [idxStart, idxStart + 1],
-                documentIdx: 0, clusterIdx: clusterIdx, mentionIdx: mentionIdx,
-                autoCreated: false
+            let corefId = `d1c${clusterIdx}m${mentionIdx}`
+            let newMention: Mention
+            if (markedWord.current.length === 1) {
+                newMention = {
+                    id: corefId,
+                    content: wordArr.current[idxStart],
+                    selectionRange: [idxStart, idxStart + 1],
+                    documentIdx: 0, clusterIdx: clusterIdx, mentionIdx: mentionIdx,
+                    autoCreated: false
+                }
+            } else {
+                newMention = {
+                    id: corefId,
+                    content: wordArr.current.slice(idxStart, markedWord.current[1]).join(" "),
+                    selectionRange: markedWord.current,
+                    documentIdx: 0, clusterIdx: clusterIdx, mentionIdx: mentionIdx,
+                    autoCreated: false
+                }
             }
-        } else {
-            newMention = {
-                id: corefId,
-                content: wordArr.current.slice(idxStart, markedWord.current[1]).join(" "),
-                selectionRange: markedWord.current,
-                documentIdx: 0, clusterIdx: clusterIdx, mentionIdx: mentionIdx,
-                autoCreated: false
+            setNewCorefSelection(newMention)
+            let cluster: Mention[] = allCorefs.current[clusterIdx]
+            cluster.splice(mentionIdx, 0, newMention)
+            for (let i = mentionIdx + 1; i < cluster.length; i++) {
+                let m: Mention = cluster[i]
+                let newMentionIdx: number = m.mentionIdx + 1
+                m.mentionIdx = newMentionIdx
+                m.id = `d1c${clusterIdx}m${newMentionIdx}`
             }
+            corefClusters[clusterIdx].splice(mentionIdx, 0, [newMention.selectionRange[0], newMention.selectionRange[1] - 1])
+            setCorefClusters(corefClusters)
+        } catch (e) {
+            callSnackbar("An Error occurred: "+ e, "top", "error")
         }
-        setNewCorefSelection(newMention)
-        let cluster: Mention[] = allCorefs.current[clusterIdx]
-        cluster.splice(mentionIdx, 0, newMention)
-        for (let i = mentionIdx + 1; i < cluster.length; i++) {
-            let m: Mention = cluster[i]
-            let newMentionIdx: number = m.mentionIdx + 1
-            m.mentionIdx = newMentionIdx
-            m.id = `d1c${clusterIdx}m${newMentionIdx}`
-        }
-        corefClusters[clusterIdx].splice(mentionIdx, 0, [newMention.selectionRange[0], newMention.selectionRange[1] - 1])
-        setCorefClusters(corefClusters)
     }
 
     const deleteCoref = function() {
         // TODO: implement versioning of the documents in order to keep track of previous annotation states
         //  (model inference should create a new version => if a coreference, that was created by the model,
         //  is deleted and re-added, the system should still be able to show the plots afterwards)
+        // todo: properly update allCorefs and delete empty array slots
         let clusterIdx = currentMention!.clusterIdx
         let mentionIdx = currentMention!.mentionIdx
         corefClusters[clusterIdx].splice(mentionIdx, 1)
@@ -293,7 +298,7 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
                     break;
             }
         } else {
-            if(clusterId > allCorefs.current.length+1){
+            if(clusterId > corefClusters.length+1){
                 callSnackbar("No such Cluster: "+newCoref, "top", "error")
             }else {
                 corefShort(clusterId)

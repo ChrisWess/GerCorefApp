@@ -11,15 +11,9 @@ interface HoverBoxProps {
 
 const HoverBox: React.FC<HoverBoxProps> = ({word, mention, cluster, hovertoggle}) => {
 
-    const textStyle = {
-        position: 'absolute',
-        fontSize: '14pt'
-    }
-
     const hoverStyle = {
         position: 'absolute',
         display: 'inline-block',
-        //wrap: "nowrap",
         height: '25px',
         width: 'fit-content',
         overflow: 'nowrap',
@@ -30,7 +24,6 @@ const HoverBox: React.FC<HoverBoxProps> = ({word, mention, cluster, hovertoggle}
         float: 'center',
         marginLeft: '-10px',
         borderRadius: '25px',
-        //border: '2px solid #000000',
         backgroundColor: '#FFFF88',
         fontSize: '12pt',
         zIndex: '100',
