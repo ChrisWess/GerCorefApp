@@ -17,6 +17,7 @@ interface MyProps {
     sendConfidencesToParent: Function
     children: any
     onDownloadDocument: Function
+    changeDocumentId: any
 };
 type MyState = { selectedFile: any, nameWasChanged: boolean, newName: string };
 
@@ -118,6 +119,8 @@ class Documents extends React.Component<MyProps, MyState>{
                         },
                     },
                 );
+                console.log(data._id)
+                console.log(data.tokens);
                 this.props.sendCorefClusterToParent(data.clust)
                 this.props.sendCorefTextToParent(data.tokens)
                 if (!this.state.nameWasChanged) {
@@ -127,6 +130,7 @@ class Documents extends React.Component<MyProps, MyState>{
                 }
                 this.props.allCorefs.current = []
                 this.props.sendConfidencesToParent(data.probs)
+                this.props.changeDocumentId(data._id);
             }
             catch (error) {
                 if (axios.isAxiosError(error)) {
@@ -158,6 +162,7 @@ class Documents extends React.Component<MyProps, MyState>{
                     chosenDocument={this.props.chosenDocument}
                     allCorefs={this.props.allCorefs}
                     sendConfidencesToParent={this.props.sendConfidencesToParent}
+                    changeDocumentId={this.props.changeDocumentId}
                 >
                 </Table>
                 <Button variant="outlined" style={{ margin: 5, textTransform: "none", width: "97%" }} disabled>

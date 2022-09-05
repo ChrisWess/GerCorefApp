@@ -1,6 +1,6 @@
 import React, {MutableRefObject, useState} from 'react';
 import "./MainView.css"
-import {Divider, List, ListItem,ListItemIcon, Pagination} from "@mui/material";
+import {Divider, List, ListItem, ListItemIcon, Pagination} from "@mui/material";
 import set = Reflect.set;
 import HoverBox from "./HoverBox";
 const _ = require('lodash');
@@ -106,7 +106,7 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
                                                setNewCorefSelection, markWords, keyShortcutExecuted, hovertoggle, autoAnnotoggle}) => {
 
 
-
+    console.log(txt);
     //For Pagination
     const [listItem, setListItems] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
@@ -277,6 +277,7 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
 
     //Decide which Items are to be displayed on this page
     const currentItems = buffer.slice(indexOfFirstItem, indexOfLastItem);
+    console.log(currentItems);
     const sentenceList = currentItems.map((d, index) =>
         <React.Fragment key={index}>
             <ListItem divider key={index+".1"}>

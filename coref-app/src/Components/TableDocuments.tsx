@@ -37,6 +37,7 @@ function Table(props: any) {
             props.changeChosenDocument(el);
             props.allCorefs.current = []
             props.sendConfidencesToParent(data.probs)
+            props.changeDocumentId(data._id);
         }
         catch (error) {
             if (axios.isAxiosError(error)) {

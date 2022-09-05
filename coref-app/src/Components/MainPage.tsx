@@ -20,6 +20,7 @@ import set = Reflect.set;
 import Statistics from "./Statistics";
 import axios from "axios";
 import FileConverter from "./FileConverter";
+import Search from './Search';
 
 
 
@@ -112,6 +113,8 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
     const [currentMention, setCurrentMention] = React.useState<Mention | undefined>(undefined);
     const [chosenDocument, setChosenDocument] = React.useState(null);
     const [confidences, setConfidences] = React.useState<ConfidenceValues[][]>([]);
+    const [documentId, setDocumentId] = React.useState<string>();
+    console.log(corefText);
 
     const [hovertoggle, setHovertoggle] = React.useState(true);
     const [autoAnnotoggle, setAutoAnnoToggle] = React.useState(true);
@@ -413,14 +416,24 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
 
     //For Tabs
     const [value, setValue] = React.useState(0);
+    const [val, setVal] = React.useState(0);
     const handleChange = (event: React.SyntheticEvent, newValue: number) => {
         setValue(newValue);
     };
 
+    const handleChangeTab = (event: React.SyntheticEvent, newValue: number) => {
+        setVal(newValue);
+    };
 
-    const  changeChosenDocument = (newDocument: any) => {
+
+    const changeChosenDocument = (newDocument: any) => {
         setChosenDocument(newDocument);
         console.log(newDocument);
+    };
+
+    const changeDocumentId = (newId: any) => {
+        setDocumentId(newId);
+        console.log('doc id changed:', newId);
     };
 
     React.useEffect(() => {
@@ -524,6 +537,14 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
                                     flexDirection: 'column',
                                     height: 800,
                                 }}>
+                                    <Box sx={{ width: '100%' }}>
+                                        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                                            <Tabs value={val} onChange={handleChangeTab} aria-label="basic tabs example">
+                                                <Tab label="Coreferences" {...a11yProps(0)} />
+                                                <Tab label="Search" {...a11yProps(1)} />
+                                            </Tabs>
+                                        </Box>
+                                    <TabPanel value={val} index={0}>
                                     <CorefView
                                         selectedCoref={selectedCoref}
                                         wordArr={wordArr}
@@ -540,6 +561,13 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
                                         autoAnnotoggle={autoAnnotoggle}
                                         setAutoAnnotoggle={setAutoAnnoToggle}
                                     />
+                                    </TabPanel>
+                                    <TabPanel value={val} index={1}>
+                                            <Search                                         
+                                            documentId={documentId}                                           
+                                            ></Search>
+                                        </TabPanel>
+                                    </Box>
                                 </Paper>
                             </Grid>
 
@@ -609,6 +637,7 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
                                                 allCorefs={allCorefs}
                                                 sendConfidencesToParent={sendConfidencesToMainPage}
                                                 onDownloadDocument={onDownloadDocument}
+                                                changeDocumentId={changeDocumentId}
                                                 >
                                             </Documents>                                        
                                         </TabPanel>
@@ -622,10 +651,7 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
                                     </Box>
                                 </Paper>
                             </Grid>
-
                         </Grid>
-
-                        <Copyright sx={{ pt: 4 }} />
                     </Container>
                 </Box>
             </Box>
