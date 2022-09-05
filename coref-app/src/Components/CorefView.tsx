@@ -18,6 +18,8 @@ interface CorefViewProps {
     deleteCoref: Function
     setHovertoggle: Function
     hovertoggle: boolean
+    autoAnnotoggle: boolean
+    setAutoAnnotoggle: Function
 }
 
 export const getCluster = function(mention: Mention, allCorefs: Mention[][]) {
@@ -28,11 +30,15 @@ export const getCluster = function(mention: Mention, allCorefs: Mention[][]) {
 const CorefView: React.FC<CorefViewProps> = ({ selectedCoref, wordArr,
                                                  allCorefs, clusterColor, markedWord,
                                                  currentMention, handleSelectCoref, setCurrentMention,
-                                                 addCoref, deleteCoref, setHovertoggle, hovertoggle}) => {
+                                                 addCoref, deleteCoref, setHovertoggle, hovertoggle, autoAnnotoggle, setAutoAnnotoggle}) => {
     const theme = useTheme();
 
     function deleteC() {
         deleteCoref()
+    }
+
+    function toggleAutoAnno() {
+        setAutoAnnotoggle(!autoAnnotoggle)
     }
 
     function toggleHover() {
@@ -66,7 +72,7 @@ const CorefView: React.FC<CorefViewProps> = ({ selectedCoref, wordArr,
                 Delete Coreference
             </Button>
 
-            <FormControlLabel control={<Switch defaultChecked />} style={{margin: 5}} label="Model Inference" />
+            <FormControlLabel onChange={toggleAutoAnno} control={<Switch defaultChecked />} style={{margin: 5}} label="Model Inference" />
             <FormControlLabel onChange={toggleHover} control={<Switch defaultChecked />} style={{margin: 5}} label="Hover Information" />
         </>
     );

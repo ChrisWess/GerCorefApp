@@ -114,6 +114,7 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
     const [confidences, setConfidences] = React.useState<ConfidenceValues[][]>([]);
 
     const [hovertoggle, setHovertoggle] = React.useState(true);
+    const [autoAnnotoggle, setAutoAnnoToggle] = React.useState(true);
 
     //currently on the "c" button for the shortcuts
     const [shortcutSaved, setShortcutSaved] = React.useState<number>(0);
@@ -129,6 +130,7 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
         converter.convertFile(dataType ,documentName, corefClusters, corefText)
     }
 
+    //todo: add new doesnt work when the coref cluster existed before but all its entries were deleted
     function addCoref(clusterId: number) {
         return function () {
             let idxStart: number = markedWord.current[0]
@@ -279,7 +281,7 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
                     callSnackbar("deleted coreference", "top", "info")
                     break;
                 case "n":
-                    corefShort(allCorefs.current.length + 1)
+                    corefShort(corefClusters.length + 1)
                     callSnackbar("new cluster created", "top", "info")
                     break;
                 case "c":
@@ -535,6 +537,8 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
                                         deleteCoref={deleteCoref}
                                         hovertoggle={hovertoggle}
                                         setHovertoggle={setHovertoggle}
+                                        autoAnnotoggle={autoAnnotoggle}
+                                        setAutoAnnotoggle={setAutoAnnoToggle}
                                     />
                                 </Paper>
                             </Grid>
@@ -559,6 +563,7 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
                                         markWords={markWords}
                                         keyShortcutExecuted={keyShortcutExecuted}
                                         hovertoggle={hovertoggle}
+                                        autoAnnotoggle={autoAnnotoggle}
                                     ></MainView>
                                 </Paper>
                             </Grid>

@@ -26,6 +26,7 @@ interface MainViewProps {
     markWords: Function
     keyShortcutExecuted: Function
     hovertoggle: boolean
+    autoAnnotoggle: boolean
 }
 
 export const parseMentionId = function(mentionId: string) {
@@ -102,7 +103,7 @@ function flattenClust(buffer: any, clust: any, allCorefs: any, sentenceOffsets: 
 
 const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
                                                wordArr, wordFlags,
-                                               setNewCorefSelection, markWords, keyShortcutExecuted, hovertoggle}) => {
+                                               setNewCorefSelection, markWords, keyShortcutExecuted, hovertoggle, autoAnnotoggle}) => {
 
 
 
@@ -218,7 +219,7 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
         let startIdxInSentence = mentionIdxStart - sentenceOffsets[sentenceIdx]
         let shiftedStartIdx = startIdxInSentence - deleted[startIdxInSentence]
         let id = "w" + mentionIdxStart;
-        if (mentionIdxStart === mentionIdxEnd) {
+        if (mentionIdxStart === mentionIdxEnd && !(!autoAnnotoggle && cluster[mentionIdx].autoCreated)) {
             sentBuffer.splice(shiftedStartIdx, 1,
             <b key={corefId}
                id={corefId}
@@ -238,12 +239,11 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
                     <sub key={id+"-5"} id={id}>{currentIndexOfCoref}</sub>
                 </abbr>
             </b>);
-        } else {
+        } else if (!(!autoAnnotoggle && cluster[mentionIdx].autoCreated)){
             // TODO: implement correct handling of overlapping coreferences
             //   => check if any mentionIdxRanges overlap (can be done on the "flattenedClust" array) &
             //      make a function that makes the correct JSXElement for these overlapping corefs.
             //      (also use the entire span of the overlapping annotations to set deletedCumulated)
-
             let endIdxInSentence = mentionIdxEnd - sentenceOffsets[sentenceIdx]
             let mentionSlice: JSX.Element[] = sentBuffer.slice(shiftedStartIdx + 1,
                 endIdxInSentence - deleted[startIdxInSentence])

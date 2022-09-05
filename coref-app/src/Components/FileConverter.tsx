@@ -1,6 +1,7 @@
 class FileConverter {
 
 
+    //todo: needs to ignore autoannotaded corefs when the toggle is off
     public convertFile(datatype: string ,name: string, clusts: any, tokens: any) {
         switch (datatype) {
             case "CoNLL-2012":
