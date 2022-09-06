@@ -10,6 +10,7 @@ import ListSubheader from '@mui/material/ListSubheader';
 function Table(props: any) {
 
     async function handleClick(el: any) {
+        // TODO: this function should only be in the upload button, instead read the document from database and display it
         let formData = new FormData();
         formData.append(
             'myFile',
@@ -50,6 +51,9 @@ function Table(props: any) {
         }
     }
 
+    // TODO: load in all document names of the user
+    //   only "upload" button should trigger the model inference
+    //   The list buttons should only query the corresponding document from DB
     //TODO: rewrite it more clear, without 2 lists and if 
     if (Object.keys(props.tableData).length != 0) {
         let arr = Array.from(Object.keys(props.tableData));

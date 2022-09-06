@@ -114,7 +114,7 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
     const [chosenDocument, setChosenDocument] = React.useState(null);
     const [confidences, setConfidences] = React.useState<ConfidenceValues[][]>([]);
     const [documentId, setDocumentId] = React.useState<string>();
-    console.log(corefText);
+    const [documentIdMapping, setDocumentIdMapping] = React.useState<Map<string, string>>(new Map<string, string>());
 
     const [hovertoggle, setHovertoggle] = React.useState(true);
     const [autoAnnotoggle, setAutoAnnoToggle] = React.useState(true);
@@ -133,7 +133,6 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
         converter.convertFile(dataType ,documentName, corefClusters, corefText)
     }
 
-    //todo: add new doesnt work when the coref cluster existed before but all its entries were deleted
     function addCoref(clusterId: number) {
         return function () {
             let idxStart: number = markedWord.current[0]
@@ -245,13 +244,10 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
         // TODO: implement versioning of the documents in order to keep track of previous annotation states
         //  (model inference should create a new version => if a coreference, that was created by the model,
         //  is deleted and re-added, the system should still be able to show the plots afterwards)
-        // todo: properly update allCorefs and delete empty array slots
         let clusterIdx = currentMention!.clusterIdx
         let mentionIdx = currentMention!.mentionIdx
         corefClusters[clusterIdx].splice(mentionIdx, 1)
-        if (corefClusters[clusterIdx].length === 0) {
-            corefClusters.splice(clusterIdx, 1)
-        }
+
         let cluster: Mention[] = allCorefs.current[clusterIdx]
         cluster.splice(mentionIdx, 1)
         for (let i = mentionIdx; i < cluster.length; i++) {
@@ -259,6 +255,19 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
             let newMentionIdx: number = m.mentionIdx - 1
             m.mentionIdx = newMentionIdx
             m.id = `d1c${clusterIdx}m${newMentionIdx}`
+        }
+
+        if (corefClusters[clusterIdx].length === 0) {
+            corefClusters.splice(clusterIdx, 1)
+            allCorefs.current.splice(clusterIdx, 1)
+            for (let i = clusterIdx; i < allCorefs.current.length; i++) {
+                cluster = allCorefs.current[i]
+                for (let j = 0; j < cluster.length; j++) {
+                    let m: Mention = cluster[j]
+                    m.clusterIdx = i
+                    m.id = `d1c${i}m${m.mentionIdx}`
+                }
+            }
         }
         setCorefClusters(corefClusters)
         setNewCorefSelection(undefined)

@@ -2,7 +2,6 @@ import React, {MutableRefObject, useState} from 'react';
 import { useTheme } from '@mui/material/styles';
 import {Button, TextField} from "@mui/material";
 import axios from 'axios';
-import {Mention} from "./MainView";
 
 export default function Text(props: any) {
     const theme = useTheme();
@@ -28,6 +27,7 @@ export default function Text(props: any) {
             props.changeChosenDocument(null);
             props.allCorefs.current = []
             props.sendConfidencesToParent(data.probs)
+            // TODO: maybe automatically switch to documents tab and select the newly created document from the list
         }
         catch (error) {
             if (axios.isAxiosError(error)) {
@@ -41,6 +41,7 @@ export default function Text(props: any) {
         }
     }
 
+    // TODO: use a default file name when submitting text (e.g. doc1, doc2 => increment by looking at all previously created doc names with that pattern)
     return (
         <>
             <TextField

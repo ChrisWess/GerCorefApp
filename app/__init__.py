@@ -20,11 +20,11 @@ else:
 application.config["MONGO_URI"] = config.MONGODB_DATABASE_URI
 
 # MongoDB database
-client = PyMongo(application)  # username='username', password='password'
+client = PyMongo(application, connect=True, serverSelectionTimeoutMS=5000)  # username='username', password='password'
+print("Available database collections:", client.db.list_collection_names())
 # Initialize mongodb collections
 users = client.db.users
 docs = client.db.docs
-# TODO: make db liveness check
 
 # Login manager settings
 login_manager = LoginManager()

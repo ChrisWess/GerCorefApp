@@ -103,10 +103,8 @@ class Documents extends React.Component<MyProps, MyState>{
                 'myFile',
                 this.state.selectedFile !== null ? this.state.selectedFile : "",
             );
-            formData.append(
-            'docname',
-            'default_name'
-            );
+            // TODO: default to file name from file system, but create textfield for renaming documents
+            formData.append('docname', name);
 
             try {
                 const { data } = await axios.post(

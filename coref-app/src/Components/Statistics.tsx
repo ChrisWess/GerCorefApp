@@ -35,7 +35,7 @@ const Statistics: React.FC<StatisticsProps> = ({ currentMention, confidences, al
             let x: number[] = [probs.noClusterProb, probs.newClusterProb]
             let y: string[] = ['No Mention ', 'New Cluster ']
             for (let i = 0; i < probs.clusterProbs.length; i++) {
-                x.push(probs.clusterProbs[0])
+                x.push(probs.clusterProbs[i])
                 y.push('Cluster ' + (i + 1) + ' ')
             }
 
