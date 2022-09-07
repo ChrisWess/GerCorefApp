@@ -114,7 +114,7 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
     const [chosenDocument, setChosenDocument] = React.useState(null);
     const [confidences, setConfidences] = React.useState<ConfidenceValues[][]>([]);
     const [documentId, setDocumentId] = React.useState<string>();
-    const [documentIdMapping, setDocumentIdMapping] = React.useState<Map<string, string>>(new Map<string, string>());
+    const [documentIdMapping, setDocumentIdMapping] = React.useState<Map<string, string> | undefined>();
 
     const [hovertoggle, setHovertoggle] = React.useState(true);
     const [autoAnnotoggle, setAutoAnnoToggle] = React.useState(true);
@@ -445,7 +445,42 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
         console.log('doc id changed:', newId);
     };
 
+    async function loadDocuments() {
+        // load in the list of documents belonging to the current user and set the documentList
+        if (!documentIdMapping) {
+            try {
+                const {data} = await axios.get(
+                    `http://127.0.0.1:5000/docs`,
+                    {
+                        headers: {
+                            'Access-Control-Allow-Origin': '*',
+                            'Content-Type': 'application/json',
+                        },
+                        params: {_id: 1, name: 1}
+                    },
+                );
+
+                console.log("Here")
+                let documentIdNamePairs: [string, string][] = []
+                for (let i = 0; i < data.length; i++) {
+                    let reducedDoc = data[i]
+                    documentIdNamePairs.push([reducedDoc._id, reducedDoc.name])
+                }
+                setDocumentIdMapping(new Map<string, string>(documentIdNamePairs))
+            } catch (error) {
+                if (axios.isAxiosError(error)) {
+                    console.log('error message: ', error.message);
+                    return error.message;
+                } else {
+                    console.log('unexpected error: ', error);
+                    return 'An unexpected error occurred';
+                }
+            }
+        }
+    }
+
     React.useEffect(() => {
+        // add text selection event listener to the HTML document object
         document.addEventListener('mouseup', () => {
             let selection = window.getSelection()
             let words = wordArr.current
@@ -619,7 +654,7 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
                                         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                                             <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
                                                 <Tab label="Text" {...a11yProps(0)} />
-                                                <Tab label="Documents" {...a11yProps(1)} />
+                                                <Tab label="Documents" {...a11yProps(1)} onClick={loadDocuments} />
                                                 <Tab label="Statistics" {...a11yProps(2)} />
                                             </Tabs>
                                         </Box>

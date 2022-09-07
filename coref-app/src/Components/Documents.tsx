@@ -6,6 +6,7 @@ import {Mention} from "./MainView";
 import "./Documents.css"
 import "./FileConverter"
 import FileConverter from "./FileConverter";
+import ButtonTextfield from "./ButtonTextfield";
 
 
 interface MyProps {
@@ -48,7 +49,6 @@ class Documents extends React.Component<MyProps, MyState>{
         super(props);
         this.state = { selectedFile: null, nameWasChanged: false, newName: "" };
     };
-
 
     // On file download (click the download button)
     onFileDownload = (event: any) => {
@@ -145,6 +145,10 @@ class Documents extends React.Component<MyProps, MyState>{
             (document.getElementById('file') as HTMLInputElement).value = '';
         }
     };
+
+    renameDoc = (inpt: string) => {
+        console.log(inpt)
+    }
     
     render() {
         return (
@@ -163,6 +167,7 @@ class Documents extends React.Component<MyProps, MyState>{
                     changeDocumentId={this.props.changeDocumentId}
                 >
                 </Table>
+                <ButtonTextfield tfLabel="New Document Name" buttonText="Rename" submitFunc={this.renameDoc} />
                 <Button variant="outlined" style={{ margin: 5, textTransform: "none", width: "97%" }} disabled>
                     Share selected document</Button>
                 <span className="dropdown">
