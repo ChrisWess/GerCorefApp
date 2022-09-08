@@ -4,37 +4,29 @@ import TextField from "@mui/material/TextField";
 import TableWords from "./TableWords";
 
 
-interface MyProps {
+interface SearchProps {
   documentId: any
 };
 
-type MyState = { prevText: string, inputText: string};
+type MyState = { prevText: string, inputText: string };
 
-class Search extends React.Component<MyProps, MyState>{
-  static res: any;
-  static rows: any[] = [];
+const Search: React.FC<SearchProps> = ({ documentId }) => {
+  const [rows, setRows] = React.useState<any[]>([]);
+  const [inputText, setInputText] = React.useState<string>("");
+  const [prevText, setPrevText] = React.useState<string>("");
 
-  constructor(props: any) {
-    super(props);
-    this.state = { prevText: "", inputText: "" };
-  };
-
-  createData = (num: any, str: any) => {
+  const createData = (num: any, str: any) => {
     return { num, str };
   }
 
-  inputHandlerEnter = async (event: any) => {
+  const inputHandlerEnter = async (event: any) => {
     console.log(event)
     if (event.charCode === 13) {
-      console.log(this.state.inputText);
-      Search.rows = [];
-      //let formData = new FormData();
-      //formData.append('input', this.state.inputText);
-      //formData.append('text', this.props.documentId);
+      console.log(inputText);
       try {
         const { data } = await axios.post(
           `http://127.0.0.1:5000/findSentences`,
-          { "input": this.state.inputText, "id": this.props.documentId },
+          { "input": inputText, "id": documentId },
           {
             headers: {
               'Access-Control-Allow-Origin': '*',
@@ -43,15 +35,17 @@ class Search extends React.Component<MyProps, MyState>{
             },
           },
         );
-        Search.res = data;
-        console.log(Search.res);
-        for (var key in Search.res) {
-          for (const i in Search.res[key]) {
-            Search.rows.push(this.createData(key, Search.res[key][i]));
+        let new_rows = [];
+        console.log(data);
+        for (var key in data) {
+          for (const i in data[key]) {
+            new_rows.push(createData(key, data[key][i]));
           }
         }
-        this.setState({prevText: this.state.inputText})
+        setPrevText(inputText);
+        setRows(new_rows);
       } catch (error) {
+        setRows([]);
         if (axios.isAxiosError(error)) {
           console.log('error message: ', error.message);
           return error.message;
@@ -61,32 +55,29 @@ class Search extends React.Component<MyProps, MyState>{
         }
       }
     }
-    console.log(Search.rows);
+    console.log(rows);
+    console.log(prevText);
   };
 
-  inputHandler = (event: any) => {
+  const inputHandler = (event: any) => {
     var lowerCase = event.target.value.toLowerCase();
-    this.setState({ inputText: lowerCase });
-    console.log(this.state.inputText);
+    setInputText(lowerCase);
+    console.log(inputText);
   };
 
-  render() {
-    return (
-      <div className="main">
-        <TextField
-          value={this.state.inputText}
-          id="outlined-basic"
-          variant="outlined"
-          fullWidth
-          label="Search"
-          onChange={this.inputHandler}
-          onKeyPress={this.inputHandlerEnter} />
-        <TableWords
-          rows={Search.rows}
-          inputText={this.state.prevText} />
-      </div>
-    );
-  }
+  return (
+    <div className="main">
+      <TextField
+        value={inputText}
+        id="outlined-basic"
+        variant="outlined"
+        fullWidth
+        label="Search"
+        onChange={inputHandler}
+        onKeyPress={inputHandlerEnter} />
+      <TableWords rows={rows} inputText={prevText} />
+    </div>
+  );
 }
 
 export default Search;

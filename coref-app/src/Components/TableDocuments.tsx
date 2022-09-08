@@ -7,14 +7,30 @@ import Divider from '@mui/material/Divider';
 import ListSubheader from '@mui/material/ListSubheader';
 
 
-function Table(props: any) {
+interface TableDocumentsProps {
+    tableData: any
+    sendCorefClusterToParent: any
+    sendCorefTextToParent: any
+    changeChosenDocument: any
+    sendConfidencesToParent: any
+    allCorefs: any
+    changeDocumentId: any
+    chosenDocument: any
+    children: React.ReactNode;
+}
+
+
+const TableDocuments: React.FC<TableDocumentsProps> = ({ tableData,
+    sendCorefClusterToParent, sendCorefTextToParent,
+    changeChosenDocument, allCorefs, sendConfidencesToParent,
+    changeDocumentId, chosenDocument, children }) => {
 
     async function handleClick(el: any) {
         // TODO: this function should only be in the upload button, instead read the document from database and display it
         let formData = new FormData();
         formData.append(
             'myFile',
-            props.tableData[el],
+            tableData[el],
         );
         formData.append(
             'docname',
@@ -33,12 +49,12 @@ function Table(props: any) {
                 },
             );
 
-            props.sendCorefClusterToParent(data.clust)
-            props.sendCorefTextToParent(data.tokens)
-            props.changeChosenDocument(el);
-            props.allCorefs.current = []
-            props.sendConfidencesToParent(data.probs)
-            props.changeDocumentId(data._id);
+            sendCorefClusterToParent(data.clust)
+            sendCorefTextToParent(data.tokens)
+            changeChosenDocument(el);
+            allCorefs.current = []
+            sendConfidencesToParent(data.probs)
+            changeDocumentId(data._id);
         }
         catch (error) {
             if (axios.isAxiosError(error)) {
@@ -55,13 +71,13 @@ function Table(props: any) {
     //   only "upload" button should trigger the model inference
     //   The list buttons should only query the corresponding document from DB
     //TODO: rewrite it more clear, without 2 lists and if 
-    if (Object.keys(props.tableData).length != 0) {
-        let arr = Array.from(Object.keys(props.tableData));
+    if (Object.keys(tableData).length != 0) {
+        let arr = Array.from(Object.keys(tableData));
         const tableBody = arr.map((el: any, index) => (
-            <div key = {index}>
-                <ListItemButton style = {index === arr.indexOf(props.chosenDocument) ?
-                        { backgroundColor: 'lightGray' } : {}}>
-                    <ListItemText  style={{ lineHeight: 1, margin: 0 }} onClick={() => handleClick(el)}> {el} </ListItemText>
+            <div key={index}>
+                <ListItemButton style={index === arr.indexOf(chosenDocument) ?
+                    { backgroundColor: 'lightGray' } : {}}>
+                    <ListItemText style={{ lineHeight: 1, margin: 0 }} onClick={() => handleClick(el)}> {el} </ListItemText>
                 </ListItemButton>
                 <Divider />
             </div>
@@ -95,4 +111,4 @@ function Table(props: any) {
         )
     }
 }
-export default Table;
+export default TableDocuments;

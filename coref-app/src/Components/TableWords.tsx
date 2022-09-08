@@ -27,9 +27,15 @@ const Highlighted = ({ text = "a", highlight = "a" }) => {
     );
 };
 
+interface TablewordsProps {
+    rows: any
+    inputText: any
+}
 
-function TableWords(props: any) {
-    if (props.rows.length) {
+const TableWords: React.FC<TablewordsProps> = ({ rows, inputText }) => {
+    console.log(rows)
+    console.log(inputText)
+    if (rows.length) {
         return (
             <TableContainer component={Paper} style={{ maxHeight: 650 }}>
                 <Table sx={{ minWidth: 100 }} size="small" aria-label="a dense table">
@@ -40,11 +46,11 @@ function TableWords(props: any) {
                         </TableRow>
                     </TableHead>
                     <TableBody> {
-                        props.rows.map((row: { num: string | number; str: string; },
+                        rows.map((row: { num: string | number; str: string; },
                             index: React.Key | null | undefined) => (
                             <TableRow key={index} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                                 <TableCell component="th" scope="row">{row.num}</TableCell>
-                                <TableCell align="right"><Highlighted text={row.str} highlight={props.inputText} />
+                                <TableCell align="right"><Highlighted text={row.str} highlight={inputText} />
                                 </TableCell>
                             </TableRow>
                         ))

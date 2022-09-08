@@ -1,33 +1,32 @@
-import React, {MutableRefObject} from 'react';
+import React, { MutableRefObject } from 'react';
 import axios from 'axios';
 import { Button } from "@mui/material";
-import Table from "./TableDocuments";
-import {Mention} from "./MainView";
+import TableDocuments from "./TableDocuments";
+import { Mention } from "./MainView";
 import "./Documents.css"
 import "./FileConverter"
 import FileConverter from "./FileConverter";
 import ButtonTextfield from "./ButtonTextfield";
 
 
-interface MyProps {
+interface DocumentsProps {
     sendCorefClusterToParent: any
     sendCorefTextToParent: any,
     changeChosenDocument: any,
     chosenDocument: any
     allCorefs: MutableRefObject<Mention[][]>
     sendConfidencesToParent: Function
-    children: any
     onDownloadDocument: Function
     changeDocumentId: any
-};
-type MyState = { selectedFile: any, nameWasChanged: boolean, newName: string };
+    children: React.ReactNode;
+}
 
 type dict = {
     [key: string]: any
 };
 
 // Close the dropdown if the user clicks outside of it
-window.onclick = function(event) {
+window.onclick = function (event) {
     // @ts-ignore
     if (!event.target!.matches('.dropbtn')) {
         let dropdowns = document.getElementsByClassName("dropdown-content");
@@ -40,46 +39,52 @@ window.onclick = function(event) {
     }
 }
 
-class Documents extends React.Component<MyProps, MyState>{
 
-    static allData: dict = new Object();
-    static supportedDataTypes = ["XML", "CoNLL-2012", "plaintext"];
+const Documents: React.FC<DocumentsProps> = ({ sendCorefClusterToParent,
+    sendCorefTextToParent,
+    changeChosenDocument,
+    chosenDocument,
+    allCorefs,
+    sendConfidencesToParent,
+    onDownloadDocument,
+    changeDocumentId, children }) => {
 
-    constructor(props: any) {
-        super(props);
-        this.state = { selectedFile: null, nameWasChanged: false, newName: "" };
-    };
+    const [allData] = React.useState<dict>(new Object());
+    const [selectedFile, setSelectedFile] = React.useState<any | null>(null);
+    const [nameWasChanged, setNameWasChanged] = React.useState<boolean>(false);
+    const [newName, setNewName] = React.useState<string>("");
+    const supportedDataTypes = ["XML", "CoNLL-2012", "plaintext"];
 
     // On file download (click the download button)
-    onFileDownload = (event: any) => {
+    const onFileDownload = (event: any) => {
         document.getElementById("documentsDropDown")!.classList.toggle("show");
     };
 
 
     // On file select (from the pop up)
-    onFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const onFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         // Update the state
         let y = (event?.target as HTMLInputElement).files;
         let file = null;
         if (y != null) {
             file = y[0];
         }
-        this.setState({ selectedFile: file });
+        setSelectedFile(file);
     };
 
     // On file upload (click the upload button)
-    onFileUpload = async (event: any) => {
+    const onFileUpload = async (event: any) => {
         // TODO: store files on backend 
         // TODO: store jsons, not recompute them every time
 
-        if (this.state.selectedFile !== null) {
-            const name = this.state.selectedFile.name;
-            if (name in Documents.allData) {
+        if (selectedFile !== null) {
+            const name = selectedFile.name;
+            if (name in allData) {
                 let arr = name.split(".");
                 const last = arr.pop();
                 const first = arr.join('.');
                 let sameNames = [];
-                for (const [key, value] of Object.entries(Documents.allData)) {
+                for (const [key, value] of Object.entries(allData)) {
                     if (key.startsWith(first) && key.endsWith('.' + last)) {
                         sameNames.push(key);
                     }
@@ -89,19 +94,19 @@ class Documents extends React.Component<MyProps, MyState>{
                     ++number;
                 }
                 const finalName = first + '-' + number + '.' + last;
-                Documents.allData[finalName] = this.state.selectedFile;
-                this.setState({ nameWasChanged: true });
-                this.setState({ newName: finalName });
+                allData[finalName] = selectedFile;
+                setNameWasChanged(true);
+                setNewName(finalName);
             } else {
-                Documents.allData[name] = this.state.selectedFile;
-                this.setState({ nameWasChanged: false });
+                allData[name] = selectedFile;
+                setNameWasChanged(false);
             }
 
 
             let formData = new FormData();
             formData.append(
                 'myFile',
-                this.state.selectedFile !== null ? this.state.selectedFile : "",
+                selectedFile !== null ? selectedFile : "",
             );
             // TODO: default to file name from file system, but create textfield for renaming documents
             formData.append('docname', name);
@@ -119,16 +124,16 @@ class Documents extends React.Component<MyProps, MyState>{
                 );
                 console.log(data._id)
                 console.log(data.tokens);
-                this.props.sendCorefClusterToParent(data.clust)
-                this.props.sendCorefTextToParent(data.tokens)
-                if (!this.state.nameWasChanged) {
-                    this.props.changeChosenDocument(this.state.selectedFile['name']);
+                sendCorefClusterToParent(data.clust)
+                sendCorefTextToParent(data.tokens)
+                if (!nameWasChanged) {
+                    changeChosenDocument(selectedFile['name']);
                 } else {
-                    this.props.changeChosenDocument(this.state.newName);
+                    changeChosenDocument(newName);
                 }
-                this.props.allCorefs.current = []
-                this.props.sendConfidencesToParent(data.probs)
-                this.props.changeDocumentId(data._id);
+                allCorefs.current = []
+                sendConfidencesToParent(data.probs)
+                changeDocumentId(data._id);
             }
             catch (error) {
                 if (axios.isAxiosError(error)) {
@@ -139,50 +144,50 @@ class Documents extends React.Component<MyProps, MyState>{
                     return 'An unexpected error occurred';
                 }
             }
-            this.setState({ selectedFile: null });
+            setSelectedFile(null);
         }
         if (document !== null && document.getElementById('file') !== null) {
             (document.getElementById('file') as HTMLInputElement).value = '';
         }
     };
 
-    renameDoc = (inpt: string) => {
+    const renameDoc = (inpt: string) => {
         console.log(inpt)
     }
-    
-    render() {
-        return (
-            <div>
-                <input type="file" id="file" onChange={this.onFileChange} accept=".txt" />
-                <Button variant="outlined" style={{ margin: 1, textTransform: "none", width: "97%" }}
-                    onClick={this.onFileUpload} type="submit" disabled={!this.state.selectedFile}> Upload </Button>
-                <Table
-                    tableData={Documents.allData}
-                    sendCorefClusterToParent={this.props.sendCorefClusterToParent}
-                    sendCorefTextToParent={this.props.sendCorefTextToParent}
-                    changeChosenDocument={this.props.changeChosenDocument}
-                    chosenDocument={this.props.chosenDocument}
-                    allCorefs={this.props.allCorefs}
-                    sendConfidencesToParent={this.props.sendConfidencesToParent}
-                    changeDocumentId={this.props.changeDocumentId}
-                >
-                </Table>
-                <ButtonTextfield tfLabel="New Document Name" buttonText="Rename" submitFunc={this.renameDoc} />
-                <Button variant="outlined" style={{ margin: 5, textTransform: "none", width: "97%" }} disabled>
-                    Share selected document</Button>
-                <span className="dropdown">
-                    <Button disabled={!this.props.chosenDocument} variant="outlined" style={{ margin: 5, textTransform: "none", width: "97%" }} onClick={this.onFileDownload} className="dropbtn">
-                        Download annotated document</Button>
-                    <div id="documentsDropDown" className="dropdown-content">
-                        {Documents.supportedDataTypes.map((dataTypes, index) =>
-                            (<a key={"DT-"+index+1} onClick={() => this.props.onDownloadDocument(dataTypes, "TestName")}>{Documents.supportedDataTypes[index]}</a>))}
-                    </div>
-                </span>
-                <Button variant="outlined" style={{ margin: 5, textTransform: "none", width: "97%" }} disabled>
-                    Submit annotation <br />(Submit for online learning)</Button>
-            </div>
-        );
-    }
+
+    return (
+        <div>
+            <input type="file" id="file" onChange={onFileChange} accept=".txt" />
+            <Button variant="outlined" style={{ margin: 1, textTransform: "none", width: "97%" }}
+                onClick={onFileUpload} type="submit" disabled={!selectedFile}> Upload </Button>
+            <TableDocuments
+                tableData={allData}
+                sendCorefClusterToParent={sendCorefClusterToParent}
+                sendCorefTextToParent={sendCorefTextToParent}
+                changeChosenDocument={changeChosenDocument}
+                chosenDocument={chosenDocument}
+                allCorefs={allCorefs}
+                sendConfidencesToParent={sendConfidencesToParent}
+                changeDocumentId={changeDocumentId}
+            >
+            </TableDocuments>
+            <ButtonTextfield tfLabel="New Document Name" buttonText="Rename" submitFunc={renameDoc} />
+            <Button variant="outlined" style={{ margin: 5, textTransform: "none", width: "97%" }} disabled>
+                Share selected document</Button>
+            <span className="dropdown">
+                <Button disabled={!chosenDocument} variant="outlined" style={{ margin: 5, textTransform: "none", width: "97%" }}
+                    onClick={onFileDownload} className="dropbtn">
+                    Download annotated document</Button>
+                <div id="documentsDropDown" className="dropdown-content">
+                    {supportedDataTypes.map((dataTypes, index) =>
+                    (<a key={"DT-" + index + 1} onClick={() => onDownloadDocument(dataTypes, "TestName")}>
+                        {supportedDataTypes[index]}</a>))}
+                </div>
+            </span>
+            <Button variant="outlined" style={{ margin: 5, textTransform: "none", width: "97%" }} disabled>
+                Submit annotation <br />(Submit for online learning)</Button>
+        </div>
+    );
 }
 
 export default Documents;
