@@ -21,8 +21,8 @@ application.config["MONGO_URI"] = config.MONGODB_DATABASE_URI
 
 # MongoDB database
 client = PyMongo(application, connect=True, serverSelectionTimeoutMS=5000)  # username='username', password='password'
-db = client.db
-print("Available database collections:", db.list_collection_names())
+mdb = client.db
+print("Available database collections:", mdb.list_collection_names())
 
 # Login manager settings
 login_manager = LoginManager()

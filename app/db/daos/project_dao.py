@@ -2,7 +2,7 @@ from bson.objectid import ObjectId
 from flask import session
 
 from app.db.models.project import Project
-from app import db
+from app import mdb
 
 
 class ProjectDAO:
@@ -17,7 +17,7 @@ class ProjectDAO:
 
     def __init__(self):
         # Initialize mongodb collection of projects
-        self.projects = db.projects
+        self.projects = mdb.projects
 
     def find_all(self, projection=None):
         """

@@ -5,7 +5,7 @@ from flask_login import login_user, logout_user, login_required
 
 from app.db.models.user import User
 from app.db.daos.project_dao import ProjectDAO
-from app import application, db, login_manager
+from app import application, mdb, login_manager
 
 
 class UserDAO:
@@ -20,7 +20,7 @@ class UserDAO:
 
     def __init__(self):
         # Initialize mongodb collection of users
-        self.users = db.users
+        self.users = mdb.users
 
     @staticmethod
     @login_manager.user_loader

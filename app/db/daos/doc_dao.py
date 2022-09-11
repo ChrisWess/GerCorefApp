@@ -3,7 +3,7 @@ from flask import session
 
 from app.db.models.doc import Document
 from app.db.daos.project_dao import ProjectDAO
-from app import db
+from app import mdb
 
 
 class DocumentDAO:
@@ -18,7 +18,7 @@ class DocumentDAO:
 
     def __init__(self):
         # Initialize mongodb collection of documents
-        self.docs = db.docs
+        self.docs = mdb.docs
 
     def find_all(self, projection=None):
         """
