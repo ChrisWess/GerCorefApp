@@ -2,15 +2,12 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 
 
-class Document(BaseModel):
+class Project(BaseModel):
     id: str = Field(default=None, alias="_id")
     name: str = Field()
     created_by: str = Field(alias="createdBy")
     shared_with: list[str] = Field(default=[], alias="sharedWith")
-    tokens: list[list[str]] = Field()
-    clust: list[list[list[int]]] = Field()
-    annotated_by: list[list[str]] = Field(alias="annotatedBy")
-    probs: list[list[list[float]]] = Field()
+    doc_ids: list[str] = Field(default=[], alias="docIds")
     created_at_ts: datetime = Field(default=datetime.now(), alias="createdAt")
 
     class Config:
@@ -18,24 +15,20 @@ class Document(BaseModel):
         schema_extra = {
             "example": {
                 "_id": "123e4567-e89b-12d3-a456-426655440000",
-                "name": "The Hitchhiker's Guide to the Galaxy",
+                "name": "My Project",
                 "createdBy": "066de609-b04a-4b30-b46c-32537c7f1f6e",
                 "sharedWith": [],
-                "tokens": ["Time", "is", "an", "illusion", ".", "Lunchtime", "doubly", "so", "."],
-                "clust": [[[0, 0], [3, 3]]],
-                "annotatedBy": [["066de609-b04a-4b30-b46c-32537c7f1f6e", "066de609-b04a-4b30-b46c-32537c7f1f6e"]],
-                "probs": [[[1, 0], [.1, 0, .9]]],
+                "docIds": ["123e4567-e89b-12d3-a456-426655444321"],
                 "createdAt": datetime.now()
             }
         }
 
     def __repr__(self):
-        return f'<Document _id:{self.id}, name:{self.name}, createdBy:{self.created_by}>'
+        return f'<Project _id:{self.id}, name:{self.name}, createdBy:{self.created_by}>'
 
     def __dict__(self):
         result = {"name": self.name, "createdBy": self.created_by, "sharedWith": self.shared_with,
-                  "tokens": self.tokens, "clust": self.clust, "annotatedBy": self.annotated_by,
-                  "probs": self.probs, "createdAt": self.created_at_ts}
+                  "docIds": self.doc_ids, "createdAt": self.created_at_ts}
         if self.id is not None:
             result["_id"] = self.id
         return result

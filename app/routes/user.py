@@ -1,28 +1,41 @@
-import bcrypt
-from flask import request
+from flask import request, abort, render_template
+from pymongo.errors import OperationFailure
 
-from app import application, users
-from app.db.models.user import User
+from app import application
+from app.db.daos.user_dao import UserDAO
 
 
-@application.route('/user/create', methods=['GET', 'POST'])
+@application.route('/user/create', methods=['POST'])
 def create_user():
     if request.method == 'POST':
-        args = request.json
-        password = args["password"]
-        hashed_password = bcrypt.hashpw(password.encode('utf8'), bcrypt.gensalt())
-        # TODO: ensure email is unique
-        user = User(name=args["name"], email=args["email"], password=hashed_password)
-        user = dict(user)
-        del user['id']
-        result = users.insert_one(user)  # save doc
-        user['_id'] = result.inserted_id
-        print("User inserted:", result.inserted_id)
-        return user
+        try:
+            args = request.json
+            userid = UserDAO().add_user(args["name"], args["email"], args["password"])
+            return userid
+        except OperationFailure:
+            abort(500)
+        except ValueError:
+            abort(400)
 
 
-@application.route('/user/find-by-email', methods=['POST'])
+@application.route('/user/find-by-email', methods=['GET'])
 def find_user_by_email():
+    if request.method == 'GET':
+        return dict(UserDAO().find_by_email(request.args["email"]))
+
+
+@application.route('/login', methods=['GET', 'POST'])
+def login():
     if request.method == 'POST':
-        args = request.json
-        return users.find_one({"email": args["email"]})
+        email = request.form['email']
+        usr_entered = request.form['password']
+
+        try:
+            user = dict(UserDAO().validate_login(email, usr_entered))
+            del user["password"]
+            return user
+        except OperationFailure:
+            return render_template('login.html', error="Server error occurred while validating login")
+        except ValueError as e:
+            return render_template('login.html', error=str(e))
+    return render_template('login.html')

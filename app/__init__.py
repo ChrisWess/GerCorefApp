@@ -21,15 +21,13 @@ application.config["MONGO_URI"] = config.MONGODB_DATABASE_URI
 
 # MongoDB database
 client = PyMongo(application, connect=True, serverSelectionTimeoutMS=5000)  # username='username', password='password'
-print("Available database collections:", client.db.list_collection_names())
-# Initialize mongodb collections
-users = client.db.users
-docs = client.db.docs
+db = client.db
+print("Available database collections:", db.list_collection_names())
 
 # Login manager settings
 login_manager = LoginManager()
 login_manager.init_app(application)
-login_manager.login_view = "login"
+login_manager.login_view = "login"  # define login_view: tell Flask the URL of the landing that we are dealing with
 
 # Include models and routes
 from app.db import models

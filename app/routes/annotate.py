@@ -3,7 +3,7 @@ from flask_cors import cross_origin
 from flask import jsonify
 from app import application
 from app.coref.model import model
-from app.routes.docs import insert_doc, find_doc
+from app.db.daos.doc_dao import DocumentDAO
 import re
 
 
@@ -11,24 +11,25 @@ import re
 @cross_origin()
 def model_predict():
     args = request.json
-    if "docname" not in args:
+    if "projectid" not in args or "docname" not in args:
         abort(400)
     output_mode = "json_small"
     if 'output_mode' in args and args['output_mode'] == 'long':
         output_mode = "json"
     pred = model.predict(args["text"], output_mode)
-    return insert_doc(pred, args)
+    return DocumentDAO().add_doc(args["projectid"], args["docname"], pred)
 
 
 @application.route('/uploadfile', methods=['POST'])
 @cross_origin()
 def model_file():
     args = request.form
-    if "docname" not in args:
+    if "projectid" not in args or "docname" not in args:
         abort(400)
     text = request.files.get("myFile").read().decode("utf-8")
     pred = model.predict(text, "json_small")
-    return insert_doc(pred, args)
+    return DocumentDAO().add_doc(args["projectid"], args["docname"], pred)
+
 
 @application.route('/findSentences', methods=['POST'])
 @cross_origin()
@@ -37,7 +38,7 @@ def model_find():
     input = args['input']
     _id = args['id']
     result = {}
-    text = find_doc(_id)["tokens"]
+    text = DocumentDAO().find_by_id(_id)["tokens"]
     for i in range(len(text)):
         sentence = " ".join(text[i]).lower()
         res = [_.start() for _ in re.finditer(input, sentence)]

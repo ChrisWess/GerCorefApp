@@ -8,6 +8,7 @@ class UserRole(Enum):
 
 
 class User(BaseModel):
+    # TODO: save projectId list in user?
     id: str = Field(default=None, alias="_id")
     name: str = Field()
     email: str = Field()
@@ -29,7 +30,7 @@ class User(BaseModel):
         }
 
     def __repr__(self):
-        return '<User id:{}, name:{}, email:{}, role:{}>'.format(self.id, self.name, self.email, self.role)
+        return f'<User _id:{self.id}, name:{self.name}, email:{self.email}, role:{self.role}>'
 
     def __eq__(self, other):
         if isinstance(other, User):
@@ -41,6 +42,15 @@ class User(BaseModel):
         if equal is NotImplemented:
             return NotImplemented
         return not equal
+
+    def __dict__(self):
+        result = {"name": self.name, "email": self.email, "role": self.role.name, "active": self.active}
+        if self.id is not None:
+            result["_id"] = self.id
+        return result
+
+    def __str__(self):
+        return str(dict(self))
 
     @property
     def is_active(self):
