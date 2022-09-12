@@ -1,0 +1,133 @@
+import React, {MutableRefObject} from 'react';
+import {ThemeProvider, useTheme} from '@mui/material/styles';
+import {Button, Box, FormControlLabel, Switch, List, ListItem, ListItemIcon, Divider} from "@mui/material";
+import ResponsiveAppBar from "./ResponsiveAppBar";
+import CssBaseline from "@mui/material/CssBaseline";
+import Container from "@mui/material/Container";
+import Grid from "@mui/material/Grid";
+import Paper from "@mui/material/Paper";
+interface DashboardProps {
+
+}
+
+function getProjects() {
+    return ["Project1", "Project2", "Project3", "Project4", "Project5"]
+}
+
+function startProject() {
+    console.log("start project")
+    return undefined
+}
+
+function openProject(project: string) {
+    console.log("opens project: "+project)
+    return undefined
+}
+
+
+const UserDashboard: React.FC<DashboardProps> = ({}) => {
+    const theme = useTheme();
+    const [allProjects, setAllProjects] = React.useState<string[]>(["Project1", "Project2", "Project3", "Project4", "Project5","Project1", "Project2", "Project3", "Project4", "Project5","Project1", "Project2", "Project3", "Project4", "Project5"]);
+    let projectList = [
+        <React.Fragment key={0}>
+            <ListItem divider key={"0.1"}>
+                <div key={"0.3"}>no projects</div>
+                <Divider key={"0.4"}/>
+            </ListItem>
+        </React.Fragment>]
+
+    //setAllProjects(getProjects())
+    if(allProjects) {
+        projectList = allProjects.map((d, index) =>
+            <React.Fragment key={index} >
+                <ListItem divider key={index + ".1"} onClick={() => openProject(d)} >
+                    <ListItemIcon key={index + ".2"}>
+                        {index + 1}
+                    </ListItemIcon>
+                    <div key={index + ".3"}>{d}</div>
+                    <Divider key={index + ".4"}/>
+                </ListItem>
+            </React.Fragment>
+        );
+    }
+
+
+    return (
+        <ThemeProvider theme={theme}>
+            <ResponsiveAppBar></ResponsiveAppBar>
+            <Box sx={{ display: 'flex' }}>
+                <CssBaseline />
+                <Box
+                    component="main"
+                    sx={{
+                        backgroundColor: (theme) =>
+                            theme.palette.mode === 'light'
+                                ? theme.palette.grey[100]
+                                : theme.palette.grey[900],
+                        flexGrow: 1,
+                        height: '100vh',
+                        overflow: 'auto',
+                    }}
+                >
+                    <Container maxWidth="xl" sx={{ mt: 4, mb: 4, marginTop: "100pt"}}>
+
+
+                        <Grid container spacing={3} rowSpacing={3} sx={{marginLeft: "20%", width: "30%", float: "left"}}>
+                            <Grid item xs={12} md={12} lg={12}>
+                                <Paper
+                                    elevation={6}
+                                    sx={{
+                                        p: 2,
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        height: 465,
+                                        overflow: 'auto'
+                                    }}>
+                                    <List className="pagination" key={"mainList"}>
+                                        {projectList}
+                                    </List>
+                                </Paper>
+                            </Grid>
+                            <Grid item xs={12} md={12} lg={12}>
+                                <Button variant={"contained"} style={{backgroundColor:"primary" , margin: 1, textTransform: "none", width: "97%" }}
+                                        onClick={startProject} type="submit"> new project </Button>
+                            </Grid>
+                        </Grid>
+
+                        <Grid  container spacing={3} rowSpacing={3}  sx={{marginLeft: "10pt", width: "30%", float: "left"}}>
+                            <Grid item xs={12} md={12} lg={12}>
+                                <Paper
+                                    elevation={6}
+                                    sx={{
+                                        p: 2,
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        height: 250,
+                                    }}>
+                                    User Information
+                                </Paper>
+                            </Grid>
+
+
+                            <Grid item xs={12} md={12} lg={12}>
+                                <Paper
+                                    elevation={6}
+                                    sx={{
+                                        p: 2,
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        height: 250,
+                                    }}>
+                                    Not sure yet.
+                                </Paper>
+                            </Grid>
+                        </Grid>
+
+                    </Container>
+                </Box>
+            </Box>
+        </ThemeProvider>
+    );
+}
+
+export default UserDashboard;
