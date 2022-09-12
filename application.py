@@ -1,4 +1,4 @@
-from app import application
+from app import application, config
 
 if __name__ == '__main__':
-    application.run()  # Can change port of application here (default: 5000)
+    application.run(config.HOST, config.PORT, config.DEBUG)

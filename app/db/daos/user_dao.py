@@ -26,6 +26,7 @@ class UserDAO:
     @staticmethod
     @login_manager.user_loader
     def load_user(user_email):
+        print(user_email)
         return UserDAO().find_by_email(user_email)
 
     @staticmethod
