@@ -20,6 +20,7 @@ class Common:
 class Debug(Common):
     # Enter your local database name
     MONGODB_DATABASE_URI = "mongodb://localhost:27017/" + Common.DB_NAME
+    WORKSPACE_URL = "http://localhost:3000/"
 
 
 # Production specific configurations
@@ -29,3 +30,4 @@ class Production(Common):
     # Database configuration
     MONGODB_DATABASE_URI = 'mongodb://' + str(env.get('DB_USER')) + ':' + str(env.get('DB_PASS')) + '@' + \
                            str(env.get('DB_HOST')) + '/' + str(env.get('DB_SCHEMA'))
+    WORKSPACE_URL = "production_url"  # FIXME: when going live

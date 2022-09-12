@@ -49,7 +49,7 @@ def login():
 
         try:
             UserDAO().validate_login(email, usr_entered).to_dict()
-            return redirect("/")
+            return redirect(url_for("index"))
         except OperationFailure:
             return render_template('login.html', error="Server error occurred while validating login")
         except ValueError as e:
