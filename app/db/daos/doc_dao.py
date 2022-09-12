@@ -9,6 +9,7 @@ from app import mdb
 class DocumentDAO:
     @staticmethod
     def to_model(db_result):
+        db_result["_id"] = str(db_result["_id"])
         return Document(**db_result)
 
     def __new__(cls):
@@ -73,7 +74,7 @@ class DocumentDAO:
         annotated_by = [[0] * len(cluster) for cluster in model_pred['clusters']]
         doc = Document(name=name, created_by=user_id, tokens=model_pred['tokens'],
                        clust=model_pred['clusters'], annotated_by=annotated_by, probs=model_pred['probs'])
-        doc = dict(doc)
+        doc = doc.to_dict()
         result = self.docs.insert_one(doc)  # save doc
         doc['_id'] = str(result.inserted_id)
         print("Document inserted:", result.inserted_id)

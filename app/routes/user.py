@@ -19,7 +19,8 @@ def create_user():
             abort(400)
 
 
-@application.route('/user/register', methods=['POST'])
+@application.route('/register', methods=['GET', 'POST'])
+@application.route('/user/register', methods=['GET', 'POST'])
 def register_user():
     if request.method == 'POST':
         try:
@@ -29,13 +30,15 @@ def register_user():
         except OperationFailure:
             return render_template('register.html', error="Server error occurred while trying to register user")
         except ValueError as e:
+            print(e)
             return render_template('register.html', error=str(e))
+    return render_template('register.html')
 
 
 @application.route('/user/find-by-email', methods=['GET'])
 def find_user_by_email():
     if request.method == 'GET':
-        return dict(UserDAO().find_by_email(request.args["email"]))
+        return UserDAO().find_by_email(request.args["email"]).to_dict()
 
 
 @application.route('/login', methods=['GET', 'POST'])
@@ -45,12 +48,12 @@ def login():
         usr_entered = request.form['password']
 
         try:
-            user = dict(UserDAO().validate_login(email, usr_entered))
-            del user["password"]
-            return user
+            UserDAO().validate_login(email, usr_entered).to_dict()
+            return redirect("/")
         except OperationFailure:
-            return render_template('template/login.html', error="Server error occurred while validating login")
+            return render_template('login.html', error="Server error occurred while validating login")
         except ValueError as e:
+            print(e)
             return render_template('login.html', error=str(e))
     return render_template('login.html')
 

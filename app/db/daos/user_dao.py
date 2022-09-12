@@ -11,6 +11,7 @@ from app import application, mdb, login_manager
 class UserDAO:
     @staticmethod
     def to_model(db_result):
+        db_result["_id"] = str(db_result["_id"])
         return User(**db_result)
 
     def __new__(cls):
@@ -37,19 +38,18 @@ class UserDAO:
         # Validates a user login. Returns user record or None
         # Get Fields Username & Password
         # Client Side Login & Validation handled by wtforms in register class
-        user = self.users.find_one({"email": email})
+        user = self.find_by_email(email)
         if user is not None:
             # Get Stored Hased and Salted password
-            password = user['password']
             # Compare Password with hashed password- Bcrypt
-            if bcrypt.checkpw(usr_entered.encode('utf-8'), password.encode('utf-8')):
+            if bcrypt.checkpw(usr_entered.encode('utf-8'), user.password.encode('utf-8')):
                 application.logger.info('Password Matched')
                 session['logged_in'] = True
-                session['userid'] = str(user['_id'])
+                session['userid'] = str(user.id)
                 session['username'] = email
 
                 login_user(user)
-                return UserDAO.to_model(user)
+                return user
             else:
                 raise ValueError('Incorrect Credentials')
         else:
@@ -86,10 +86,10 @@ class UserDAO:
         if email_exists:
             raise ValueError(f"User with email {email} does already exist!")
         user = User(name=name, email=email, password=hashed_password)
-        user = dict(user)
+        user = user.to_dict()
         result = self.users.insert_one(user)
         user['_id'] = result.inserted_id
         # create a special project "misc" when creating a user (used for single shared docs)
-        ProjectDAO().add_project("misc", result.inserted_id)
+        ProjectDAO().add_project("misc", str(result.inserted_id))
         print("User inserted:", result.inserted_id)
         return result.inserted_id

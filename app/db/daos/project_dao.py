@@ -8,6 +8,7 @@ from app import mdb
 class ProjectDAO:
     @staticmethod
     def to_model(db_result):
+        db_result["_id"] = str(db_result["_id"])
         return Project(**db_result)
 
     def __new__(cls):
@@ -71,8 +72,8 @@ class ProjectDAO:
         if user_id is None:
             user_id = session['userid']
         name = self._unique_projectname_for_user(name, user_id)
-        doc = Project(name=name, created_by=session['userid'])
-        doc = dict(doc)
+        doc = Project(name=name, created_by=user_id)
+        doc = doc.to_dict()
         result = self.projects.insert_one(doc)  # save project
         doc['_id'] = str(result.inserted_id)
         print("Project inserted:", result.inserted_id)

@@ -32,7 +32,7 @@ class Document(BaseModel):
     def __repr__(self):
         return f'<Document _id:{self.id}, name:{self.name}, createdBy:{self.created_by}>'
 
-    def __dict__(self):
+    def to_dict(self):
         result = {"name": self.name, "createdBy": self.created_by, "sharedWith": self.shared_with,
                   "tokens": self.tokens, "clust": self.clust, "annotatedBy": self.annotated_by,
                   "probs": self.probs, "createdAt": self.created_at_ts}
@@ -41,4 +41,4 @@ class Document(BaseModel):
         return result
 
     def __str__(self):
-        return str(dict(self))
+        return str(self.to_dict())

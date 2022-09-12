@@ -43,14 +43,18 @@ class User(BaseModel):
             return NotImplemented
         return not equal
 
-    def __dict__(self):
-        result = {"name": self.name, "email": self.email, "role": self.role.name, "active": self.active}
+    def to_dict(self):
+        result = {"name": self.name, "email": self.email, "password": self.password,
+                  "role": self.role.value, "active": self.active}
         if self.id is not None:
             result["_id"] = self.id
         return result
 
     def __str__(self):
-        return str(dict(self))
+        return str(self.to_dict())
+
+    def get_id(self):
+        return self.id
 
     @property
     def is_active(self):

@@ -26,7 +26,7 @@ class Project(BaseModel):
     def __repr__(self):
         return f'<Project _id:{self.id}, name:{self.name}, createdBy:{self.created_by}>'
 
-    def __dict__(self):
+    def to_dict(self):
         result = {"name": self.name, "createdBy": self.created_by, "sharedWith": self.shared_with,
                   "docIds": self.doc_ids, "createdAt": self.created_at_ts}
         if self.id is not None:
@@ -34,4 +34,4 @@ class Project(BaseModel):
         return result
 
     def __str__(self):
-        return str(dict(self))
+        return str(self.to_dict())
