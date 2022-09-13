@@ -5,35 +5,43 @@ from app import application
 from app.db.daos.doc_dao import DocumentDAO
 
 
-@application.route('/docs', methods=['GET'])
+@application.route('/doc', methods=['GET'])
 @cross_origin()
 def find_docs():
     args = request.args  # query params
     if args:
-        args = args.to_dict()
+        dict_args = args.to_dict()
         for key, val in args.items():
-            args[key] = bool(val)
-        return str(DocumentDAO().find_all(args))
+            try:
+                val = int(val)
+                if val:
+                    dict_args[key] = val
+                else:
+                    del dict_args[key]
+            except ValueError:
+                del dict_args[key]
+        result = DocumentDAO().find_all(dict_args)
     else:
-        return str(DocumentDAO().find_all())
+        result = DocumentDAO().find_all()
+    return DocumentDAO.list_response(result)
 
 
-@application.route('/docs/user', methods=['GET'])
+@application.route('/doc/user', methods=['GET'])
 @cross_origin()
 def find_docs_of_user():
     args = request.args
     if "userid" not in args:
         abort(400)
-    return str(DocumentDAO().find_by_user(args["userid"]))
+    return DocumentDAO.list_response(DocumentDAO().find_by_user(args["userid"]))
 
 
-@application.route('/docs', methods=['PUT'])
+@application.route('/doc', methods=['PUT'])
 @cross_origin()
 def update_doc():
     pass
 
 
-@application.route('/docs/rename', methods=['PUT'])
+@application.route('/doc/rename', methods=['PUT'])
 @cross_origin()
 def rename_doc():
     args = request.json

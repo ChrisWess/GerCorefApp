@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 from pydantic import BaseModel, Field
 
@@ -12,6 +13,13 @@ class Document(BaseModel):
     annotated_by: list[list[str]] = Field(alias="annotatedBy")
     probs: list[list[list[float]]] = Field()
     created_at_ts: datetime = Field(default=datetime.now(), alias="createdAt")
+
+    def __init__(self, **data):
+        if '_id' in data:
+            data['_id'] = str(data['_id'])
+        if 'createdAt' in data and isinstance(data['createdAt'], str):
+            data['createdAt'] = datetime.strptime(data['createdAt'], "%Y-%m-%d %H:%M:%S.%f")
+        super().__init__(**data)
 
     class Config:
         allow_population_by_field_name = True
@@ -30,15 +38,12 @@ class Document(BaseModel):
         }
 
     def __repr__(self):
-        return f'<Document _id:{self.id}, name:{self.name}, createdBy:{self.created_by}>'
+        return json.dumps(self.to_dict())
 
     def to_dict(self):
         result = {"name": self.name, "createdBy": self.created_by, "sharedWith": self.shared_with,
                   "tokens": self.tokens, "clust": self.clust, "annotatedBy": self.annotated_by,
-                  "probs": self.probs, "createdAt": self.created_at_ts}
+                  "probs": self.probs, "createdAt": self.created_at_ts.isoformat(' ')}
         if self.id is not None:
             result["_id"] = self.id
         return result
-
-    def __str__(self):
-        return str(self.to_dict())

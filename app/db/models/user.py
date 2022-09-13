@@ -1,3 +1,4 @@
+import json
 from enum import Enum
 from pydantic import BaseModel, Field
 
@@ -16,6 +17,13 @@ class User(BaseModel):
     role: UserRole = Field(default=UserRole.USER)
     active: bool = Field(default=True)
 
+    def __init__(self, **data):
+        if '_id' in data:
+            data['_id'] = str(data['_id'])
+        if 'role' in data:
+            data['role'] = UserRole(data['role'])
+        super().__init__(**data)
+
     class Config:
         allow_population_by_field_name = True
         schema_extra = {
@@ -30,7 +38,7 @@ class User(BaseModel):
         }
 
     def __repr__(self):
-        return f'<User _id:{self.id}, name:{self.name}, email:{self.email}, role:{self.role}>'
+        return json.dumps(self.to_dict())
 
     def __eq__(self, other):
         if isinstance(other, User):
@@ -49,9 +57,6 @@ class User(BaseModel):
         if self.id is not None:
             result["_id"] = self.id
         return result
-
-    def __str__(self):
-        return str(self.to_dict())
 
     def get_id(self):
         return self.id
