@@ -11,6 +11,7 @@ import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
+import {Link} from "react-router-dom";
 
 //The app bar is mostly copy-pasted from https://mui.com/material-ui/react-app-bar/
 
@@ -147,7 +148,9 @@ const ResponsiveAppBar = () => {
                         >
                             {settings.map((setting) => (
                                 <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                                    <Typography textAlign="center">{setting}</Typography>
+                                    <Typography textAlign="center">
+                                        <Link to={"/"+setting}>{setting}</Link>
+                                    </Typography>
                                 </MenuItem>
                             ))}
                         </Menu>
