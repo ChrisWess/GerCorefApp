@@ -60,6 +60,9 @@ class DocumentDAO(BaseDAO):
 
     def add_doc(self, project_id, name, model_pred):
         # creates a new document in the docs collection
+        # TODO: TEMP BEGIN
+        project_id = ProjectDAO().find_by_name(session['userid'], 'misc')['_id']
+        # TODO: TEMP END
         unique_name = self._unique_docname_for_project(project_id, name)
         doc = self._insert_autoannotated_doc(unique_name, session['userid'], model_pred)
         ProjectDAO().add_doc_to_project(project_id, doc['_id'])

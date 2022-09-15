@@ -26,13 +26,10 @@ def find_docs():
     return DocumentDAO.list_response(result)
 
 
-@application.route('/doc/user', methods=['GET'])
+@application.route('/doc/user/<user_id>', methods=['GET'])
 @cross_origin()
-def find_docs_of_user():
-    args = request.args
-    if "userid" not in args:
-        abort(400)
-    return DocumentDAO.list_response(DocumentDAO().find_by_user(args["userid"]))
+def find_docs_of_user(user_id=None):
+    return DocumentDAO.list_response(DocumentDAO().find_by_user(user_id))
 
 
 @application.route('/doc', methods=['PUT'])

@@ -152,7 +152,7 @@ def find_user_by_id(user_id=None):
             abort(404)  # TODO: this should be prevented in frontend by field validators
 
 
-@application.route('/user/by-email', methods=['GET'])
+@application.route('/user/byEmail', methods=['GET'])
 def find_user_by_email():
     if request.method == 'GET':
         user = UserDAO().find_by_email(request.args["email"])

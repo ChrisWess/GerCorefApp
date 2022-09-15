@@ -70,6 +70,37 @@ def find_projects_of_user(user_id=None):
         return get_projects_of_user(user_id)
 
 
+def get_project_of_user_by_name(user_id, project_name):
+    args = request.args
+    try:
+        ObjectId(user_id)
+        if args:
+            projection = [key for key, val in args.items() if int(val)]
+            return ProjectDAO().find_by_name(user_id, project_name, projection)
+        else:
+            return ProjectDAO().find_by_name(user_id, project_name)
+    except bson.errors.InvalidId:
+        abort(404)
+
+
+@application.route('/project/current/byName/<project_name>', methods=['GET'])
+@cross_origin()
+@login_required
+def find_project_of_current_user_by_name(project_name):
+    if request.method == 'GET':
+        user_id = session.get("userid", default=None)
+        if user_id is None:
+            abort(400)
+        return get_project_of_user_by_name(user_id, project_name)
+
+
+@application.route('/project/<user_id>/byName/<project_name>', methods=['GET'])
+@cross_origin()
+def find_project_of_user_by_name(user_id, project_name):
+    if request.method == 'GET':
+        return get_project_of_user_by_name(user_id, project_name)
+
+
 @application.route('/project', methods=['POST'])
 @cross_origin()
 def add_project():

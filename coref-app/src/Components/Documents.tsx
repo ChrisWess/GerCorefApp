@@ -104,12 +104,10 @@ const Documents: React.FC<DocumentsProps> = ({ sendCorefClusterToParent,
 
 
             let formData = new FormData();
-            formData.append(
-                'myFile',
-                selectedFile !== null ? selectedFile : "",
-            );
+            formData.append('myFile', selectedFile);
             // TODO: default to file name from file system, but create textfield for renaming documents
             formData.append('docname', name);
+            formData.append('projectid', "TEMP");
 
             try {
                 const { data } = await axios.post(
