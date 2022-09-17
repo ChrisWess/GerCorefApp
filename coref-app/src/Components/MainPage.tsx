@@ -111,10 +111,10 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
     const [selectedCoref, setSelectedCoref] = React.useState<number[]>([]);
     const [clusterColor, setClusterColor] = React.useState<string>("black");
     const [currentMention, setCurrentMention] = React.useState<Mention | undefined>(undefined);
-    const [chosenDocument, setChosenDocument] = React.useState(null);
+    const [chosenDocument, setChosenDocument] = React.useState(null);  // TODO: remove
     const [confidences, setConfidences] = React.useState<ConfidenceValues[][]>([]);
     const [documentId, setDocumentId] = React.useState<string>();
-    const [documentIdMapping, setDocumentIdMapping] = React.useState<Map<string, string> | undefined>();
+    const [documentIdNamePairs, setDocumentIdNamePairs] = React.useState<[string, string][] | undefined>();
 
     const [hovertoggle, setHovertoggle] = React.useState(true);
     const [autoAnnotoggle, setAutoAnnoToggle] = React.useState(true);
@@ -447,10 +447,10 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
 
     async function loadDocuments() {
         // load in the list of documents belonging to the current user and set the documentList
-        if (!documentIdMapping) {
+        if (!documentIdNamePairs) {
             try {
                 const {data} = await axios.get(
-                    `http://127.0.0.1:5000/docs`,
+                    `http://127.0.0.1:5000/doc`,
                     {
                         headers: {
                             'Access-Control-Allow-Origin': '*',
@@ -460,13 +460,14 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
                     },
                 );
 
-                console.log("Here")
-                let documentIdNamePairs: [string, string][] = []
-                for (let i = 0; i < data.length; i++) {
-                    let reducedDoc = data[i]
-                    documentIdNamePairs.push([reducedDoc._id, reducedDoc.name])
+                let data_arr = data.result
+                let idNamePairs: [string, string][] = []
+                for (let i = 0; i < data_arr.length; i++) {
+                    let reducedDoc = data_arr[i]
+                    idNamePairs.push([reducedDoc._id, reducedDoc.name])
                 }
-                setDocumentIdMapping(new Map<string, string>(documentIdNamePairs))
+                idNamePairs.sort((a, b) => a[1] > b[1] ? 1 : b[1] > a[1] ? -1 : 0)
+                setDocumentIdNamePairs(idNamePairs)
             } catch (error) {
                 if (axios.isAxiosError(error)) {
                     console.log('error message: ', error.message);
@@ -677,13 +678,14 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
                                                 sendCorefClusterToParent={sendCorefClustersToMainPage}
                                                 sendCorefTextToParent={sendCorefTextToMainPage}
                                                 changeChosenDocument={changeChosenDocument}
-                                                chosenDocument={chosenDocument}
                                                 allCorefs={allCorefs}
                                                 sendConfidencesToParent={sendConfidencesToMainPage}
                                                 onDownloadDocument={onDownloadDocument}
+                                                documentId={documentId}
                                                 changeDocumentId={changeDocumentId}
-                                                >
-                                            </Documents>                                        
+                                                documentsInfo={documentIdNamePairs}
+                                                setDocumentsInfo={setDocumentIdNamePairs}
+                                            />
                                         </TabPanel>
                                         <TabPanel value={value} index={2}>
                                             <Statistics

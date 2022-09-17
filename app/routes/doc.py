@@ -1,3 +1,4 @@
+import bson
 from flask import request, abort
 from flask_cors import cross_origin
 
@@ -24,6 +25,23 @@ def find_docs():
     else:
         result = DocumentDAO().find_all()
     return DocumentDAO.list_response(result)
+
+
+@application.route('/doc/<doc_id>', methods=['GET'])
+def find_doc_by_id(doc_id=None):
+    if request.method == 'GET':
+        projection = None
+        args = request.args
+        if args:
+            projection = [key for key, val in args.items() if int(val)]
+        try:
+            doc = DocumentDAO().find_by_id(doc_id, projection)
+            if doc is None:
+                abort(404)
+            else:
+                return doc
+        except bson.errors.InvalidId:
+            abort(404)
 
 
 @application.route('/doc/user/<user_id>', methods=['GET'])

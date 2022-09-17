@@ -42,7 +42,10 @@ def unauthorized_callback():
     # In call back url we can specify where we want to redirect the user
     # TODO: maybe save in session timestamp of when login happened and if login was a long time ago,
     #  then validate that this user still exists in DB.
-    return login()
+    if request.method == 'GET':
+        return login()
+    else:
+        return {"result": "Unauthorized", "status": 401}
 
 
 def handle_login_error(err_msg):
@@ -176,4 +179,4 @@ def delete_user_by_id(user_id):
 @application.errorhandler(401)
 def do_login_first():
     """Display login page when user is not authorised."""
-    return login(request.endpoint)
+    return login()

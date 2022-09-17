@@ -5,88 +5,82 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import Divider from '@mui/material/Divider';
 import ListSubheader from '@mui/material/ListSubheader';
+import {FC, ReactNode} from "react";
+import {Mention} from "./MainView";
+import {clearPrevMarking} from "./MainPage";
 
 
 interface TableDocumentsProps {
-    tableData: any
     sendCorefClusterToParent: any
     sendCorefTextToParent: any
-    changeChosenDocument: any
     sendConfidencesToParent: any
     allCorefs: any
+    documentId: string | undefined
     changeDocumentId: any
-    chosenDocument: any
-    children: React.ReactNode;
+    documentsInfo: [string, string][] | undefined
 }
 
 
-const TableDocuments: React.FC<TableDocumentsProps> = ({ tableData,
-    sendCorefClusterToParent, sendCorefTextToParent,
-    changeChosenDocument, allCorefs, sendConfidencesToParent,
-    changeDocumentId, chosenDocument, children }) => {
+const TableDocuments: FC<TableDocumentsProps> = ({ sendCorefClusterToParent, sendCorefTextToParent,
+    sendConfidencesToParent, documentId, changeDocumentId, documentsInfo }) => {
 
-    async function handleClick(el: any) {
-        // TODO: this function should only be in the upload button, instead read the document from database and display it
-        let formData = new FormData();
-        formData.append(
-            'myFile',
-            tableData[el],
-        );
-        formData.append(
-            'docname',
-            'default_name'
-        );
-
-        try {
-            const { data } = await axios.post(
-                `http://127.0.0.1:5000/uploadfile`,
-                formData,
-                {
-                    headers: {
-                        'Access-Control-Allow-Origin': '*',
-                        'Content-Type': 'multipart/form-data',
+    const createClickHandler = (docId: string) => {
+        return async function handleClick() {
+            try {
+                const { data } = await axios.get(
+                    `http://127.0.0.1:5000/doc/${docId}`,
+                    {
+                        headers: {
+                            'Access-Control-Allow-Origin': '*',
+                            'Content-Type': 'multipart/form-data',
+                        },
                     },
-                },
-            );
+                );
 
-            sendCorefClusterToParent(data.clust)
-            sendCorefTextToParent(data.tokens)
-            changeChosenDocument(el);
-            allCorefs.current = []
-            sendConfidencesToParent(data.probs)
-            changeDocumentId(data._id);
-        }
-        catch (error) {
-            if (axios.isAxiosError(error)) {
-                console.log('error message: ', error.message);
-                return error.message;
-            } else {
-                console.log('unexpected error: ', error);
-                return 'An unexpected error occurred';
+                sendCorefClusterToParent(data.clust)
+                sendCorefTextToParent(data.tokens)
+                // allCorefs.current = []
+                sendConfidencesToParent(data.probs)
+                changeDocumentId(data._id);
+            }
+            catch (error) {
+                if (axios.isAxiosError(error)) {
+                    console.log('error message: ', error.message);
+                    return error.message;
+                } else {
+                    console.log('unexpected error: ', error);
+                    return 'An unexpected error occurred';
+                }
             }
         }
-    }
+    };
 
     // TODO: load in all document names of the user
     //   only "upload" button should trigger the model inference
     //   The list buttons should only query the corresponding document from DB
-    //TODO: rewrite it more clear, without 2 lists and if 
-    if (Object.keys(tableData).length != 0) {
-        let arr = Array.from(Object.keys(tableData));
-        const tableBody = arr.map((el: any, index) => (
-            <div key={index}>
-                <ListItemButton style={index === arr.indexOf(chosenDocument) ?
-                    { backgroundColor: 'lightGray' } : {}}>
-                    <ListItemText style={{ lineHeight: 1, margin: 0 }} onClick={() => handleClick(el)}> {el} </ListItemText>
+    //TODO: rewrite it more clear, without 2 lists and if
+    if (documentsInfo && documentsInfo.length > 0) {
+        let currIndex = -1
+        for (let i = 0; i < documentsInfo.length; i++) {
+            if (documentsInfo[i][0] === documentId) {
+                currIndex = i
+                break
+            }
+        }
+        const tableBody = documentsInfo.map((item, index) => (
+            <div key={"docSelect" + index}>
+                <ListItemButton style={index === currIndex ? { backgroundColor: 'lightGray' } : {}}>
+                    <ListItemText style={{ lineHeight: 1, margin: 0 }}
+                                  onClick={() => createClickHandler(item[0])}> {item[1]} </ListItemText>
                 </ListItemButton>
                 <Divider />
             </div>
         ));
         return (
-            <List key='list' sx={{
+            <List key='list' component="nav" sx={{
                 width: '100%', maxWidth: 360,
-                bgcolor: 'background.paper', height: 300, overflow: 'auto'
-            }} component="nav"
+                bgcolor: 'background.paper', height: 300,
+                overflow: 'auto' }}
                 subheader={<ListSubheader>Files</ListSubheader>}>
                 <Divider />
                 {tableBody}

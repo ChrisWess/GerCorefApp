@@ -1,6 +1,8 @@
 from flask import request, abort
 from flask_cors import cross_origin
 from flask import jsonify
+from flask_login import login_required
+
 from app import application
 from app.coref.model import model
 from app.db.daos.doc_dao import DocumentDAO
@@ -22,6 +24,7 @@ def model_predict():
 
 @application.route('/uploadfile', methods=['POST'])
 @cross_origin()
+@login_required
 def model_file():
     args = request.form
     if "projectid" not in args or "docname" not in args:

@@ -13,12 +13,13 @@ interface DocumentsProps {
     sendCorefClusterToParent: any
     sendCorefTextToParent: any,
     changeChosenDocument: any,
-    chosenDocument: any
     allCorefs: MutableRefObject<Mention[][]>
     sendConfidencesToParent: Function
     onDownloadDocument: Function
+    documentId: string | undefined
     changeDocumentId: any
-    children: React.ReactNode;
+    documentsInfo: [string, string][] | undefined
+    setDocumentsInfo: Function
 }
 
 type dict = {
@@ -43,16 +44,17 @@ window.onclick = function (event) {
 const Documents: React.FC<DocumentsProps> = ({ sendCorefClusterToParent,
     sendCorefTextToParent,
     changeChosenDocument,
-    chosenDocument,
     allCorefs,
     sendConfidencesToParent,
     onDownloadDocument,
-    changeDocumentId, children }) => {
+    documentId,
+    changeDocumentId,
+    documentsInfo,
+    setDocumentsInfo }) => {
 
-    const [allData] = React.useState<dict>(new Object());
     const [selectedFile, setSelectedFile] = React.useState<any | null>(null);
-    const [nameWasChanged, setNameWasChanged] = React.useState<boolean>(false);
-    const [newName, setNewName] = React.useState<string>("");
+    const [fileNames, setFileNames] = React.useState<Set<string> | undefined>(
+        documentsInfo === undefined ? undefined : new Set(documentsInfo?.map((item) => item[1])));
     const supportedDataTypes = ["XML", "CoNLL-2012", "plaintext"];
 
     // On file download (click the download button)
@@ -74,40 +76,35 @@ const Documents: React.FC<DocumentsProps> = ({ sendCorefClusterToParent,
 
     // On file upload (click the upload button)
     const onFileUpload = async (event: any) => {
-        // TODO: store files on backend 
-        // TODO: store jsons, not recompute them every time
-
-        if (selectedFile !== null) {
-            const name = selectedFile.name;
-            if (name in allData) {
-                let arr = name.split(".");
-                const last = arr.pop();
-                const first = arr.join('.');
+        if (selectedFile !== null && documentsInfo !== undefined) {
+            let fileName = selectedFile.name
+            if (fileNames !== undefined && fileName in fileNames) {
+                // TODO: show prompt that file with that name exists in docs =>
+                //  user options: 1) add file (with number in name), 2) overwrite, 3) cancel
+                let arr = fileName.split(".");
+                let suffix = arr.pop();
+                let prefix = arr.join('.');
                 let sameNames = [];
-                for (const [key, value] of Object.entries(allData)) {
-                    if (key.startsWith(first) && key.endsWith('.' + last)) {
-                        sameNames.push(key);
+                for (let i = 0; i < documentsInfo.length; i++) {
+                    let fName = documentsInfo[i][1]
+                    if (fName.startsWith(prefix) && fName.endsWith('.' + suffix)) {
+                        sameNames.push(fName);
                     }
                 }
                 let number = 1;
-                while (sameNames.includes(first + '-' + number + '.' + last)) {
+                let newName = `${prefix}-${number}.${suffix}`
+                while (sameNames.includes(newName)) {
                     ++number;
+                    newName = `${prefix}-${number}.${suffix}`
                 }
-                const finalName = first + '-' + number + '.' + last;
-                allData[finalName] = selectedFile;
-                setNameWasChanged(true);
-                setNewName(finalName);
-            } else {
-                allData[name] = selectedFile;
-                setNameWasChanged(false);
+                fileName = newName
             }
-
 
             let formData = new FormData();
             formData.append('myFile', selectedFile);
             // TODO: default to file name from file system, but create textfield for renaming documents
-            formData.append('docname', name);
-            formData.append('projectid', "TEMP");
+            formData.append('docname', fileName);
+            formData.append('projectid', "TEMP");  // TODO: ignored for now
 
             try {
                 const { data } = await axios.post(
@@ -120,15 +117,29 @@ const Documents: React.FC<DocumentsProps> = ({ sendCorefClusterToParent,
                         },
                     },
                 );
+                // TODO: handle unauthorized (make button not clickable when not logged in?)
+                console.log(data)
                 console.log(data._id)
                 console.log(data.tokens);
+                if (fileNames === undefined) {
+                    setFileNames(new Set<string>([fileName]))
+                } else {
+                    fileNames.add(fileName)
+                    setFileNames(fileNames)
+                }
+                let insertIndex = documentsInfo.length
+                for (let i = 0; i < insertIndex; i++) {
+                    let a = documentsInfo[i][1]
+                    if (fileName < a) {
+                        insertIndex = 0
+                        break
+                    }
+                }
+                documentsInfo.splice(insertIndex, 0, [data._id, fileName])
+                setDocumentsInfo(documentsInfo)
+
                 sendCorefClusterToParent(data.clust)
                 sendCorefTextToParent(data.tokens)
-                if (!nameWasChanged) {
-                    changeChosenDocument(selectedFile['name']);
-                } else {
-                    changeChosenDocument(newName);
-                }
                 allCorefs.current = []
                 sendConfidencesToParent(data.probs)
                 changeDocumentId(data._id);
@@ -159,21 +170,18 @@ const Documents: React.FC<DocumentsProps> = ({ sendCorefClusterToParent,
             <Button variant="outlined" style={{ margin: 1, textTransform: "none", width: "97%" }}
                 onClick={onFileUpload} type="submit" disabled={!selectedFile}> Upload </Button>
             <TableDocuments
-                tableData={allData}
                 sendCorefClusterToParent={sendCorefClusterToParent}
                 sendCorefTextToParent={sendCorefTextToParent}
-                changeChosenDocument={changeChosenDocument}
-                chosenDocument={chosenDocument}
                 allCorefs={allCorefs}
                 sendConfidencesToParent={sendConfidencesToParent}
+                documentId={documentId}
                 changeDocumentId={changeDocumentId}
-            >
-            </TableDocuments>
+                documentsInfo={documentsInfo} />
             <ButtonTextfield tfLabel="New Document Name" buttonText="Rename" submitFunc={renameDoc} />
             <Button variant="outlined" style={{ margin: 5, textTransform: "none", width: "97%" }} disabled>
                 Share selected document</Button>
             <span className="dropdown">
-                <Button disabled={!chosenDocument} variant="outlined" style={{ margin: 5, textTransform: "none", width: "97%" }}
+                <Button disabled={!documentId} variant="outlined" style={{ margin: 5, textTransform: "none", width: "97%" }}
                     onClick={onFileDownload} className="dropbtn">
                     Download annotated document</Button>
                 <div id="documentsDropDown" className="dropdown-content">
