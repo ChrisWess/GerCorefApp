@@ -55,9 +55,6 @@ const TableDocuments: FC<TableDocumentsProps> = ({ sendCorefClusterToParent, sen
         }
     };
 
-    // TODO: load in all document names of the user
-    //   only "upload" button should trigger the model inference
-    //   The list buttons should only query the corresponding document from DB
     //TODO: rewrite it more clear, without 2 lists and if
     if (documentsInfo && documentsInfo.length > 0) {
         let currIndex = -1
@@ -69,9 +66,10 @@ const TableDocuments: FC<TableDocumentsProps> = ({ sendCorefClusterToParent, sen
         }
         const tableBody = documentsInfo.map((item, index) => (
             <div key={"docSelect" + index}>
-                <ListItemButton style={index === currIndex ? { backgroundColor: 'lightGray' } : {}}>
+                <ListItemButton style={index === currIndex ? { backgroundColor: 'lightGray' } : {}}
+                                disabled={index === currIndex}>
                     <ListItemText style={{ lineHeight: 1, margin: 0 }}
-                                  onClick={() => createClickHandler(item[0])}> {item[1]} </ListItemText>
+                                  onClick={() => createClickHandler(item[0])()}> {item[1]} </ListItemText>
                 </ListItemButton>
                 <Divider />
             </div>

@@ -12,7 +12,7 @@ export default function Text(props: any) {
         try{
             const { data } = await axios.post(
                 `http://127.0.0.1:5000/model`,
-                { "text": input, "docname": "default_name" },
+                { "text": input, "docname": "default_name", "projectid": "TEMP" },  // TODO: project id
                 {
                     headers: {
                         'Access-Control-Allow-Origin': '*',

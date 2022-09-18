@@ -1,13 +1,11 @@
 import bson
 from flask import request, abort
-from flask_cors import cross_origin
 
 from app import application
 from app.db.daos.doc_dao import DocumentDAO
 
 
 @application.route('/doc', methods=['GET'])
-@cross_origin()
 def find_docs():
     args = request.args  # query params
     if args:
@@ -35,7 +33,7 @@ def find_doc_by_id(doc_id=None):
         if args:
             projection = [key for key, val in args.items() if int(val)]
         try:
-            doc = DocumentDAO().find_by_id(doc_id, projection)
+            doc = DocumentDAO().find_by_id_response(doc_id, projection)
             if doc is None:
                 abort(404)
             else:
@@ -45,19 +43,16 @@ def find_doc_by_id(doc_id=None):
 
 
 @application.route('/doc/user/<user_id>', methods=['GET'])
-@cross_origin()
 def find_docs_of_user(user_id=None):
     return DocumentDAO.list_response(DocumentDAO().find_by_user(user_id))
 
 
 @application.route('/doc', methods=['PUT'])
-@cross_origin()
 def update_doc():
     pass
 
 
 @application.route('/doc/rename', methods=['PUT'])
-@cross_origin()
 def rename_doc():
     args = request.json
     if "docname" not in args or "docid" not in args:

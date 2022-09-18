@@ -22,7 +22,9 @@ class UserDAO(BaseDAO):
         self.model = User
 
     def load_user_model(self, user_id):
-        return self.model(**self.collection.find_one({"_id": ObjectId(user_id)}))
+        user = self.collection.find_one({"_id": ObjectId(user_id)})
+        if user is not None:
+            return self.model(**user)
 
     @staticmethod
     @login_manager.user_loader
@@ -60,7 +62,7 @@ class UserDAO(BaseDAO):
         else:
             raise ValueError('Email not registered')
 
-    def find_by_email(self, email, projection=None):
+    def find_by_email_response(self, email, projection=None):
         """
         Find User with given email
         :param projection:
@@ -72,6 +74,9 @@ class UserDAO(BaseDAO):
         else:
             return self.to_response(self.collection.find_one({"email": email}, projection))
 
+    def find_by_email(self, email, projection=None):
+        return self.collection.find_one({"email": email}, projection)
+
     def delete_by_id(self, user_id):
         # TODO: delete projects and documents, too. Also make a safe delete function, where account is just hidden
         self.collection.delete_one({"_id": ObjectId(user_id)})
@@ -81,10 +86,10 @@ class UserDAO(BaseDAO):
 
     def add_user(self, name, email, password):
         # creates a new user in the users collection
-        hashed_password = bcrypt.hashpw(password.encode('utf8'), bcrypt.gensalt())
         email_exists = self.collection.find_one({"email": email}, ['_id']) is not None
         if email_exists:
             raise ValueError(f"User with email {email} does already exist!")
+        hashed_password = bcrypt.hashpw(password.encode('utf8'), bcrypt.gensalt())
         user = User(name=name, email=email, password=hashed_password)
         user = user.to_dict()
         result = self.collection.insert_one(user)

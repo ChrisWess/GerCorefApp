@@ -1,5 +1,4 @@
 from flask import request, abort
-from flask_cors import cross_origin
 from flask import jsonify
 from flask_login import login_required
 
@@ -10,10 +9,10 @@ import re
 
 
 @application.route('/model', methods=['POST'])
-@cross_origin()
+#@login_required
 def model_predict():
     args = request.json
-    if "projectid" not in args or "docname" not in args:
+    if any(arg not in args for arg in ("projectid", "docname", "text")):
         abort(400)
     output_mode = "json_small"
     if 'output_mode' in args and args['output_mode'] == 'long':
@@ -23,8 +22,7 @@ def model_predict():
 
 
 @application.route('/uploadfile', methods=['POST'])
-@cross_origin()
-@login_required
+#@login_required
 def model_file():
     args = request.form
     if "projectid" not in args or "docname" not in args:
@@ -35,16 +33,15 @@ def model_file():
 
 
 @application.route('/findSentences', methods=['POST'])
-@cross_origin()
 def model_find():
     args = request.json
-    input = args['input']
+    inpt = args['input']
     _id = args['id']
     result = {}
     text = DocumentDAO().find_by_id(_id)["tokens"]
     for i in range(len(text)):
         sentence = " ".join(text[i]).lower()
-        res = [_.start() for _ in re.finditer(input, sentence)]
+        res = [_.start() for _ in re.finditer(inpt, sentence)]
         if len(res) != 0:
             result[i+1] = []
             #spaces = [_.start() for _ in re.finditer(' ', s)]
@@ -52,7 +49,7 @@ def model_find():
                 strfrom = r
                 while strfrom != 0 and sentence[strfrom-1] != ' ':
                     strfrom = strfrom - 1
-                strto = r + len(input)
+                strto = r + len(inpt)
                 while strto != len(sentence) and sentence[strto] != ' ':
                     strto = strto + 1
                 result[i+1].append(sentence[strfrom:strto])

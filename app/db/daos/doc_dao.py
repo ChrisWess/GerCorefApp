@@ -2,9 +2,10 @@ from bson.objectid import ObjectId
 from flask import session
 
 from app.db.daos.base import BaseDAO
+from app.db.daos.user_dao import UserDAO
 from app.db.models.doc import Document
 from app.db.daos.project_dao import ProjectDAO
-from app import mdb
+from app import mdb, config
 
 
 class DocumentDAO(BaseDAO):
@@ -38,7 +39,7 @@ class DocumentDAO(BaseDAO):
             self.collection.delete_many({"name": name, "createdBy": userid})
 
     def _unique_docname_for_project(self, project_id, name):
-        project_docs = ProjectDAO().find_by_id(project_id, {'docIds': True})['docIds']
+        project_docs = ProjectDAO().find_by_id(project_id, ['docIds'])['docIds']
         proj_docnames = {doc["name"] for doc in self.collection.find({"_id": {"$in": project_docs}}, {"name": True})}
         unique_name = name
         i = 0
@@ -60,11 +61,16 @@ class DocumentDAO(BaseDAO):
 
     def add_doc(self, project_id, name, model_pred):
         # creates a new document in the docs collection
-        # TODO: TEMP BEGIN
-        project_id = ProjectDAO().find_by_name(session['userid'], 'misc')['_id']
-        # TODO: TEMP END
+        # FIXME: BEGIN Workaround (session not available with react dev server)
+        #   Could be fixed with setting authorization & session in headers (e.g. JWT)
+        if config.DEBUG:
+            user_id = str(UserDAO().find_by_email("demo")['_id'])
+            project_id = str(ProjectDAO().find_by_name(user_id, 'misc')['_id'])
+        else:
+            user_id = session['userid']
+        # FIXME: END Workaround
         unique_name = self._unique_docname_for_project(project_id, name)
-        doc = self._insert_autoannotated_doc(unique_name, session['userid'], model_pred)
+        doc = self._insert_autoannotated_doc(unique_name, user_id, model_pred)
         ProjectDAO().add_doc_to_project(project_id, doc['_id'])
         return doc
 

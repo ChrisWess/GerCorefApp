@@ -62,20 +62,22 @@ def handle_login_error(err_msg):
 
 @application.route('/login', methods=['GET', 'POST'])
 def login():
+    if UserDAO.is_logged_in_in_session() and UserDAO().find_by_id(session['userid']) is None:
+        print("Logging out...")
+        UserDAO.logout_user()
+        redirect_to = f"?next={request.path}"
+        return render_template('login.html', redirect_to=redirect_to)
     if request.method == 'POST':
         try:
-            if UserDAO.is_logged_in_in_session():
-                raise ValueError("Already logged in! Make sure to log out first.")
-            else:
-                email = request.form['email']
-                usr_entered = request.form['password']
+            email = request.form['email']
+            usr_entered = request.form['password']
 
-                UserDAO().validate_login(email, usr_entered)
-                redirect_to = request.args.get('next', default=None)
-                if redirect_to:
-                    return redirect(redirect_to)
-                else:
-                    return redirect(url_for("index"))
+            UserDAO().validate_login(email, usr_entered)
+            redirect_to = request.args.get('next', default=None)
+            if redirect_to:
+                return redirect(redirect_to)
+            else:
+                return redirect(url_for("index"))
         except OperationFailure:
             return handle_login_error("Server error occurred while validating login")
         except ValueError as e:
@@ -91,10 +93,13 @@ def login():
 
 
 @application.route('/logout', methods=['GET', 'POST'])
-@login_required
 def logout():
-    UserDAO.logout_user()
-    return redirect(url_for('index'))
+    if UserDAO.is_logged_in_in_session():
+        print("Logging out...")
+        UserDAO.logout_user()
+        return redirect(url_for('index'))
+    else:
+        return {"result": "Logout unsuccessful! Not logged in.", "status": 401}
 
 
 @application.route('/user', methods=['GET'])
@@ -126,7 +131,7 @@ def find_current_user():
         if user_id is None:
             abort(400)
         try:
-            user = UserDAO().find_by_id(user_id)
+            user = UserDAO().find_by_id_response(user_id)
             if user is None:
                 abort(404)
             else:
@@ -144,7 +149,7 @@ def find_user_by_id(user_id=None):
             # projection in find_one() must be a list of keys to include
             projection = [key for key, val in args.items() if int(val)]
         try:
-            user = UserDAO().find_by_id(user_id, projection)
+            user = UserDAO().find_by_id_response(user_id, projection)
             if user is None:
                 # TODO: handle 404s in frontend (or maybe better return an JSON response with {"response": 404})
                 # TODO: throw 404s in other routes (docs, projects), too
@@ -158,7 +163,7 @@ def find_user_by_id(user_id=None):
 @application.route('/user/byEmail', methods=['GET'])
 def find_user_by_email():
     if request.method == 'GET':
-        user = UserDAO().find_by_email(request.args["email"])
+        user = UserDAO().find_by_email_response(request.args["email"])
         if user is None:
             abort(404)
         else:

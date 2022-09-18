@@ -30,7 +30,7 @@ class ProjectDAO(BaseDAO):
         else:
             return [self.to_response(project) for project in self.collection.find({"createdBy": user_id}, projection)]
 
-    def find_by_name(self, user_id, project_name, projection=None):
+    def find_by_name_response(self, user_id, project_name, projection=None):
         """
         Find Project by its name of user with given user id
         :param user_id: Id of the user
@@ -40,9 +40,13 @@ class ProjectDAO(BaseDAO):
         """
         # TODO: create index on field "createdBy" in DB
         if projection is None:
+            print(self.collection.find_one({"createdBy": user_id, "name": project_name}))
             return self.to_response(self.collection.find_one({"createdBy": user_id, "name": project_name}), True)
         else:
             return self.to_response(self.collection.find_one({"createdBy": user_id, "name": project_name}, projection))
+
+    def find_by_name(self, user_id, project_name, projection=None):
+        return self.collection.find_one({"createdBy": user_id, "name": project_name}, projection)
 
     def delete_by_id(self, project_id):
         # TODO: remove all docs of the project, if not being shared with anyone

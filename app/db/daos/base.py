@@ -30,7 +30,7 @@ class BaseDAO:
         else:
             return [self.to_response(project) for project in self.collection.find({}, projection)]
 
-    def find_by_id(self, entity_id, projection=None):
+    def find_by_id_response(self, entity_id, projection=None):
         """
         Find DB entity with given id
         :param projection:
@@ -41,6 +41,9 @@ class BaseDAO:
             return self.to_response(self.collection.find_one({"_id": ObjectId(entity_id)}), True)
         else:
             return self.to_response(self.collection.find_one({"_id": ObjectId(entity_id)}, projection))
+
+    def find_by_id(self, entity_id, projection=None):
+        return self.collection.find_one({"_id": ObjectId(entity_id)}, projection)
 
     def delete_by_id(self, project_id):
         self.collection.delete_one({"_id": ObjectId(project_id)})

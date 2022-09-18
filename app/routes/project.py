@@ -76,9 +76,9 @@ def get_project_of_user_by_name(user_id, project_name):
         ObjectId(user_id)
         if args:
             projection = [key for key, val in args.items() if int(val)]
-            return ProjectDAO().find_by_name(user_id, project_name, projection)
+            return ProjectDAO().find_by_name_response(user_id, project_name, projection)
         else:
-            return ProjectDAO().find_by_name(user_id, project_name)
+            return ProjectDAO().find_by_name_response(user_id, project_name)
     except bson.errors.InvalidId:
         abort(404)
 

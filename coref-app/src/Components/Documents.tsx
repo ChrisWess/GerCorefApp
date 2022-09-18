@@ -78,7 +78,7 @@ const Documents: React.FC<DocumentsProps> = ({ sendCorefClusterToParent,
     const onFileUpload = async (event: any) => {
         if (selectedFile !== null && documentsInfo !== undefined) {
             let fileName = selectedFile.name
-            if (fileNames !== undefined && fileName in fileNames) {
+            if (fileNames !== undefined && fileNames.has(fileName)) {
                 // TODO: show prompt that file with that name exists in docs =>
                 //  user options: 1) add file (with number in name), 2) overwrite, 3) cancel
                 let arr = fileName.split(".");
@@ -111,6 +111,7 @@ const Documents: React.FC<DocumentsProps> = ({ sendCorefClusterToParent,
                     `http://127.0.0.1:5000/uploadfile`,
                     formData,
                     {
+                        withCredentials: true,
                         headers: {
                             'Access-Control-Allow-Origin': '*',
                             'Content-Type': 'multipart/form-data',
