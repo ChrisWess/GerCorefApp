@@ -15,7 +15,17 @@ import {Link} from "react-router-dom";
 
 //The app bar is mostly copy-pasted from https://mui.com/material-ui/react-app-bar/
 
-const pages = ['Help', 'Info'];
+function handlePage(page: string){
+    if(page == "LOGIN"){
+        window.location.href = 'http://localhost:5000/login';
+        return null;
+    }
+    else{
+        console.log(page)
+    }
+}
+
+const pages = ['Help', 'Info', 'LOGIN'];
 const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
 
 const ResponsiveAppBar = () => {
@@ -116,7 +126,7 @@ const ResponsiveAppBar = () => {
                         {pages.map((page) => (
                             <Button
                                 key={page}
-                                onClick={handleCloseNavMenu}
+                                onClick={() => handlePage(page)}
                                 sx={{ my: 2, color: 'white', display: 'block' }}
                             >
                                 {page}
@@ -124,6 +134,7 @@ const ResponsiveAppBar = () => {
                         ))}
                     </Box>
 
+                    {/*
                     <Box sx={{ flexGrow: 0 }}>
                         <Tooltip title="Open settings">
                             <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
@@ -155,6 +166,7 @@ const ResponsiveAppBar = () => {
                             ))}
                         </Menu>
                     </Box>
+                    */}
                 </Toolbar>
             </Container>
         </AppBar>
