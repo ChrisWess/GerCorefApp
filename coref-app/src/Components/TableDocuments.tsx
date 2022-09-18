@@ -37,11 +37,14 @@ const TableDocuments: FC<TableDocumentsProps> = ({ sendCorefClusterToParent, sen
                     },
                 );
 
-                sendCorefClusterToParent(data.clust)
-                sendCorefTextToParent(data.tokens)
-                // allCorefs.current = []
-                sendConfidencesToParent(data.probs)
-                changeDocumentId(data._id);
+                if (data.status === 200) {
+                    let result = data.result
+                    sendCorefClusterToParent(result.clust)
+                    sendCorefTextToParent(result.tokens)
+                    // allCorefs.current = []
+                    sendConfidencesToParent(result.probs)
+                    changeDocumentId(result._id);
+                }
             }
             catch (error) {
                 if (axios.isAxiosError(error)) {

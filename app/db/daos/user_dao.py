@@ -62,29 +62,36 @@ class UserDAO(BaseDAO):
         else:
             raise ValueError('Email not registered')
 
-    def find_by_email_response(self, email, projection=None):
+    def find_by_email(self, email, projection=None, generate_response=False):
         """
         Find User with given email
-        :param projection:
         :param email: String email to find
+        :param projection:
+        :param generate_response:
         :return: User object if found, None otherwise
         """
-        if projection is None:
-            return self.to_response(self.collection.find_one({"email": email}), True)
+        result = self.collection.find_one({"email": email}, projection)
+        if generate_response:
+            return self.to_response(result, not projection)
         else:
-            return self.to_response(self.collection.find_one({"email": email}, projection))
+            return result
 
-    def find_by_email(self, email, projection=None):
-        return self.collection.find_one({"email": email}, projection)
-
-    def delete_by_id(self, user_id):
+    def delete_by_id(self, user_id, generate_response=False):
         # TODO: delete projects and documents, too. Also make a safe delete function, where account is just hidden
-        self.collection.delete_one({"_id": ObjectId(user_id)})
+        result = self.collection.delete_one({"_id": ObjectId(user_id)})
+        if generate_response:
+            return self.to_response(result, operation=BaseDAO.DELETE)
+        else:
+            return result
 
-    def delete_by_email(self, email):
-        self.collection.delete_one({"email": email})
+    def delete_by_email(self, email, generate_response=False):
+        result = self.collection.delete_one({"email": email})
+        if generate_response:
+            return self.to_response(result, operation=BaseDAO.DELETE)
+        else:
+            return result
 
-    def add_user(self, name, email, password):
+    def add_user(self, name, email, password, generate_response=False):
         # creates a new user in the users collection
         email_exists = self.collection.find_one({"email": email}, ['_id']) is not None
         if email_exists:
@@ -97,4 +104,8 @@ class UserDAO(BaseDAO):
         # create a special project "misc" when creating a user (used for single shared docs)
         ProjectDAO().add_project("misc", str(result.inserted_id))
         print("User inserted:", result.inserted_id)
-        return result.inserted_id
+        del user['password']
+        if generate_response:
+            return self.to_response(user, True, BaseDAO.CREATE, True)
+        else:
+            return user

@@ -12,7 +12,6 @@ import ButtonTextfield from "./ButtonTextfield";
 interface DocumentsProps {
     sendCorefClusterToParent: any
     sendCorefTextToParent: any,
-    changeChosenDocument: any,
     allCorefs: MutableRefObject<Mention[][]>
     sendConfidencesToParent: Function
     onDownloadDocument: Function
@@ -43,7 +42,6 @@ window.onclick = function (event) {
 
 const Documents: React.FC<DocumentsProps> = ({ sendCorefClusterToParent,
     sendCorefTextToParent,
-    changeChosenDocument,
     allCorefs,
     sendConfidencesToParent,
     onDownloadDocument,
@@ -118,32 +116,33 @@ const Documents: React.FC<DocumentsProps> = ({ sendCorefClusterToParent,
                         },
                     },
                 );
-                // TODO: handle unauthorized (make button not clickable when not logged in?)
-                console.log(data)
-                console.log(data._id)
-                console.log(data.tokens);
-                if (fileNames === undefined) {
-                    setFileNames(new Set<string>([fileName]))
-                } else {
-                    fileNames.add(fileName)
-                    setFileNames(fileNames)
-                }
-                let insertIndex = documentsInfo.length
-                for (let i = 0; i < insertIndex; i++) {
-                    let a = documentsInfo[i][1]
-                    if (fileName < a) {
-                        insertIndex = 0
-                        break
+                if (data.status === 201) {
+                    let result = data.result
+                    console.log(result._id)
+                    console.log(result.tokens);
+                    if (fileNames === undefined) {
+                        setFileNames(new Set<string>([fileName]))
+                    } else {
+                        fileNames.add(fileName)
+                        setFileNames(fileNames)
                     }
-                }
-                documentsInfo.splice(insertIndex, 0, [data._id, fileName])
-                setDocumentsInfo(documentsInfo)
+                    let insertIndex = documentsInfo.length
+                    for (let i = 0; i < insertIndex; i++) {
+                        let a = documentsInfo[i][1]
+                        if (fileName < a) {
+                            insertIndex = 0
+                            break
+                        }
+                    }
+                    documentsInfo.splice(insertIndex, 0, [result._id, fileName])
+                    setDocumentsInfo(documentsInfo)
 
-                sendCorefClusterToParent(data.clust)
-                sendCorefTextToParent(data.tokens)
-                allCorefs.current = []
-                sendConfidencesToParent(data.probs)
-                changeDocumentId(data._id);
+                    sendCorefClusterToParent(result.clust)
+                    sendCorefTextToParent(result.tokens)
+                    allCorefs.current = []
+                    sendConfidencesToParent(result.probs)
+                    changeDocumentId(result._id);
+                }  // TODO: handle unauthorized and other errors (make button not clickable when not logged in?)
             }
             catch (error) {
                 if (axios.isAxiosError(error)) {

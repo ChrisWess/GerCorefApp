@@ -111,10 +111,10 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
     const [selectedCoref, setSelectedCoref] = React.useState<number[]>([]);
     const [clusterColor, setClusterColor] = React.useState<string>("black");
     const [currentMention, setCurrentMention] = React.useState<Mention | undefined>(undefined);
-    const [chosenDocument, setChosenDocument] = React.useState(null);  // TODO: remove
     const [confidences, setConfidences] = React.useState<ConfidenceValues[][]>([]);
     const [documentId, setDocumentId] = React.useState<string>();
     const [documentIdNamePairs, setDocumentIdNamePairs] = React.useState<[string, string][] | undefined>();
+    const [unsavedChanges, setUnsavedChanges] = React.useState<boolean>();
 
     const [hovertoggle, setHovertoggle] = React.useState(true);
     const [autoAnnotoggle, setAutoAnnoToggle] = React.useState(true);
@@ -434,12 +434,6 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
         setVal(newValue);
     };
 
-
-    const changeChosenDocument = (newDocument: any) => {
-        setChosenDocument(newDocument);
-        console.log(newDocument);
-    };
-
     const changeDocumentId = (newId: any) => {
         setDocumentId(newId);
         console.log('doc id changed:', newId);
@@ -460,14 +454,16 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
                     },
                 );
 
-                let data_arr = data.result
-                let idNamePairs: [string, string][] = []
-                for (let i = 0; i < data_arr.length; i++) {
-                    let reducedDoc = data_arr[i]
-                    idNamePairs.push([reducedDoc._id, reducedDoc.name])
+                if (data.status === 200) {
+                    let result = data.result
+                    let idNamePairs: [string, string][] = []
+                    for (let i = 0; i < result.length; i++) {
+                        let reducedDoc = result[i]
+                        idNamePairs.push([reducedDoc._id, reducedDoc.name])
+                    }
+                    idNamePairs.sort((a, b) => a[1] > b[1] ? 1 : b[1] > a[1] ? -1 : 0)
+                    setDocumentIdNamePairs(idNamePairs)
                 }
-                idNamePairs.sort((a, b) => a[1] > b[1] ? 1 : b[1] > a[1] ? -1 : 0)
-                setDocumentIdNamePairs(idNamePairs)
             } catch (error) {
                 if (axios.isAxiosError(error)) {
                     console.log('error message: ', error.message);
@@ -665,7 +661,6 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
                                             <Text
                                                 sendCorefClusterToParent={sendCorefClustersToMainPage}
                                                 sendCorefTextToParent={sendCorefTextToMainPage}
-                                                changeChosenDocument={changeChosenDocument}
                                                 allCorefs={allCorefs}
                                                 sendConfidencesToParent={sendConfidencesToMainPage}
                                             />
@@ -677,7 +672,6 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
                                             <Documents
                                                 sendCorefClusterToParent={sendCorefClustersToMainPage}
                                                 sendCorefTextToParent={sendCorefTextToMainPage}
-                                                changeChosenDocument={changeChosenDocument}
                                                 allCorefs={allCorefs}
                                                 sendConfidencesToParent={sendConfidencesToMainPage}
                                                 onDownloadDocument={onDownloadDocument}

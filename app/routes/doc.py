@@ -3,6 +3,7 @@ from flask import request, abort
 
 from app import application
 from app.db.daos.doc_dao import DocumentDAO
+from app.db.daos.project_dao import ProjectDAO
 
 
 @application.route('/doc', methods=['GET'])
@@ -19,10 +20,9 @@ def find_docs():
                     del dict_args[key]
             except ValueError:
                 del dict_args[key]
-        result = DocumentDAO().find_all(dict_args)
+        return DocumentDAO().find_all(dict_args, True)
     else:
-        result = DocumentDAO().find_all()
-    return DocumentDAO.list_response(result)
+        return DocumentDAO().find_all(generate_response=True)
 
 
 @application.route('/doc/<doc_id>', methods=['GET'])
@@ -33,7 +33,7 @@ def find_doc_by_id(doc_id=None):
         if args:
             projection = [key for key, val in args.items() if int(val)]
         try:
-            doc = DocumentDAO().find_by_id_response(doc_id, projection)
+            doc = DocumentDAO().find_by_id(doc_id, projection, True)
             if doc is None:
                 abort(404)
             else:
@@ -44,11 +44,26 @@ def find_doc_by_id(doc_id=None):
 
 @application.route('/doc/user/<user_id>', methods=['GET'])
 def find_docs_of_user(user_id=None):
-    return DocumentDAO.list_response(DocumentDAO().find_by_user(user_id))
+    return DocumentDAO().find_by_user(user_id, generate_response=True)
 
 
-@application.route('/doc', methods=['PUT'])
-def update_doc():
+@application.route('/doc/<doc_id>', methods=['DELETE'])
+def delete_doc_by_id(doc_id):
+    if request.method == 'DELETE':
+        try:
+            ProjectDAO().remove_doc_from_any_project(doc_id)
+            return DocumentDAO().delete_by_id(doc_id, True)
+        except bson.errors.InvalidId:
+            abort(404)
+
+
+@application.route('/doc/<user_id>', methods=['PUT'])
+def update_doc_corefs(user_id=None):
+    pass
+
+
+@application.route('/doc/share/<doc_id>/with/<user_id>', methods=['PUT'])
+def share_doc(doc_id, user_id):
     pass
 
 
@@ -57,4 +72,4 @@ def rename_doc():
     args = request.json
     if "docname" not in args or "docid" not in args:
         abort(400)
-    return DocumentDAO().rename_doc(args["docid"], args["docname"])
+    return DocumentDAO().rename_doc(args["docid"], args["docname"], True)

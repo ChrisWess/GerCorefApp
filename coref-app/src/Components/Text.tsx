@@ -6,7 +6,6 @@ import axios from 'axios';
 export default function Text(props: any) {
     const theme = useTheme();
     const [text, setText] = useState("")
-    const [clust, setClust] = useState([[]])
 
     async function submitText(input: string) {
         try{
@@ -21,13 +20,15 @@ export default function Text(props: any) {
                     },
                 },
             );
-            console.log(JSON.stringify(data, null, 4));
-            props.sendCorefClusterToParent(data.clust)
-            props.sendCorefTextToParent(data.tokens)
-            props.changeChosenDocument(null);
-            props.allCorefs.current = []
-            props.sendConfidencesToParent(data.probs)
-            // TODO: maybe automatically switch to documents tab and select the newly created document from the list
+            if (data.status === 201) {
+                let result = data.result
+                console.log(JSON.stringify(result, null, 4));
+                props.sendCorefClusterToParent(result.clust)
+                props.sendCorefTextToParent(result.tokens)
+                props.allCorefs.current = []
+                props.sendConfidencesToParent(result.probs)
+                // TODO: maybe automatically switch to documents tab and select the newly created document from the list
+            }
         }
         catch (error) {
             if (axios.isAxiosError(error)) {

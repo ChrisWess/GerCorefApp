@@ -12,8 +12,7 @@ def create_user():
     if request.method == 'POST':
         try:
             args = request.json
-            userid = UserDAO().add_user(args["name"], args["email"], args["password"])
-            return userid
+            return UserDAO().add_user(args["name"], args["email"], args["password"], generate_response=True)
         except OperationFailure:
             abort(500)
         except ValueError:
@@ -117,10 +116,9 @@ def find_users():
                         del dict_args[key]
                 except ValueError:
                     del dict_args[key]
-            result = UserDAO().find_all(dict_args)
+            return UserDAO().find_all(dict_args, True)
         else:
-            result = UserDAO().find_all()
-        return UserDAO.list_response(result)
+            return UserDAO().find_all(generate_response=True)
 
 
 @application.route('/user/current/', methods=['GET'])
@@ -131,7 +129,7 @@ def find_current_user():
         if user_id is None:
             abort(400)
         try:
-            user = UserDAO().find_by_id_response(user_id)
+            user = UserDAO().find_by_id(user_id, generate_response=True)
             if user is None:
                 abort(404)
             else:
@@ -149,7 +147,7 @@ def find_user_by_id(user_id=None):
             # projection in find_one() must be a list of keys to include
             projection = [key for key, val in args.items() if int(val)]
         try:
-            user = UserDAO().find_by_id_response(user_id, projection)
+            user = UserDAO().find_by_id(user_id, projection, True)
             if user is None:
                 # TODO: handle 404s in frontend (or maybe better return an JSON response with {"response": 404})
                 # TODO: throw 404s in other routes (docs, projects), too
@@ -163,7 +161,7 @@ def find_user_by_id(user_id=None):
 @application.route('/user/byEmail', methods=['GET'])
 def find_user_by_email():
     if request.method == 'GET':
-        user = UserDAO().find_by_email_response(request.args["email"])
+        user = UserDAO().find_by_email(request.args["email"], generate_response=True)
         if user is None:
             abort(404)
         else:
@@ -175,10 +173,9 @@ def delete_user_by_id(user_id):
     if request.method == 'DELETE':
         # TODO: log out deleted user, if logged in
         try:
-            UserDAO().delete_by_id(user_id)
+            return UserDAO().delete_by_id(user_id, True)
         except bson.errors.InvalidId:
             abort(404)
-        return user_id
 
 
 @application.errorhandler(401)

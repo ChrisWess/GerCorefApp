@@ -20,23 +20,27 @@ class DocumentDAO(BaseDAO):
         self.collection = mdb.docs
         self.model = Document
 
-    def find_by_user(self, user_id, projection=None):
+    def find_by_user(self, user_id, projection=None, generate_response=False):
         """
         Find Documents of user with given user id
         :param projection:
+        :param generate_response:
         :param user_id: Id of the user
         :return: Document object if found, None otherwise
         """
-        if projection is None:
-            return [self.to_response(doc, True) for doc in self.collection.find({"createdBy": user_id})]
+        result = [doc for doc in self.collection.find({"createdBy": user_id}, projection)]
+        if generate_response:
+            return self.to_response(result, not projection)
         else:
-            return [self.to_response(doc) for doc in self.collection.find({"createdBy": user_id}, projection)]
+            return result
 
-    def delete_by_docname(self, name, userid=None):
+    def delete_by_docname(self, name, userid=None, generate_response=False):
         if userid is None:
-            self.collection.delete_many({"name": name})
+            result = self.collection.delete_many({"name": name})
         else:
-            self.collection.delete_many({"name": name, "createdBy": userid})
+            result = self.collection.delete_many({"name": name, "createdBy": userid})
+        if generate_response:
+            return self.to_response(result, operation=BaseDAO.DELETE)
 
     def _unique_docname_for_project(self, project_id, name):
         project_docs = ProjectDAO().find_by_id(project_id, ['docIds'])['docIds']
@@ -59,7 +63,7 @@ class DocumentDAO(BaseDAO):
         print("Document inserted:", result.inserted_id)
         return doc
 
-    def add_doc(self, project_id, name, model_pred):
+    def add_doc(self, project_id, name, model_pred, generate_response=False):
         # creates a new document in the docs collection
         # FIXME: BEGIN Workaround (session not available with react dev server)
         #   Could be fixed with setting authorization & session in headers (e.g. JWT)
@@ -72,13 +76,22 @@ class DocumentDAO(BaseDAO):
         unique_name = self._unique_docname_for_project(project_id, name)
         doc = self._insert_autoannotated_doc(unique_name, user_id, model_pred)
         ProjectDAO().add_doc_to_project(project_id, doc['_id'])
-        return doc
+        if generate_response:
+            return self.to_response(doc, True, BaseDAO.CREATE, True)
+        else:
+            return doc
 
-    def rename_doc(self, doc_id, name):
+    def rename_doc(self, doc_id, name, generate_response=False):
         filtr = {"_id": ObjectId(doc_id)}
         new_name = {"$set": {'name': name}}
         self.collection.update_one(filtr, new_name)
-        return name
+        if generate_response:
+            return self.to_response(doc_id, operation=BaseDAO.UPDATE)
+        else:
+            return doc_id
 
-    def update_doc(self, name):
-        pass
+    def update_doc(self, doc_id, tokens, clust, generate_response=False):
+        filtr = {"_id": ObjectId(doc_id)}
+        new_name = {"$set": {'tokens': tokens, 'ckust': clust}}
+        self.collection.update_one(filtr, new_name)
+        return  # TODO

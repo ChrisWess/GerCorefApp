@@ -18,7 +18,7 @@ def model_predict():
     if 'output_mode' in args and args['output_mode'] == 'long':
         output_mode = "json"
     pred = model.predict(args["text"], output_mode)
-    return DocumentDAO().add_doc(args["projectid"], args["docname"], pred)
+    return DocumentDAO().add_doc(args["projectid"], args["docname"], pred, True)
 
 
 @application.route('/uploadfile', methods=['POST'])
@@ -29,7 +29,7 @@ def model_file():
         abort(400)
     text = request.files.get("myFile").read().decode("utf-8")
     pred = model.predict(text, "json_small")
-    return DocumentDAO().add_doc(args["projectid"], args["docname"], pred)
+    return DocumentDAO().add_doc(args["projectid"], args["docname"], pred, True)
 
 
 @application.route('/findSentences', methods=['POST'])
