@@ -21,6 +21,11 @@ import Statistics from "./Statistics";
 import axios from "axios";
 import FileConverter from "./FileConverter";
 import Search from './Search';
+import SearchIcon from '@mui/icons-material/Search';
+import AssessmentIcon from '@mui/icons-material/Assessment';
+import TextFieldsIcon from '@mui/icons-material/TextFields';
+import DescriptionIcon from '@mui/icons-material/Description';
+
 
 
 
@@ -115,6 +120,17 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
     const [documentId, setDocumentId] = React.useState<string>();
     const [documentIdNamePairs, setDocumentIdNamePairs] = React.useState<[string, string][] | undefined>();
     const [unsavedChanges, setUnsavedChanges] = React.useState<boolean>();
+    const [documentIdMapping, setDocumentIdMapping] = React.useState<Map<string, string> | undefined>();
+    const [currentPage, setCurrentPage] = React.useState(1);
+    const [itemsPerPage] = React.useState(10);
+    const [sentenceToHighlight, setSentenceToHighlight] = React.useState(0);
+    const [wordsToHighlight, setWordsToHighlight] = React.useState<number[]>([]);
+
+
+    const changePage = (sentence: number, words: number[]) => {
+        setCurrentPage(Math.ceil(sentence / itemsPerPage));
+        setSentenceToHighlight(sentence);
+    }
 
     const [hovertoggle, setHovertoggle] = React.useState(true);
     const [autoAnnotoggle, setAutoAnnoToggle] = React.useState(true);
@@ -425,18 +441,13 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
 
     //For Tabs
     const [value, setValue] = React.useState(0);
-    const [val, setVal] = React.useState(0);
     const handleChange = (event: React.SyntheticEvent, newValue: number) => {
         setValue(newValue);
-    };
-
-    const handleChangeTab = (event: React.SyntheticEvent, newValue: number) => {
-        setVal(newValue);
+        setSentenceToHighlight(0);
     };
 
     const changeDocumentId = (newId: any) => {
         setDocumentId(newId);
-        console.log('doc id changed:', newId);
     };
 
     async function loadDocuments() {
@@ -578,14 +589,6 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
                                     flexDirection: 'column',
                                     height: 800,
                                 }}>
-                                    <Box sx={{ width: '100%' }}>
-                                        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                                            <Tabs value={val} onChange={handleChangeTab} aria-label="basic tabs example">
-                                                <Tab label="Coreferences" {...a11yProps(0)} />
-                                                <Tab label="Search" {...a11yProps(1)} />
-                                            </Tabs>
-                                        </Box>
-                                    <TabPanel value={val} index={0}>
                                     <CorefView
                                         selectedCoref={selectedCoref}
                                         wordArr={wordArr}
@@ -602,13 +605,6 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
                                         autoAnnotoggle={autoAnnotoggle}
                                         setAutoAnnotoggle={setAutoAnnoToggle}
                                     />
-                                    </TabPanel>
-                                    <TabPanel value={val} index={1}>
-                                            <Search                                         
-                                            documentId={documentId}                                           
-                                            ></Search>
-                                        </TabPanel>
-                                    </Box>
                                 </Paper>
                             </Grid>
 
@@ -633,7 +629,13 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
                                         keyShortcutExecuted={keyShortcutExecuted}
                                         hovertoggle={hovertoggle}
                                         autoAnnotoggle={autoAnnotoggle}
-                                    ></MainView>
+                                        setCurrentPage={setCurrentPage}
+                                        currentPage={currentPage}
+                                        itemsPerPage={itemsPerPage}
+                                        sentenceToHighlight={sentenceToHighlight}
+                                        setSentenceToHighlight={setSentenceToHighlight}
+                                        wordsToHighlight={wordsToHighlight}>
+                                    </MainView>
                                 </Paper>
                             </Grid>
 
@@ -649,10 +651,11 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
                                 }}>
                                     <Box sx={{ width: '100%' }}>
                                         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                                            <Tabs value={value} onChange={handleChange} aria-label="basic tabs example">
-                                                <Tab label="Text" {...a11yProps(0)} />
-                                                <Tab label="Documents" {...a11yProps(1)} onClick={loadDocuments} />
-                                                <Tab label="Statistics" {...a11yProps(2)} />
+                                            <Tabs value={value} onChange={handleChange}> 
+                                                <Tab icon={<TextFieldsIcon />} {...a11yProps(0)} style={{minWidth:"25%"}}/>
+                                                <Tab icon={<DescriptionIcon />} {...a11yProps(1)} onClick={loadDocuments} style ={{minWidth: '25%'}}/>
+                                                <Tab icon={<SearchIcon />}  {...a11yProps(2)} style ={{minWidth: '25%'}}/> 
+                                                <Tab icon={<AssessmentIcon />} {...a11yProps(3)} style ={{minWidth: '25%'}}/>
                                             </Tabs>
                                         </Box>
                                         <TabPanel value={value} index={0}>
@@ -663,6 +666,7 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
                                                 sendCorefTextToParent={sendCorefTextToMainPage}
                                                 allCorefs={allCorefs}
                                                 sendConfidencesToParent={sendConfidencesToMainPage}
+                                                changeDocumentId={changeDocumentId}
                                             />
 
 
@@ -682,6 +686,15 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
                                             />
                                         </TabPanel>
                                         <TabPanel value={value} index={2}>
+                                            <Search                                         
+                                                documentId={documentId}  
+                                                txt={corefText}
+                                                changePage={changePage} 
+                                                setSentenceToHighlight={setSentenceToHighlight}
+                                                setWordsToHighlight = {setWordsToHighlight}  
+                                            ></Search>
+                                        </TabPanel>
+                                        <TabPanel value={value} index={3}>
                                             <Statistics
                                                 currentMention={currentMention}
                                                 confidences={confidences}

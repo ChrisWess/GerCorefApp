@@ -23,10 +23,12 @@ export default function Text(props: any) {
             if (data.status === 201) {
                 let result = data.result
                 console.log(JSON.stringify(result, null, 4));
-                props.sendCorefClusterToParent(result.clust)
-                props.sendCorefTextToParent(result.tokens)
+                props.sendCorefClusterToParent(result.clust);
+                props.sendCorefTextToParent(result.tokens);
                 props.allCorefs.current = []
-                props.sendConfidencesToParent(result.probs)
+                props.sendConfidencesToParent(result.probs);
+                props.changeDocumentId(data._id);
+
                 // TODO: maybe automatically switch to documents tab and select the newly created document from the list
             }
         }

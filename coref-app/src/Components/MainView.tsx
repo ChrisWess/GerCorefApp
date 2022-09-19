@@ -27,6 +27,13 @@ interface MainViewProps {
     keyShortcutExecuted: Function
     hovertoggle: boolean
     autoAnnotoggle: boolean
+    setCurrentPage: any
+    currentPage: any
+    itemsPerPage: any
+    children: any
+    sentenceToHighlight: any
+    setSentenceToHighlight: any
+    wordsToHighlight: any
 }
 
 export const parseMentionId = function(mentionId: string) {
@@ -102,17 +109,18 @@ function flattenClust(buffer: any, clust: any, allCorefs: any, sentenceOffsets: 
 
 
 const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
-                                               wordArr, wordFlags,
-                                               setNewCorefSelection, markWords, keyShortcutExecuted, hovertoggle, autoAnnotoggle}) => {
+                                                wordArr, wordFlags,
+                                               setNewCorefSelection, markWords, keyShortcutExecuted, 
+                                               hovertoggle, autoAnnotoggle, setCurrentPage,
+                                               currentPage, itemsPerPage, sentenceToHighlight,
+                                               setSentenceToHighlight, wordsToHighlight}) => {
 
-
-    console.log(txt);
     //For Pagination
     const [listItem, setListItems] = useState([]);
-    const [currentPage, setCurrentPage] = useState(1);
-    const [itemsPerPage, setItemsPerPage] = useState(15);
     const indexOfLastItem = currentPage*itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    //const style={ index_to_highlight === index? {fontFamily: "cursive", fontWeight: "bold", fontSize: "2rem"};
+    //{fontFamily: "sans-serif", fontWeight: "normal", fontSize: "1rem"}
 
     //functions for editing shortcuts: "a" activates shortcut, subsequent number is recorded and saved in current input
     //input is processed and cleared when "a" is released (currentInput and setInput).
@@ -166,20 +174,52 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
     //Puts Text in array of sentences, each word wrapped in <abbr> element.
     let buffer: JSX.Element[][] = new Array<JSX.Element[]>()
     let sentenceOffsets: number[] = [0]
+    let current = 0;
     for (let i = 0; i < txt.length; i++) {
         let sentence: JSX.Element[] = []
         for (let j = 0; j < txt[i].length; j++) {
             let token: string = txt[i][j];
             let currentId = 'w' + wordArr.current.length;
-            if (token.match(/^[.,:!?]$/)) {  // check for punctuation
-                sentence.push(<abbr key={currentId} id={currentId}>{token}</abbr>)
+            if (token.match(/^[.,:!?;]$/)) {  // check for punctuation
+                if (wordsToHighlight.length != 0 && current < wordsToHighlight.length
+                    && i == wordsToHighlight[current].num - 1 
+                    && j >= wordsToHighlight[current].words[0] 
+                    && j <= wordsToHighlight[current].words[1]) {
+                    sentence.push(<abbr key={currentId} id={currentId} style={{backgroundColor: "yellow"}}>
+                                    {token}</abbr>);
+                    if (j == wordsToHighlight[current].words[1]) {
+                        current += 1;
+                    }
+                }
+                else {
+                    sentence.push(<abbr key={currentId} id={currentId}>{token}</abbr>)
+               }
                 if (token === '.' && j !== txt[i].length - 1) {
                     wordFlags.current.push(null)
                 } else {
                     wordFlags.current.push(false)
                 }
             } else {
-                sentence.push(<abbr key={currentId} id={currentId} className="wregular" onClick={wordClickEvent}>{" " + token}</abbr>)
+                if (wordsToHighlight.length != 0 && current < wordsToHighlight.length 
+                    && i == wordsToHighlight[current].num - 1 
+                    && j >= wordsToHighlight[current].words[0] 
+                    && j <= wordsToHighlight[current].words[1]) {  
+                   if  (j == wordsToHighlight[current].words[0]) {   
+                        sentence.push(<span> <abbr key={currentId} id={currentId} className="wregular" onClick={wordClickEvent} 
+                            style={{backgroundColor: "yellow"}}>{token}</abbr></span>
+                                );
+                    } else {
+                        sentence.push(<abbr key={currentId} id={currentId} className="wregular" onClick={wordClickEvent} 
+                        style={{backgroundColor: "yellow"}}>
+                            {token}</abbr>);
+                    }
+                    if (j == wordsToHighlight[current].words[1]) {
+                        current += 1;
+                    }
+                } else {
+                    sentence.push(<abbr key={currentId} id={currentId} className="wregular" onClick={wordClickEvent}>
+                        {" " + token}</abbr>)
+                }
                 wordFlags.current.push(true)
             }
             wordArr.current.push(token)
@@ -195,6 +235,7 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
     //for each coref cluster it puts an html element in front of its first word and behind its last word
     //
     // !! overlapping corefs cause many errors, also when trying to make new overlapping corefs !!
+    current = 0;
     for (let i = 0; i < flattenedClust.length; i++) {
         let mentionIdxStart = flattenedClust[i][0]
         let mentionIdxEnd = flattenedClust[i][1]
@@ -219,6 +260,22 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
         let startIdxInSentence = mentionIdxStart - sentenceOffsets[sentenceIdx]
         let shiftedStartIdx = startIdxInSentence - deleted[startIdxInSentence]
         let id = "w" + mentionIdxStart;
+
+        while (wordsToHighlight.length != 0 && current < wordsToHighlight.length 
+            && (wordsToHighlight[current].num - 1 < sentenceIdx
+                || (wordsToHighlight[current].num - 1 <= sentenceIdx 
+                    && wordsToHighlight[current].words[0] < startIdxInSentence))) {
+            current = current + 1;
+        }
+
+        let toHightlight = (wordsToHighlight.length != 0 && current < wordsToHighlight.length 
+            && sentenceIdx == wordsToHighlight[current].num - 1 
+            && startIdxInSentence >= wordsToHighlight[current].words[0] 
+            && startIdxInSentence <= wordsToHighlight[current].words[1]);
+        
+         //(sentenceIdx == sentenceToHighlight - 1
+        //    && startIdxInSentence >= wordsToHighlight[0] 
+        //    && startIdxInSentence <= wordsToHighlight[1]);
         if (mentionIdxStart === mentionIdxEnd && !(!autoAnnotoggle && cluster[mentionIdx].autoCreated)) {
             sentBuffer.splice(shiftedStartIdx, 1,
             <b key={corefId}
@@ -228,8 +285,9 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
                 <abbr
                     key={id+"-1"}
                     id={id}
-                    className={"cr cr-" + currentIndexOfCoref}>
-                                    <a key={id+"-2"} id={id} href="#d1c1m1">[</a>
+                    className={"cr cr-" + currentIndexOfCoref}
+                    style={toHightlight?{backgroundColor: "yellow"}:{}}>
+                    <a key={id+"-2"} id={id} href="#d1c1m1" >[</a>
                     <HoverBox
                     word={wordArr.current[mentionIdxStart]}
                     cluster={currentIndexOfCoref}
@@ -248,23 +306,27 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
             let mentionSlice: JSX.Element[] = sentBuffer.slice(shiftedStartIdx + 1,
                 endIdxInSentence - deleted[startIdxInSentence])
             let id1 = "w" + mentionIdxEnd;
+           // style={toHightlight?{fontWeight: "bold", fontSize: "2rem"}:{}}>
 
             sentBuffer.splice(shiftedStartIdx, mentionIdxEnd + 1 - mentionIdxStart,
-                <b key={corefId} id={corefId} onClick={selectNewCorefEvent}>
+                <b key={corefId} id={corefId} onClick={selectNewCorefEvent} >
                     {" "}
-                    <abbr key={id+"-1"} id={id} className={"cr cr-" + currentIndexOfCoref}>
+                    <abbr key={id+"-1"} id={id} className={"cr cr-" + currentIndexOfCoref}
+                        style={toHightlight?{backgroundColor: "yellow"}:{}}>
                         <a key={id+"-2"} id={id} href="#d1c1m1">[</a>
                         <HoverBox word={wordArr.current[mentionIdxStart]} cluster={currentIndexOfCoref} hovertoggle={hovertoggle} mention={cluster[mentionIdx]}/>
                     </abbr>
                     {mentionSlice.map((elem, index) => (
                         <abbr key={'w' + (mentionIdxStart + index + 1)+"-1"}
                               id={'w' + (mentionIdxStart + index + 1)}
-                              className={"cr cr-" + currentIndexOfCoref}>
+                              className={"cr cr-" + currentIndexOfCoref}
+                              style={toHightlight?{backgroundColor: "yellow"}:{}}>
                             {" "}
                             <HoverBox word={wordArr.current[mentionIdxStart + index + 1]} cluster={currentIndexOfCoref} hovertoggle={hovertoggle} mention={cluster[mentionIdx]}/>
                         </abbr>
                     ))}
-                    <abbr key={id1+"-1"} id={id1} className={"cr cr-" + currentIndexOfCoref}>
+                    <abbr key={id1+"-1"} id={id1} className={"cr cr-" + currentIndexOfCoref}
+                        style={toHightlight?{backgroundColor: "yellow"}:{}}>
                         {" "}
                         <HoverBox word={wordArr.current[mentionIdxEnd]} cluster={currentIndexOfCoref} hovertoggle={hovertoggle} mention={cluster[mentionIdx]}/>
                         <a key={id1+"-2"} id={id1} href="#d1c1m1">]</a>
@@ -277,10 +339,13 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
 
     //Decide which Items are to be displayed on this page
     const currentItems = buffer.slice(indexOfFirstItem, indexOfLastItem);
-    console.log(currentItems);
+    let index_to_highlight = -1;
+    if (indexOfFirstItem < sentenceToHighlight && sentenceToHighlight <= indexOfLastItem) {
+        index_to_highlight = sentenceToHighlight - indexOfFirstItem - 1;
+    }
     const sentenceList = currentItems.map((d, index) =>
         <React.Fragment key={index}>
-            <ListItem divider key={index+".1"}>
+            <ListItem divider key={index+".1"} selected={index_to_highlight === index? true : false}>
                 <ListItemIcon key={index+".2"}>
                     {index+indexOfFirstItem+1}
                 </ListItemIcon>
@@ -290,7 +355,7 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
         </React.Fragment>
     );
     //todo: fix problem with scrolling
-
+//style={{fontSize: index_to_highlight === index? 20: 15}}
     return (
         <>
             <div style={{height:720, overflow: 'auto', paddingTop: '20px'}}  onKeyUp={deactivateListener} onKeyPress={processKey} tabIndex={1}>
@@ -302,8 +367,9 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
             </div>
             <Pagination
                 count={Math.ceil(buffer.length / itemsPerPage)}
-                onChange={(event,page) => setCurrentPage(page)}
+                onChange={(event,page) => { setCurrentPage(page); setSentenceToHighlight(0); }}
                 style={{marginLeft: "auto", marginRight: "auto"}}
+                page={currentPage}
             />
         </>
     );

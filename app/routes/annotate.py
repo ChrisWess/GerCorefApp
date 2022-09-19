@@ -1,3 +1,4 @@
+from string import punctuation
 from flask import request, abort
 from flask import jsonify
 from flask_login import login_required
@@ -35,22 +36,33 @@ def model_file():
 @application.route('/findSentences', methods=['POST'])
 def model_find():
     args = request.json
-    inpt = args['input']
+    input = args['input']
     _id = args['id']
     result = {}
     text = DocumentDAO().find_by_id(_id)["tokens"]
+    punc = set(punctuation)
+    input = re.escape(input)
     for i in range(len(text)):
-        sentence = " ".join(text[i]).lower()
-        res = [_.start() for _ in re.finditer(inpt, sentence)]
+        sentence = ''.join(w if set(w) <= punc else ' ' + w for w in text[i]).lstrip().lower()
+        res = [_.start() for _ in re.finditer(input, sentence)]
         if len(res) != 0:
+            starts_of_words = [0]
+            for j in range(len(text[i])-1):
+                starts_of_words.append(starts_of_words[-1] + len(text[i][j]) +
+                    (0 if set(text[i][j+1]) <= punc else 1))
             result[i+1] = []
-            #spaces = [_.start() for _ in re.finditer(' ', s)]
+            start = 0
+            prev_start = -1
+            end = 0
             for r in res:
-                strfrom = r
-                while strfrom != 0 and sentence[strfrom-1] != ' ':
-                    strfrom = strfrom - 1
-                strto = r + len(inpt)
-                while strto != len(sentence) and sentence[strto] != ' ':
-                    strto = strto + 1
-                result[i+1].append(sentence[strfrom:strto])
+                while start + 1 < len(starts_of_words) and r >= starts_of_words[start + 1]:
+                    start += 1
+                    end += 1
+                while end < len(starts_of_words) and r + len(input) > starts_of_words[end]:
+                    end += 1
+                end -= 1
+                if prev_start != start:
+                    result[i+1].append((start, end))
+                prev_start = start
     return jsonify(result)
+
