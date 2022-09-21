@@ -45,8 +45,9 @@ function Copyright(props: any) {
 //For Snackbar
 //Allows use of snackbar: use "callSnackbar" with the inputs message, position and type
 // see "ShortcutSnackbar.tsx"
-interface SnackbarProps {
+interface MainPageProps {
     callSnackbar: Function;
+    title: string;
 }
 
 //For Tabs
@@ -110,7 +111,7 @@ export const clearPrevMarking = function(markedWord: number[]) {
 //unused, possibly usable to create a color theme to improve visuals
 const theme = createTheme();
 
-export default function MainPage({callSnackbar}: SnackbarProps) {
+export default function MainPage({callSnackbar, title}: MainPageProps) {
     const [corefClusters, setCorefClusters] = React.useState<number[][][]>([]);
     const [corefText, setCorefText] = React.useState<string[][]>([]);
     const [selectedCoref, setSelectedCoref] = React.useState<number[]>([]);
@@ -701,6 +702,7 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
                         overflow: 'auto',
                     }}
                 >
+                    <h2 style={{textAlign: 'center', marginTop: '10px', marginBottom: '5px'}}>{title}</h2>
                     <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
                         <Grid container spacing={3}>
 

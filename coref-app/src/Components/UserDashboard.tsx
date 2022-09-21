@@ -21,6 +21,7 @@ function startProject() {
 
 function openProject(project: string) {
     console.log("opens project: "+project)
+    window.location.href = 'http://localhost:3000/project/'+project;
     return undefined
 }
 

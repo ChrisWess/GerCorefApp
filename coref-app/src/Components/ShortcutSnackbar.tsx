@@ -5,6 +5,8 @@ import IconButton from '@mui/material/IconButton';
 import CloseIcon from '@mui/icons-material/Close';
 import MainPage from "./MainPage";
 import MuiAlert, { AlertProps } from '@mui/material/Alert';
+import {useParams} from "react-router-dom";
+
 
 export interface SnackbarMessage {
     message: string;
@@ -25,6 +27,7 @@ export interface State {
 }
 
 export default function ConsecutiveSnackbars() {
+    const {title} = useParams();
     const [snackPack, setSnackPack] = React.useState<readonly SnackbarMessage[]>([]);
     const [open, setOpen] = React.useState(false);
     const [position, setPosition] = React.useState("bottom" as ("bottom" | "top") );
@@ -74,6 +77,7 @@ export default function ConsecutiveSnackbars() {
             <div>
                 <MainPage
                     callSnackbar={callSnackbar}
+                    title={title? title: "NONAME"}
                 />
                 <Snackbar
                     key={messageInfo ? messageInfo.key : undefined}
@@ -110,6 +114,7 @@ export default function ConsecutiveSnackbars() {
         <div>
             <MainPage
                 callSnackbar={callSnackbar}
+                title={title? title: "NONAME"}
             />
             <Snackbar
                 key={messageInfo ? messageInfo.key : undefined}

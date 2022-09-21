@@ -16,17 +16,19 @@ import {Link} from "react-router-dom";
 //The app bar is mostly copy-pasted from https://mui.com/material-ui/react-app-bar/
 
 function handlePage(page: string){
-    if(page == "LOGIN"){
-        window.location.href = 'http://localhost:5000/login';
-        return null;
-    }
-    else{
-        console.log(page)
+    console.log("Pressed "+page+"-button")
+    switch (page) {
+        case "Logout":
+            window.location.href = 'http://localhost:5000/login'
+            break;
+        case "Dashboard":
+            window.location.href = 'http://localhost:3000/Dashboard'
+            break;
     }
 }
 
-const pages = ['Help', 'Info', 'LOGIN'];
-const settings = ['Profile', 'Account', 'Dashboard', 'Logout'];
+const pages = ['Help', 'Info'];
+const settings = ['Dashboard', 'Logout'];
 
 const ResponsiveAppBar = () => {
     const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
@@ -134,7 +136,6 @@ const ResponsiveAppBar = () => {
                         ))}
                     </Box>
 
-                    {/*
                     <Box sx={{ flexGrow: 0 }}>
                         <Tooltip title="Open settings">
                             <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
@@ -159,14 +160,14 @@ const ResponsiveAppBar = () => {
                         >
                             {settings.map((setting) => (
                                 <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                                    <Typography textAlign="center">
-                                        <Link to={"/"+setting}>{setting}</Link>
+                                    <Typography textAlign="center" onClick={() => handlePage(setting)}>
+                                        {setting}
                                     </Typography>
                                 </MenuItem>
                             ))}
                         </Menu>
                     </Box>
-                    */}
+
                 </Toolbar>
             </Container>
         </AppBar>

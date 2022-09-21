@@ -9,17 +9,19 @@ import NotFound from "./Components/NotFound";
 
 
 function App() {
+    //todo: check if project with the title exists or not
   return (
 
       <div>
         <Routes>
           <Route path="/" element={<Outlet/>}>
               <Route index element={<ShortcutSnackbar />} />
-            <Route path="dashboard" element={<UserDashboard />} />
-            {/* Using path="*"" means "match anything", so this route
+              <Route path="project/:title" element={<ShortcutSnackbar />} />
+              <Route path="dashboard" element={<UserDashboard />} />
+              {/* Using path="*"" means "match anything", so this route
                   acts like a catch-all for URLs that we don't have explicit
                   routes for. */}
-            <Route path="*" element={<NotFound />} />
+              <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>
       </div>
