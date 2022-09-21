@@ -90,8 +90,50 @@ class DocumentDAO(BaseDAO):
         else:
             return doc_id
 
-    def update_doc(self, doc_id, tokens, clust, generate_response=False):
+    def update_doc(self, doc_id, ops, generate_response=False):
+        user_id = str(UserDAO().find_by_email("demo", ['_id'])['_id'])  # FIXME: session['userid']
+        doc = self.find_by_id(doc_id)
+        # TODO: when a coref model prediction is re-added, the probs should be available again (requires versioning)
+        clust = doc['clust']
+        probs = doc['probs']
+        annotated_by = doc['annotatedBy']
+        # Apply operations (ops). They are applied in python only at first, which means that
+        # if an invalid operation is executed, an error is thrown and the DB won't be affected.
+        for op in ops:
+            op_type = op[0]
+            if op_type == 0:
+                cidx, midx, start, end = op[1:]
+                if cidx == len(clust):
+                    clust.append([])
+                    annotated_by.append([])
+                clust[cidx].insert(midx, [start, end])
+                annotated_by[cidx].insert(midx, user_id)
+            elif op_type == 1:
+                cidx, midx = op[1:]
+                if annotated_by[cidx][midx] == "0":
+                    # TODO: combine probs, annotated_by and coref into objects in one list
+                    #   make a new model Mention: {probs: ..., annotatedBy: ..., range: ...}
+                    #   "clust" is then list[list[Mention]]
+                    probs_idx = 0
+                    for i, c in enumerate(annotated_by[cidx]):
+                        if midx >= i:
+                            break
+                        if c == "0":
+                            probs_idx += 1
+                    del probs[cidx][probs_idx]
+                del annotated_by[cidx][midx]
+                del clust[cidx][midx]
+                if not clust[cidx]:
+                    del probs[cidx]
+                    del annotated_by[cidx]
+                    del clust[cidx]
+            else:
+                raise ValueError(f"Operation with id {op_type} does not exist!")
+        # do update
         filtr = {"_id": ObjectId(doc_id)}
-        new_name = {"$set": {'tokens': tokens, 'ckust': clust}}
-        self.collection.update_one(filtr, new_name)
-        return  # TODO
+        new_content = {"$set": {'clust': clust, 'probs': probs, 'annotatedBy': annotated_by}}
+        self.collection.update_one(filtr, new_content)
+        if generate_response:
+            return self.to_response(doc_id, operation=BaseDAO.UPDATE)
+        else:
+            return doc_id

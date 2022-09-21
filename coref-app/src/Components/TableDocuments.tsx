@@ -6,63 +6,30 @@ import ListItemText from '@mui/material/ListItemText';
 import Divider from '@mui/material/Divider';
 import ListSubheader from '@mui/material/ListSubheader';
 import {FC, ReactNode} from "react";
-import {Mention} from "./MainView";
-import {clearPrevMarking} from "./MainPage";
+import * as React from "react";
 
 
 interface TableDocumentsProps {
-    sendCorefClusterToParent: any
-    sendCorefTextToParent: any
-    sendConfidencesToParent: any
-    allCorefs: any
-    documentId: string | undefined
-    changeDocumentId: any
+    selectDocument: Function
+    currDocInfo: string[]
     documentsInfo: [string, string][] | undefined
 }
 
 
-const TableDocuments: FC<TableDocumentsProps> = ({ sendCorefClusterToParent, sendCorefTextToParent,
-    sendConfidencesToParent, documentId, changeDocumentId, documentsInfo }) => {
+const TableDocuments: FC<TableDocumentsProps> = ({ selectDocument, currDocInfo, documentsInfo }) => {
 
     const createClickHandler = (docId: string) => {
-        return async function handleClick() {
-            try {
-                const { data } = await axios.get(
-                    `http://127.0.0.1:5000/doc/${docId}`,
-                    {
-                        headers: {
-                            'Access-Control-Allow-Origin': '*',
-                            'Content-Type': 'multipart/form-data',
-                        },
-                    },
-                );
-
-                if (data.status === 200) {
-                    let result = data.result
-                    sendCorefClusterToParent(result.clust)
-                    sendCorefTextToParent(result.tokens)
-                    // allCorefs.current = []
-                    sendConfidencesToParent(result.probs)
-                    changeDocumentId(result._id);
-                }
-            }
-            catch (error) {
-                if (axios.isAxiosError(error)) {
-                    console.log('error message: ', error.message);
-                    return error.message;
-                } else {
-                    console.log('unexpected error: ', error);
-                    return 'An unexpected error occurred';
-                }
-            }
+        return function handleClick() {
+            // TODO: don't allow save document when there are unsaved changes => show pop-up if user wants to save/discard/cancel
+            return selectDocument(docId)
         }
     };
 
-    //TODO: rewrite it more clear, without 2 lists and if
-    if (documentsInfo && documentsInfo.length > 0) {
+    //TODO: rewrite it more clear, without 2 lists and if-statement
+    if (documentsInfo) {
         let currIndex = -1
         for (let i = 0; i < documentsInfo.length; i++) {
-            if (documentsInfo[i][0] === documentId) {
+            if (documentsInfo[i][0] === currDocInfo[0]) {
                 currIndex = i
                 break
             }

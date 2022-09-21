@@ -1,5 +1,7 @@
 import bson
+from ast import literal_eval
 from flask import request, abort
+from flask_login import login_required
 
 from app import application
 from app.db.daos.doc_dao import DocumentDAO
@@ -57,9 +59,13 @@ def delete_doc_by_id(doc_id):
             abort(404)
 
 
-@application.route('/doc/<user_id>', methods=['PUT'])
-def update_doc_corefs(user_id=None):
-    pass
+@application.route('/doc/<doc_id>', methods=['PUT'])
+# @login_required  # TODO: requires login, because doc must be owned by user & annotatedBy should be adjusted on update
+def update_doc_corefs(doc_id=None):
+    args = request.json
+    if "ops" not in args:
+        abort(400)
+    return DocumentDAO().update_doc(doc_id, literal_eval(args["ops"]), True)
 
 
 @application.route('/doc/share/<doc_id>/with/<user_id>', methods=['PUT'])

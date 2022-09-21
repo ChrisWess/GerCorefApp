@@ -27,8 +27,8 @@ export default function Text(props: any) {
                 props.sendCorefTextToParent(result.tokens);
                 props.allCorefs.current = []
                 props.sendConfidencesToParent(result.probs);
-                props.changeDocumentId(data._id);
-
+                let newDoc: string[] = [data._id, "temp.txt"]  // TODO: create a default file name
+                props.changeCurrDocInfo(newDoc);
                 // TODO: maybe automatically switch to documents tab and select the newly created document from the list
             }
         }

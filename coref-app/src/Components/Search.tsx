@@ -8,14 +8,14 @@ import ClearIcon from '@mui/icons-material/Clear';
 
 
 interface SearchProps {
-  documentId: any
+  currDocInfo: string[]
   txt: any
   changePage: any
   setSentenceToHighlight: any
   setWordsToHighlight: any
-};
+}
 
-const Search: React.FC<SearchProps> = ({ documentId, txt, changePage, setSentenceToHighlight, setWordsToHighlight }) => {
+const Search: React.FC<SearchProps> = ({ currDocInfo, txt, changePage, setSentenceToHighlight, setWordsToHighlight }) => {
   const [rows, setRows] = React.useState<any[]>([]);
   const [inputText, setInputText] = React.useState<string>("");
   const [prevText, setPrevText] = React.useState<string>("");
@@ -24,13 +24,12 @@ const Search: React.FC<SearchProps> = ({ documentId, txt, changePage, setSentenc
     return { num, words };
   }
 
-
   const inputHandlerEnter = async (event: any) => {
     if (event.charCode === 13) {
       try {
         const { data } = await axios.post(
           `http://127.0.0.1:5000/findSentences`,
-          { "input": inputText, "id": documentId },
+          { "input": inputText, "id": currDocInfo[0] },
           {
             headers: {
               'Access-Control-Allow-Origin': '*',

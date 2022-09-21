@@ -117,15 +117,13 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
     const [clusterColor, setClusterColor] = React.useState<string>("black");
     const [currentMention, setCurrentMention] = React.useState<Mention | undefined>(undefined);
     const [confidences, setConfidences] = React.useState<ConfidenceValues[][]>([]);
-    const [documentId, setDocumentId] = React.useState<string>();
+    const [currDocInfo, setCurrDocInfo] = React.useState<string[]>([]);
     const [documentIdNamePairs, setDocumentIdNamePairs] = React.useState<[string, string][] | undefined>();
-    const [unsavedChanges, setUnsavedChanges] = React.useState<boolean>();
-    const [documentIdMapping, setDocumentIdMapping] = React.useState<Map<string, string> | undefined>();
+    const [unsavedChanges, setUnsavedChanges] = React.useState<boolean>(false);
     const [currentPage, setCurrentPage] = React.useState(1);
     const [itemsPerPage] = React.useState(10);
     const [sentenceToHighlight, setSentenceToHighlight] = React.useState(0);
     const [wordsToHighlight, setWordsToHighlight] = React.useState<number[]>([]);
-
 
     const changePage = (sentence: number, words: number[]) => {
         setCurrentPage(Math.ceil(sentence / itemsPerPage));
@@ -134,7 +132,6 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
 
     const [hovertoggle, setHovertoggle] = React.useState(true);
     const [autoAnnotoggle, setAutoAnnoToggle] = React.useState(true);
-
     //currently on the "c" button for the shortcuts
     const [shortcutSaved, setShortcutSaved] = React.useState<number>(0);
 
@@ -142,6 +139,7 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
     const wordArr = React.useRef<string[]>([]);
     const wordFlags = React.useRef<(boolean | null)[]>([]);
     const markedWord = React.useRef<number[]>([])
+    const opsArr = React.useRef<number[][] | undefined>();
 
     function onDownloadDocument(dataType: string, documentName: string) {
         let converter = new FileConverter()
@@ -149,114 +147,139 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
         converter.convertFile(dataType ,documentName, corefClusters, corefText)
     }
 
-    function addCoref(clusterId: number) {
-        return function () {
-            let idxStart: number = markedWord.current[0]
-            let clusterIdx: number = clusterId - 1
-            let mentionIdx: number
-            if (clusterId > corefClusters.length) {
-                corefClusters.push([])
-                allCorefs.current.push([])
-                mentionIdx = 0
-            } else {
-                let cluster: number[][] = corefClusters[clusterIdx]
-                mentionIdx = cluster.length
-                for (let i = 0; i < cluster.length; i++) {
-                    if (cluster[i][0] >= idxStart) {
-                        mentionIdx = i
-                        break
-                    }
+    function getCurrDocInfoFromList(docId: string) {
+        if (documentIdNamePairs) {
+            for (let i = 0; i < documentIdNamePairs.length; i++) {
+                if (documentIdNamePairs[i][0] === docId) {
+                    return documentIdNamePairs[i]
                 }
             }
-            let corefId = `d1c${clusterIdx}m${mentionIdx}`
-            let newMention: Mention
-            if (markedWord.current.length === 1) {
-                newMention = {
-                    id: corefId,
-                    content: wordArr.current[idxStart],
-                    selectionRange: [idxStart, idxStart + 1],
-                    documentIdx: 0, clusterIdx: clusterIdx, mentionIdx: mentionIdx,
-                    autoCreated: false
-                }
-            } else {
-                newMention = {
-                    id: corefId,
-                    content: wordArr.current.slice(idxStart, markedWord.current[1]).join(" "),
-                    selectionRange: markedWord.current,
-                    documentIdx: 0, clusterIdx: clusterIdx, mentionIdx: mentionIdx,
-                    autoCreated: false
-                }
-            }
-            setNewCorefSelection(newMention)
-            let cluster: Mention[] = allCorefs.current[clusterIdx]
-            cluster.splice(mentionIdx, 0, newMention)
-            for (let i = mentionIdx + 1; i < cluster.length; i++) {
-                let m: Mention = cluster[i]
-                let newMentionIdx: number = m.mentionIdx + 1
-                m.mentionIdx = newMentionIdx
-                m.id = `d1c${clusterIdx}m${newMentionIdx}`
-            }
-            corefClusters[clusterIdx].splice(mentionIdx, 0, [newMention.selectionRange[0], newMention.selectionRange[1] - 1])
-            setCorefClusters(corefClusters)
+        }
+        return []
+    }
+
+    function addOperationToStorage(opEntry: number[]) {
+        if (currDocInfo.length === 0) {
+            throw "No document id set in current state"
+        }
+        if (opsArr.current === undefined) {
+            opsArr.current = [opEntry]
+        } else {
+            opsArr.current.push(opEntry)
+        }
+        if (localStorage.getItem("docId") === null) {
+            localStorage.setItem("docId", currDocInfo[0])
+        }
+        localStorage.setItem("ops", JSON.stringify(opsArr.current))
+        if (!unsavedChanges) {
+            setUnsavedChanges(true)
         }
     }
 
-    function corefShort(clusterId: number) {
-        try {
-            let idxStart: number = markedWord.current[0]
-            let clusterIdx: number = Math.min(clusterId - 1, allCorefs.current.length);
-            let mentionIdx: number
+    async function saveChanges() {
+        // TODO: create Ctrl+S shortcut
+        let ops: string | null = localStorage.getItem("ops")
+        let docId: string | null = localStorage.getItem("docId")
+        if (!!ops && !!docId) {
+            try {
+                const {data} = await axios.put(
+                    `http://127.0.0.1:5000/doc/${docId}`,
+                    {ops: ops},
+                    {
+                        headers: {
+                            'Access-Control-Allow-Origin': '*',
+                        },
+                    },
+                );
 
-            if (clusterId > corefClusters.length) {
-                corefClusters.push([])
-                allCorefs.current.push([])
-                mentionIdx = 0
-            } else {
-                let cluster: number[][] = corefClusters[clusterIdx]
-                mentionIdx = cluster.length
-                for (let i = 0; i < cluster.length; i++) {
-                    if (cluster[i][0] >= idxStart) {
-                        mentionIdx = i
-                        break
-                    }
+                if (data.status === 200) {
+                    // Clear storage of unsaved changes
+                    opsArr.current = undefined
+                    localStorage.removeItem("ops")
+                    localStorage.removeItem("docId")
+                    setUnsavedChanges(false)
+                }
+            } catch (error) {
+                if (axios.isAxiosError(error)) {
+                    console.log('error message: ', error.message);
+                    return error.message;
+                } else {
+                    console.log('unexpected error: ', error);
+                    return 'An unexpected error occurred';
                 }
             }
-            let corefId = `d1c${clusterIdx}m${mentionIdx}`
-            let newMention: Mention
-            if (markedWord.current.length === 1) {
-                newMention = {
-                    id: corefId,
-                    content: wordArr.current[idxStart],
-                    selectionRange: [idxStart, idxStart + 1],
-                    documentIdx: 0, clusterIdx: clusterIdx, mentionIdx: mentionIdx,
-                    autoCreated: false
-                }
-            } else {
-                newMention = {
-                    id: corefId,
-                    content: wordArr.current.slice(idxStart, markedWord.current[1]).join(" "),
-                    selectionRange: markedWord.current,
-                    documentIdx: 0, clusterIdx: clusterIdx, mentionIdx: mentionIdx,
-                    autoCreated: false
+        }
+    }
+
+    function addCurrCorefMain(clusterId: number, clusterIdx: number) {
+        let idxStart: number = markedWord.current[0]
+        let mentionIdx: number
+        if (clusterId > corefClusters.length) {
+            corefClusters.push([])
+            allCorefs.current.push([])
+            mentionIdx = 0
+        } else {
+            let cluster: number[][] = corefClusters[clusterIdx]
+            mentionIdx = cluster.length
+            for (let i = 0; i < cluster.length; i++) {
+                if (cluster[i][0] >= idxStart) {
+                    mentionIdx = i
+                    break
                 }
             }
-            setNewCorefSelection(newMention)
-            let cluster: Mention[] = allCorefs.current[clusterIdx]
-            cluster.splice(mentionIdx, 0, newMention)
-            for (let i = mentionIdx + 1; i < cluster.length; i++) {
-                let m: Mention = cluster[i]
-                let newMentionIdx: number = m.mentionIdx + 1
-                m.mentionIdx = newMentionIdx
-                m.id = `d1c${clusterIdx}m${newMentionIdx}`
+        }
+        let corefId = `d1c${clusterIdx}m${mentionIdx}`
+        let newMention: Mention
+        if (markedWord.current.length === 1) {
+            newMention = {
+                id: corefId,
+                content: wordArr.current[idxStart],
+                selectionRange: [idxStart, idxStart + 1],
+                documentIdx: 0, clusterIdx: clusterIdx, mentionIdx: mentionIdx,
+                autoCreated: false
             }
-            corefClusters[clusterIdx].splice(mentionIdx, 0, [newMention.selectionRange[0], newMention.selectionRange[1] - 1])
-            setCorefClusters(corefClusters)
+        } else {
+            newMention = {
+                id: corefId,
+                content: wordArr.current.slice(idxStart, markedWord.current[1]).join(" "),
+                selectionRange: markedWord.current,
+                documentIdx: 0, clusterIdx: clusterIdx, mentionIdx: mentionIdx,
+                autoCreated: false
+            }
+        }
+        setNewCorefSelection(newMention)
+        let cluster: Mention[] = allCorefs.current[clusterIdx]
+        cluster.splice(mentionIdx, 0, newMention)
+        for (let i = mentionIdx + 1; i < cluster.length; i++) {
+            let m: Mention = cluster[i]
+            let newMentionIdx: number = m.mentionIdx + 1
+            m.mentionIdx = newMentionIdx
+            m.id = `d1c${clusterIdx}m${newMentionIdx}`
+        }
+        let idxEnd: number = newMention.selectionRange[1] - 1
+        corefClusters[clusterIdx].splice(mentionIdx, 0, [idxStart, idxEnd])
+        setCorefClusters(corefClusters)
+        let opEntry: number[] = [0, clusterIdx, mentionIdx, idxStart, idxEnd]
+        addOperationToStorage(opEntry)
+    }
+
+    function addCurrCoref(clusterId: number) {
+        return function () {
+            let clusterIdx: number = clusterId - 1
+            addCurrCorefMain(clusterId, clusterIdx)
+        }
+    }
+
+    function addCurrCorefShort(clusterId: number) {
+        try {
+            let clusterIdx: number = Math.min(clusterId - 1, allCorefs.current.length);
+            addCurrCorefMain(clusterId, clusterIdx)
         } catch (e) {
             callSnackbar("An Error occurred: "+ e, "top", "error")
         }
     }
 
-    const deleteCoref = function() {
+    const deleteCurrCoref = function() {
         // TODO: implement versioning of the documents in order to keep track of previous annotation states
         //  (model inference should create a new version => if a coreference, that was created by the model,
         //  is deleted and re-added, the system should still be able to show the plots afterwards)
@@ -287,6 +310,46 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
         }
         setCorefClusters(corefClusters)
         setNewCorefSelection(undefined)
+        let opEntry: number[] = [1, clusterIdx, mentionIdx]
+        addOperationToStorage(opEntry)
+    }
+
+    const applyDocOperation = function(op: number[]) {
+        if (op[0] === 0) {
+
+        } else if (op[0] === 1) {
+            let clusterIdx = currentMention!.clusterIdx
+            let mentionIdx = currentMention!.mentionIdx
+            corefClusters[clusterIdx].splice(mentionIdx, 1)
+
+            let cluster: Mention[] = allCorefs.current[clusterIdx]
+            cluster.splice(mentionIdx, 1)
+            for (let i = mentionIdx; i < cluster.length; i++) {
+                let m: Mention = cluster[i]
+                let newMentionIdx: number = m.mentionIdx - 1
+                m.mentionIdx = newMentionIdx
+                m.id = `d1c${clusterIdx}m${newMentionIdx}`
+            }
+
+            if (corefClusters[clusterIdx].length === 0) {
+                corefClusters.splice(clusterIdx, 1)
+                allCorefs.current.splice(clusterIdx, 1)
+                for (let i = clusterIdx; i < allCorefs.current.length; i++) {
+                    cluster = allCorefs.current[i]
+                    for (let j = 0; j < cluster.length; j++) {
+                        let m: Mention = cluster[j]
+                        m.clusterIdx = i
+                        m.id = `d1c${i}m${m.mentionIdx}`
+                    }
+                }
+            }
+            setCorefClusters(corefClusters)
+            setNewCorefSelection(undefined)
+            let opEntry: number[] = [1, clusterIdx, mentionIdx]
+            addOperationToStorage(opEntry)
+        } else {
+            throw "Operation not permitted"
+        }
     }
 
     //for the key-shortcuts used in MainView
@@ -305,11 +368,11 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
         if (isNaN(clusterId)) {
             switch (newCoref) {
                 case "d":
-                    deleteCoref()
+                    deleteCurrCoref()
                     callSnackbar("deleted coreference", "top", "info")
                     break;
                 case "n":
-                    corefShort(corefClusters.length + 1)
+                    addCurrCorefShort(corefClusters.length + 1)
                     callSnackbar("new cluster created", "top", "info")
                     break;
                 case "c":
@@ -321,7 +384,7 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
                     }
                     break;
                 case "v":
-                    corefShort(shortcutSaved)
+                    addCurrCorefShort(shortcutSaved)
                     break;
                 default:
                     callSnackbar("No such command: " + newCoref, "top", "warning")
@@ -331,7 +394,7 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
             if(clusterId > corefClusters.length+1){
                 callSnackbar("No such Cluster: "+newCoref, "top", "error")
             }else {
-                corefShort(clusterId)
+                addCurrCorefShort(clusterId)
                 callSnackbar("Added to Cluster: " + newCoref, "top", "normal")
             }
         }
@@ -349,6 +412,13 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
         console.log(messages)
         setCorefText(messages);
     };
+
+    function clearCurrentMention() {
+        setCurrentMention(undefined)
+        clearPrevMarking(markedWord.current)
+        setSelectedCoref([])
+        setClusterColor("black")
+    }
 
     const sendConfidencesToMainPage = (probs: number[][][]) => {
         probs[0][0].push(0)
@@ -446,13 +516,46 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
         setSentenceToHighlight(0);
     };
 
-    const changeDocumentId = (newId: any) => {
-        setDocumentId(newId);
+    const changeCurrDocumentInfo = (newId: any) => {
+        setCurrDocInfo(newId);
     };
+
+    async function selectDocument(docId: string) {
+        try {
+            const {data} = await axios.get(
+                `http://127.0.0.1:5000/doc/${docId}`,
+                {
+                    headers: {
+                        'Access-Control-Allow-Origin': '*',
+                        'Content-Type': 'multipart/form-data',
+                    },
+                },
+            );
+
+            if (data.status === 200) {
+                // TODO: could keep a cache of (perhaps) 5 documents
+                let result = data.result
+                setCorefClusters(result.clust)
+                setCorefText(result.tokens)
+                allCorefs.current = []
+                setConfidences(result.probs)
+                setCurrDocInfo([result._id, result.name]);
+                clearCurrentMention()
+            }
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                console.log('error message: ', error.message);
+                return error.message;
+            } else {
+                console.log('unexpected error: ', error);
+                return 'An unexpected error occurred';
+            }
+        }
+    }
 
     async function loadDocuments() {
         // load in the list of documents belonging to the current user and set the documentList
-        if (!documentIdNamePairs) {
+        if (documentIdNamePairs === undefined) {
             try {
                 const {data} = await axios.get(
                     `http://127.0.0.1:5000/doc`,
@@ -468,9 +571,30 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
                 if (data.status === 200) {
                     let result = data.result
                     let idNamePairs: [string, string][] = []
+                    let recoveredDocId: string | null = null
+                    if (currDocInfo.length === 0) {
+                        // read documentId from localStorage, if entry exists (especially when there are unsaved changes)
+                        recoveredDocId = localStorage.getItem("docId")
+                    }
                     for (let i = 0; i < result.length; i++) {
                         let reducedDoc = result[i]
-                        idNamePairs.push([reducedDoc._id, reducedDoc.name])
+                        let pair: [string, string] = [reducedDoc._id, reducedDoc.name]
+                        idNamePairs.push(pair)
+                        if (recoveredDocId === reducedDoc._id) {
+                            setCurrDocInfo(pair)
+                            await selectDocument(reducedDoc._id)
+                            let ops: string | null = localStorage.getItem("ops")
+                            if (ops !== null) {
+                                opsArr.current = JSON.parse(ops)
+                                if (opsArr.current) {
+                                    // TODO: reapply doc changes in Frontend
+                                    for (let op of opsArr.current) {
+
+                                    }
+                                }
+                                setUnsavedChanges(true)
+                            }
+                        }
                     }
                     idNamePairs.sort((a, b) => a[1] > b[1] ? 1 : b[1] > a[1] ? -1 : 0)
                     setDocumentIdNamePairs(idNamePairs)
@@ -488,6 +612,7 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
     }
 
     React.useEffect(() => {
+        // TODO: recolor coreferences after text selection is removed
         // add text selection event listener to the HTML document object
         document.addEventListener('mouseup', () => {
             let selection = window.getSelection()
@@ -598,12 +723,14 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
                                         currentMention={currentMention}
                                         handleSelectCoref={setSelectedCoref}
                                         setCurrentMention={setCurrentMention}
-                                        addCoref={addCoref}
-                                        deleteCoref={deleteCoref}
+                                        addCoref={addCurrCoref}
+                                        deleteCoref={deleteCurrCoref}
                                         hovertoggle={hovertoggle}
                                         setHovertoggle={setHovertoggle}
                                         autoAnnotoggle={autoAnnotoggle}
                                         setAutoAnnotoggle={setAutoAnnoToggle}
+                                        unsavedChanges={unsavedChanges}
+                                        saveChanges={saveChanges}
                                     />
                                 </Paper>
                             </Grid>
@@ -634,7 +761,9 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
                                         itemsPerPage={itemsPerPage}
                                         sentenceToHighlight={sentenceToHighlight}
                                         setSentenceToHighlight={setSentenceToHighlight}
-                                        wordsToHighlight={wordsToHighlight}>
+                                        wordsToHighlight={wordsToHighlight}
+                                        unsavedChanges={unsavedChanges}
+                                        currDocInfo={currDocInfo}>
                                     </MainView>
                                 </Paper>
                             </Grid>
@@ -651,10 +780,10 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
                                 }}>
                                     <Box sx={{ width: '100%' }}>
                                         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                                            <Tabs value={value} onChange={handleChange}> 
+                                            <Tabs value={value} onChange={handleChange}>
                                                 <Tab icon={<TextFieldsIcon />} {...a11yProps(0)} style={{minWidth:"25%"}}/>
                                                 <Tab icon={<DescriptionIcon />} {...a11yProps(1)} onClick={loadDocuments} style ={{minWidth: '25%'}}/>
-                                                <Tab icon={<SearchIcon />}  {...a11yProps(2)} style ={{minWidth: '25%'}}/> 
+                                                <Tab icon={<SearchIcon />}  {...a11yProps(2)} style ={{minWidth: '25%'}}/>
                                                 <Tab icon={<AssessmentIcon />} {...a11yProps(3)} style ={{minWidth: '25%'}}/>
                                             </Tabs>
                                         </Box>
@@ -666,7 +795,7 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
                                                 sendCorefTextToParent={sendCorefTextToMainPage}
                                                 allCorefs={allCorefs}
                                                 sendConfidencesToParent={sendConfidencesToMainPage}
-                                                changeDocumentId={changeDocumentId}
+                                                changeCurrDocInfo={changeCurrDocumentInfo}
                                             />
 
 
@@ -679,19 +808,21 @@ export default function MainPage({callSnackbar}: SnackbarProps) {
                                                 allCorefs={allCorefs}
                                                 sendConfidencesToParent={sendConfidencesToMainPage}
                                                 onDownloadDocument={onDownloadDocument}
-                                                documentId={documentId}
-                                                changeDocumentId={changeDocumentId}
+                                                clearCurrentMention={clearCurrentMention}
+                                                selectDocument={selectDocument}
+                                                currDocInfo={currDocInfo}
+                                                changeCurrDocInfo={changeCurrDocumentInfo}
                                                 documentsInfo={documentIdNamePairs}
                                                 setDocumentsInfo={setDocumentIdNamePairs}
                                             />
                                         </TabPanel>
                                         <TabPanel value={value} index={2}>
-                                            <Search                                         
-                                                documentId={documentId}  
+                                            <Search
+                                                currDocInfo={currDocInfo}
                                                 txt={corefText}
-                                                changePage={changePage} 
+                                                changePage={changePage}
                                                 setSentenceToHighlight={setSentenceToHighlight}
-                                                setWordsToHighlight = {setWordsToHighlight}  
+                                                setWordsToHighlight = {setWordsToHighlight}
                                             ></Search>
                                         </TabPanel>
                                         <TabPanel value={value} index={3}>

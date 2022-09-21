@@ -34,6 +34,8 @@ interface MainViewProps {
     sentenceToHighlight: any
     setSentenceToHighlight: any
     wordsToHighlight: any
+    unsavedChanges: boolean
+    currDocInfo: string[]
 }
 
 export const parseMentionId = function(mentionId: string) {
@@ -109,11 +111,12 @@ function flattenClust(buffer: any, clust: any, allCorefs: any, sentenceOffsets: 
 
 
 const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
-                                                wordArr, wordFlags,
+                                               wordArr, wordFlags,
                                                setNewCorefSelection, markWords, keyShortcutExecuted, 
                                                hovertoggle, autoAnnotoggle, setCurrentPage,
                                                currentPage, itemsPerPage, sentenceToHighlight,
-                                               setSentenceToHighlight, wordsToHighlight}) => {
+                                               setSentenceToHighlight, wordsToHighlight, unsavedChanges,
+                                               currDocInfo}) => {
 
     //For Pagination
     const [listItem, setListItems] = useState([]);
@@ -355,10 +358,13 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
         </React.Fragment>
     );
     //todo: fix problem with scrolling
-//style={{fontSize: index_to_highlight === index? 20: 15}}
+    //style={{fontSize: index_to_highlight === index? 20: 15}}
     return (
         <>
-            <div style={{height:720, overflow: 'auto', paddingTop: '20px'}}  onKeyUp={deactivateListener} onKeyPress={processKey} tabIndex={1}>
+            <div style={{height:720, overflow: 'auto', paddingTop: '10px'}}  onKeyUp={deactivateListener} onKeyPress={processKey} tabIndex={1}>
+                <div style={{textAlign: 'center', overflow: 'auto'}}>
+                    {currDocInfo.length === 0 ? "" : unsavedChanges ? (currDocInfo[1] + "*") : currDocInfo[1]}
+                </div>
                 <article id="docView">
                         <List className="pagination" key={"mainList"}>
                                 {sentenceList}

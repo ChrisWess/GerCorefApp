@@ -15,8 +15,10 @@ interface DocumentsProps {
     allCorefs: MutableRefObject<Mention[][]>
     sendConfidencesToParent: Function
     onDownloadDocument: Function
-    documentId: string | undefined
-    changeDocumentId: any
+    clearCurrentMention: Function
+    selectDocument: Function
+    currDocInfo: string[]
+    changeCurrDocInfo: Function
     documentsInfo: [string, string][] | undefined
     setDocumentsInfo: Function
 }
@@ -45,8 +47,10 @@ const Documents: React.FC<DocumentsProps> = ({ sendCorefClusterToParent,
     allCorefs,
     sendConfidencesToParent,
     onDownloadDocument,
-    documentId,
-    changeDocumentId,
+    clearCurrentMention,
+    selectDocument,
+    currDocInfo,
+    changeCurrDocInfo,
     documentsInfo,
     setDocumentsInfo }) => {
 
@@ -134,14 +138,17 @@ const Documents: React.FC<DocumentsProps> = ({ sendCorefClusterToParent,
                             break
                         }
                     }
-                    documentsInfo.splice(insertIndex, 0, [result._id, fileName])
+                    let newDocInfo: [string, string] = [result._id, fileName]
+                    documentsInfo.splice(insertIndex, 0, newDocInfo)
                     setDocumentsInfo(documentsInfo)
 
                     sendCorefClusterToParent(result.clust)
                     sendCorefTextToParent(result.tokens)
                     allCorefs.current = []
                     sendConfidencesToParent(result.probs)
-                    changeDocumentId(result._id);
+                    changeCurrDocInfo(newDocInfo);
+                    clearCurrentMention()
+                    // TODO: trigger pop-up if changes in current doc should be changed
                 }  // TODO: handle unauthorized and other errors (make button not clickable when not logged in?)
             }
             catch (error) {
@@ -170,18 +177,14 @@ const Documents: React.FC<DocumentsProps> = ({ sendCorefClusterToParent,
             <Button variant="outlined" style={{ margin: 1, textTransform: "none", width: "97%" }}
                 onClick={onFileUpload} type="submit" disabled={!selectedFile}> Upload </Button>
             <TableDocuments
-                sendCorefClusterToParent={sendCorefClusterToParent}
-                sendCorefTextToParent={sendCorefTextToParent}
-                allCorefs={allCorefs}
-                sendConfidencesToParent={sendConfidencesToParent}
-                documentId={documentId}
-                changeDocumentId={changeDocumentId}
-                documentsInfo={documentsInfo} />
+                selectDocument={selectDocument}
+                currDocInfo={currDocInfo}
+                documentsInfo={documentsInfo}/>
             <ButtonTextfield tfLabel="New Document Name" buttonText="Rename" submitFunc={renameDoc} />
             <Button variant="outlined" style={{ margin: 5, textTransform: "none", width: "97%" }} disabled>
                 Share selected document</Button>
             <span className="dropdown">
-                <Button disabled={!documentId} variant="outlined" style={{ margin: 5, textTransform: "none", width: "97%" }}
+                <Button disabled={currDocInfo.length === 0} variant="outlined" style={{ margin: 5, textTransform: "none", width: "97%" }}
                     onClick={onFileDownload} className="dropbtn">
                     Download annotated document</Button>
                 <div id="documentsDropDown" className="dropdown-content">

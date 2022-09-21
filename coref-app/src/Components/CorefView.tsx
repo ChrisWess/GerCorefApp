@@ -20,6 +20,8 @@ interface CorefViewProps {
     hovertoggle: boolean
     autoAnnotoggle: boolean
     setAutoAnnotoggle: Function
+    unsavedChanges: boolean
+    saveChanges: Function
 }
 
 export const getCluster = function(mention: Mention, allCorefs: Mention[][]) {
@@ -30,11 +32,16 @@ export const getCluster = function(mention: Mention, allCorefs: Mention[][]) {
 const CorefView: React.FC<CorefViewProps> = ({ selectedCoref, wordArr,
                                                  allCorefs, clusterColor, markedWord,
                                                  currentMention, handleSelectCoref, setCurrentMention,
-                                                 addCoref, deleteCoref, setHovertoggle, hovertoggle, autoAnnotoggle, setAutoAnnotoggle}) => {
+                                                 addCoref, deleteCoref, setHovertoggle, hovertoggle, autoAnnotoggle,
+                                                 setAutoAnnotoggle, unsavedChanges, saveChanges}) => {
     const theme = useTheme();
 
     function deleteC() {
         deleteCoref()
+    }
+
+    function saveChange() {
+        saveChanges()
     }
 
     function toggleAutoAnno() {
@@ -70,6 +77,10 @@ const CorefView: React.FC<CorefViewProps> = ({ selectedCoref, wordArr,
             <Button variant="outlined" style={{margin: 5, textTransform: "none", width: "97%"}} disabled={!currentMention}
                     onClick={deleteC}>
                 Delete Coreference
+            </Button>
+            <Button variant="outlined" style={{margin: 5, textTransform: "none", width: "97%"}} disabled={!unsavedChanges}
+                    onClick={saveChange}>
+                Save Changes (Ctrl + S)
             </Button>
 
             <FormControlLabel onChange={toggleAutoAnno} control={<Switch defaultChecked />} style={{margin: 5}} label="Model Inference" />
