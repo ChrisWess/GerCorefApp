@@ -44,6 +44,8 @@ class DocumentDAO(BaseDAO):
 
     def _unique_docname_for_project(self, project_id, name):
         project_docs = ProjectDAO().find_by_id(project_id, ['docIds'])['docIds']
+        for i, doc_id in enumerate(project_docs):
+            project_docs[i] = ObjectId(doc_id)
         proj_docnames = {doc["name"] for doc in self.collection.find({"_id": {"$in": project_docs}}, {"name": True})}
         unique_name = name
         i = 0

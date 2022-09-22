@@ -55,8 +55,6 @@ const Documents: React.FC<DocumentsProps> = ({ sendCorefClusterToParent,
     setDocumentsInfo }) => {
 
     const [selectedFile, setSelectedFile] = React.useState<any | null>(null);
-    const [fileNames, setFileNames] = React.useState<Set<string> | undefined>(
-        documentsInfo === undefined ? undefined : new Set(documentsInfo?.map((item) => item[1])));
     const supportedDataTypes = ["XML", "CoNLL-2012", "plaintext"];
 
     // On file download (click the download button)
@@ -80,28 +78,6 @@ const Documents: React.FC<DocumentsProps> = ({ sendCorefClusterToParent,
     const onFileUpload = async (event: any) => {
         if (selectedFile !== null && documentsInfo !== undefined) {
             let fileName = selectedFile.name
-            if (fileNames !== undefined && fileNames.has(fileName)) {
-                // TODO: show prompt that file with that name exists in docs =>
-                //  user options: 1) add file (with number in name), 2) overwrite, 3) cancel
-                let arr = fileName.split(".");
-                let suffix = arr.pop();
-                let prefix = arr.join('.');
-                let sameNames = [];
-                for (let i = 0; i < documentsInfo.length; i++) {
-                    let fName = documentsInfo[i][1]
-                    if (fName.startsWith(prefix) && fName.endsWith('.' + suffix)) {
-                        sameNames.push(fName);
-                    }
-                }
-                let number = 1;
-                let newName = `${prefix}-${number}.${suffix}`
-                while (sameNames.includes(newName)) {
-                    ++number;
-                    newName = `${prefix}-${number}.${suffix}`
-                }
-                fileName = newName
-            }
-
             let formData = new FormData();
             formData.append('myFile', selectedFile);
             // TODO: default to file name from file system, but create textfield for renaming documents
@@ -122,23 +98,15 @@ const Documents: React.FC<DocumentsProps> = ({ sendCorefClusterToParent,
                 );
                 if (data.status === 201) {
                     let result = data.result
-                    console.log(result._id)
-                    console.log(result.tokens);
-                    if (fileNames === undefined) {
-                        setFileNames(new Set<string>([fileName]))
-                    } else {
-                        fileNames.add(fileName)
-                        setFileNames(fileNames)
-                    }
                     let insertIndex = documentsInfo.length
                     for (let i = 0; i < insertIndex; i++) {
                         let a = documentsInfo[i][1]
-                        if (fileName < a) {
+                        if (result.name < a) {
                             insertIndex = 0
                             break
                         }
                     }
-                    let newDocInfo: [string, string] = [result._id, fileName]
+                    let newDocInfo: [string, string] = [result._id, result.name]
                     documentsInfo.splice(insertIndex, 0, newDocInfo)
                     setDocumentsInfo(documentsInfo)
 
