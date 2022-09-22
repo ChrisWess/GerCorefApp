@@ -177,6 +177,14 @@ export default function MainPage({callSnackbar, title}: MainPageProps) {
         }
     }
 
+    function clearChanges() {
+        // Clear storage of unsaved changes
+        opsArr.current = undefined
+        localStorage.removeItem("ops")
+        localStorage.removeItem("docId")
+        setUnsavedChanges(false)
+    }
+
     async function saveChanges() {
         // TODO: create Ctrl+S shortcut
         let ops: string | null = localStorage.getItem("ops")
@@ -194,11 +202,7 @@ export default function MainPage({callSnackbar, title}: MainPageProps) {
                 );
 
                 if (data.status === 200) {
-                    // Clear storage of unsaved changes
-                    opsArr.current = undefined
-                    localStorage.removeItem("ops")
-                    localStorage.removeItem("docId")
-                    setUnsavedChanges(false)
+                    clearChanges()
                 }
             } catch (error) {
                 if (axios.isAxiosError(error)) {
@@ -631,11 +635,13 @@ export default function MainPage({callSnackbar, title}: MainPageProps) {
                         // read documentId from localStorage, if entry exists (especially when there are unsaved changes)
                         recoveredDocId = localStorage.getItem("docId")
                     }
+                    let recovered = false
                     for (let i = 0; i < result.length; i++) {
                         let reducedDoc = result[i]
                         let pair: [string, string] = [reducedDoc._id, reducedDoc.name]
                         idNamePairs.push(pair)
                         if (recoveredDocId === reducedDoc._id) {
+                            recovered = true
                             setCurrDocInfo(pair)
                             let ops: string | null = localStorage.getItem("ops")
                             if (ops !== null) {
@@ -644,6 +650,9 @@ export default function MainPage({callSnackbar, title}: MainPageProps) {
                             }
                             await selectDocument(reducedDoc._id, opsArr.current)
                         }
+                    }
+                    if (!recovered) {
+                        clearChanges()
                     }
                     idNamePairs.sort((a, b) => a[1] > b[1] ? 1 : b[1] > a[1] ? -1 : 0)
                     setDocumentIdNamePairs(idNamePairs)
@@ -661,6 +670,13 @@ export default function MainPage({callSnackbar, title}: MainPageProps) {
     }
 
     React.useEffect(() => {
+        // Create Ctrl+S shortcut for saving files
+        onkeydown = function(e){
+            if(e.ctrlKey && e.keyCode == 'S'.charCodeAt(0)){
+                e.preventDefault();
+                saveChanges()
+            }
+        }
         // TODO: recolor coreferences after text selection is removed
         // add text selection event listener to the HTML document object
         document.addEventListener('mouseup', () => {

@@ -20,7 +20,7 @@ const TableDocuments: FC<TableDocumentsProps> = ({ selectDocument, currDocInfo, 
 
     const createClickHandler = (docId: string) => {
         return function handleClick() {
-            // TODO: don't allow save document when there are unsaved changes => show pop-up if user wants to save/discard/cancel
+            // TODO: don't allow change document when there are unsaved changes => show pop-up if user wants to save/discard/cancel
             return selectDocument(docId)
         }
     };
