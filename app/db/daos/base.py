@@ -67,11 +67,11 @@ class BaseDAO:
         """
         has_projection = bool(projection)
         if has_projection:
-            result = [entity for entity in self.collection.find()]
-        else:
             result = [entity for entity in self.collection.find({}, projection)]
+        else:
+            result = [entity for entity in self.collection.find()]
         if generate_response:
-            return self.to_response(result, has_projection)
+            return self.to_response(result, not has_projection)
         else:
             return result
 

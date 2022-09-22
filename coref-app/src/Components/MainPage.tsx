@@ -212,12 +212,46 @@ export default function MainPage({callSnackbar, title}: MainPageProps) {
         }
     }
 
-    function addCurrCorefMain(clusterId: number, clusterIdx: number) {
-        let idxStart: number = markedWord.current[0]
-        let mentionIdx: number
-        if (clusterId > corefClusters.length) {
-            corefClusters.push([])
+    function createNewMention(selectionRange: number[], clusterIdx: number, mentionIdx: number,
+                              idxStart: number, idxEnd: number) {
+        if (clusterIdx >= allCorefs.current.length) {
             allCorefs.current.push([])
+        }
+        let corefId = `d1c${clusterIdx}m${mentionIdx}`
+        let newMention: Mention
+        if (selectionRange.length === 1) {
+            newMention = {
+                id: corefId,
+                content: wordArr.current[idxStart],
+                selectionRange: [idxStart, idxStart + 1],
+                documentIdx: 0, clusterIdx: clusterIdx, mentionIdx: mentionIdx,
+                autoCreated: false
+            }
+        } else {
+            ++idxEnd
+            newMention = {
+                id: corefId,
+                content: wordArr.current.slice(idxStart, idxEnd).join(" "),
+                selectionRange: [idxStart, idxEnd],
+                documentIdx: 0, clusterIdx: clusterIdx, mentionIdx: mentionIdx,
+                autoCreated: false
+            }
+        }
+        let cluster: Mention[] = allCorefs.current[clusterIdx]
+        cluster.splice(mentionIdx, 0, newMention)
+        for (let i = mentionIdx + 1; i < cluster.length; i++) {
+            let m: Mention = cluster[i]
+            let newMentionIdx: number = m.mentionIdx + 1
+            m.mentionIdx = newMentionIdx
+            m.id = `d1c${clusterIdx}m${newMentionIdx}`
+        }
+        return newMention
+    }
+
+    function addCoref(clusterIdx: number, idxStart: number, idxEnd: number) {
+        let mentionIdx: number
+        if (clusterIdx >= corefClusters.length) {
+            corefClusters.push([])
             mentionIdx = 0
         } else {
             let cluster: number[][] = corefClusters[clusterIdx]
@@ -229,64 +263,57 @@ export default function MainPage({callSnackbar, title}: MainPageProps) {
                 }
             }
         }
-        let corefId = `d1c${clusterIdx}m${mentionIdx}`
-        let newMention: Mention
-        if (markedWord.current.length === 1) {
-            newMention = {
-                id: corefId,
-                content: wordArr.current[idxStart],
-                selectionRange: [idxStart, idxStart + 1],
-                documentIdx: 0, clusterIdx: clusterIdx, mentionIdx: mentionIdx,
-                autoCreated: false
-            }
-        } else {
-            newMention = {
-                id: corefId,
-                content: wordArr.current.slice(idxStart, markedWord.current[1]).join(" "),
-                selectionRange: markedWord.current,
-                documentIdx: 0, clusterIdx: clusterIdx, mentionIdx: mentionIdx,
-                autoCreated: false
-            }
-        }
-        setNewCorefSelection(newMention)
-        let cluster: Mention[] = allCorefs.current[clusterIdx]
-        cluster.splice(mentionIdx, 0, newMention)
-        for (let i = mentionIdx + 1; i < cluster.length; i++) {
-            let m: Mention = cluster[i]
-            let newMentionIdx: number = m.mentionIdx + 1
-            m.mentionIdx = newMentionIdx
-            m.id = `d1c${clusterIdx}m${newMentionIdx}`
-        }
-        let idxEnd: number = newMention.selectionRange[1] - 1
+        let newMention: Mention = createNewMention(markedWord.current, clusterIdx, mentionIdx, idxStart, idxEnd)
         corefClusters[clusterIdx].splice(mentionIdx, 0, [idxStart, idxEnd])
+        return newMention
+    }
+
+    function insertCoref(clusters: number[][][], clusterIdx: number, mentionIdx:number,
+                         idxStart: number, idxEnd: number) {
+        if (clusterIdx >= clusters.length) {
+            clusters.push([])
+            mentionIdx = 0
+        }
+        let range = idxStart === idxEnd ? [idxStart] : [idxStart, idxEnd]
+        createNewMention(range, clusterIdx, mentionIdx, idxStart, idxEnd)
+        clusters[clusterIdx].splice(mentionIdx, 0, [idxStart, idxEnd])
+        return clusters
+    }
+
+    function addCurrCorefMain(clusterIdx: number) {
+        let idxStart: number = markedWord.current[0]
+        let idxEnd: number
+        if (markedWord.current.length > 1) {
+            idxEnd = markedWord.current[1] - 1
+        } else {
+            idxEnd = markedWord.current[0]
+        }
+        let newMention: Mention = addCoref(clusterIdx, idxStart, idxEnd)
+        setNewCorefSelection(newMention)
         setCorefClusters(corefClusters)
-        let opEntry: number[] = [0, clusterIdx, mentionIdx, idxStart, idxEnd]
+        let opEntry: number[] = [0, clusterIdx, newMention.mentionIdx, idxStart, idxEnd]
         addOperationToStorage(opEntry)
     }
 
     function addCurrCoref(clusterId: number) {
         return function () {
             let clusterIdx: number = clusterId - 1
-            addCurrCorefMain(clusterId, clusterIdx)
+            addCurrCorefMain(clusterIdx)
         }
     }
 
     function addCurrCorefShort(clusterId: number) {
         try {
-            let clusterIdx: number = Math.min(clusterId - 1, allCorefs.current.length);
-            addCurrCorefMain(clusterId, clusterIdx)
+            //let clusterIdx: number = Math.min(clusterId - 1, allCorefs.current.length);
+            let clusterIdx: number = clusterId - 1
+            addCurrCorefMain(clusterIdx)
         } catch (e) {
             callSnackbar("An Error occurred: "+ e, "top", "error")
         }
     }
 
-    const deleteCurrCoref = function() {
-        // TODO: implement versioning of the documents in order to keep track of previous annotation states
-        //  (model inference should create a new version => if a coreference, that was created by the model,
-        //  is deleted and re-added, the system should still be able to show the plots afterwards)
-        let clusterIdx = currentMention!.clusterIdx
-        let mentionIdx = currentMention!.mentionIdx
-        corefClusters[clusterIdx].splice(mentionIdx, 1)
+    const deleteCoref = function(clusters: number[][][], clusterIdx: number, mentionIdx: number) {
+        clusters[clusterIdx].splice(mentionIdx, 1)
 
         let cluster: Mention[] = allCorefs.current[clusterIdx]
         cluster.splice(mentionIdx, 1)
@@ -297,8 +324,8 @@ export default function MainPage({callSnackbar, title}: MainPageProps) {
             m.id = `d1c${clusterIdx}m${newMentionIdx}`
         }
 
-        if (corefClusters[clusterIdx].length === 0) {
-            corefClusters.splice(clusterIdx, 1)
+        if (clusters[clusterIdx].length === 0) {
+            clusters.splice(clusterIdx, 1)
             allCorefs.current.splice(clusterIdx, 1)
             for (let i = clusterIdx; i < allCorefs.current.length; i++) {
                 cluster = allCorefs.current[i]
@@ -309,48 +336,46 @@ export default function MainPage({callSnackbar, title}: MainPageProps) {
                 }
             }
         }
-        setCorefClusters(corefClusters)
+        return clusters
+    }
+
+    const deleteCurrCoref = function() {
+        // TODO: implement versioning of the documents in order to keep track of previous annotation states
+        //  (model inference should create a new version => if a coreference, that was created by the model,
+        //  is deleted and re-added, the system should still be able to show the plots afterwards)
+        let clusterIdx = currentMention!.clusterIdx
+        let mentionIdx = currentMention!.mentionIdx
+        let clusters = deleteCoref(corefClusters, clusterIdx, mentionIdx)
+        setCorefClusters(clusters)
         setNewCorefSelection(undefined)
         let opEntry: number[] = [1, clusterIdx, mentionIdx]
         addOperationToStorage(opEntry)
     }
 
-    const applyDocOperation = function(op: number[]) {
+    const applyDocOperation = function(target: number[][][], op: number[]) {
         if (op[0] === 0) {
-
+            let clusterIdx = op[1]
+            let mentionIdx = op[2]
+            let start = op[3]
+            let end = op[4]
+            return insertCoref(target, clusterIdx, mentionIdx, start, end)
         } else if (op[0] === 1) {
-            let clusterIdx = currentMention!.clusterIdx
-            let mentionIdx = currentMention!.mentionIdx
-            corefClusters[clusterIdx].splice(mentionIdx, 1)
-
-            let cluster: Mention[] = allCorefs.current[clusterIdx]
-            cluster.splice(mentionIdx, 1)
-            for (let i = mentionIdx; i < cluster.length; i++) {
-                let m: Mention = cluster[i]
-                let newMentionIdx: number = m.mentionIdx - 1
-                m.mentionIdx = newMentionIdx
-                m.id = `d1c${clusterIdx}m${newMentionIdx}`
-            }
-
-            if (corefClusters[clusterIdx].length === 0) {
-                corefClusters.splice(clusterIdx, 1)
-                allCorefs.current.splice(clusterIdx, 1)
-                for (let i = clusterIdx; i < allCorefs.current.length; i++) {
-                    cluster = allCorefs.current[i]
-                    for (let j = 0; j < cluster.length; j++) {
-                        let m: Mention = cluster[j]
-                        m.clusterIdx = i
-                        m.id = `d1c${i}m${m.mentionIdx}`
-                    }
-                }
-            }
-            setCorefClusters(corefClusters)
-            setNewCorefSelection(undefined)
-            let opEntry: number[] = [1, clusterIdx, mentionIdx]
-            addOperationToStorage(opEntry)
+            let clusterIdx = op[1]
+            let mentionIdx = op[2]
+            return deleteCoref(target, clusterIdx, mentionIdx)
         } else {
             throw "Operation not permitted"
         }
+    }
+
+    function reapplyChanges(target: number[][][], ops: number[][]) {
+        if (ops) {
+            // re-apply doc changes in Frontend
+            for (let op of ops) {
+                target = applyDocOperation(target, op)
+            }
+        }
+        return target
     }
 
     //for the key-shortcuts used in MainView
@@ -421,7 +446,7 @@ export default function MainPage({callSnackbar, title}: MainPageProps) {
         setClusterColor("black")
     }
 
-    const sendConfidencesToMainPage = (probs: number[][][]) => {
+    const convertConfidences = (probs: number[][][]) => {
         probs[0][0].push(0)
         let confids: ConfidenceValues[][] = []
         for (let i = 0; i < probs.length; i++) {
@@ -521,7 +546,7 @@ export default function MainPage({callSnackbar, title}: MainPageProps) {
         setCurrDocInfo(newId);
     };
 
-    async function selectDocument(docId: string) {
+    async function selectDocument(docId: string, ops: number[][] | undefined = undefined) {
         try {
             const {data} = await axios.get(
                 `http://127.0.0.1:5000/doc/${docId}`,
@@ -536,10 +561,39 @@ export default function MainPage({callSnackbar, title}: MainPageProps) {
             if (data.status === 200) {
                 // TODO: could keep a cache of (perhaps) 5 documents
                 let result = data.result
-                setCorefClusters(result.clust)
+                let clust: number[][][] = result.clust
+                if (ops !== undefined && ops.length > 0) {
+                    // fill allCorefs already when ops need to be applied
+                    for (let i = 0; i < result.tokens.length; i++) {
+                        let cluster: string[] = result.tokens[i]
+                        for (let j = 0; j < cluster.length; j++) {
+                            wordArr.current.push(cluster[j])
+                        }
+                    }
+                    for (let i = 0; i < clust.length; i++) {
+                        allCorefs.current.push(Array<Mention>())
+                        let cluster: number[][] = clust[i]
+                        for (let j = 0; j < cluster.length; j++) {
+                            let mentionIdxStart = cluster[j][0]
+                            let mentionIdxEnd = cluster[j][1]
+                            let coref = wordArr.current.slice(mentionIdxStart, mentionIdxEnd + 1).join(" ")
+                            let corefId = `d1c${i}m${j}`
+                            allCorefs.current[i][j] = {
+                                id: corefId,
+                                content: coref,
+                                selectionRange: [mentionIdxStart, mentionIdxEnd + 1],
+                                documentIdx: 0, clusterIdx: i, mentionIdx: j,
+                                autoCreated: true
+                            }
+                        }
+                    }
+                    clust = reapplyChanges(clust, ops)
+                } else {
+                    allCorefs.current = []
+                }
+                setCorefClusters(clust)
                 setCorefText(result.tokens)
-                allCorefs.current = []
-                setConfidences(result.probs)
+                convertConfidences(result.probs)
                 setCurrDocInfo([result._id, result.name]);
                 clearCurrentMention()
             }
@@ -583,18 +637,12 @@ export default function MainPage({callSnackbar, title}: MainPageProps) {
                         idNamePairs.push(pair)
                         if (recoveredDocId === reducedDoc._id) {
                             setCurrDocInfo(pair)
-                            await selectDocument(reducedDoc._id)
                             let ops: string | null = localStorage.getItem("ops")
                             if (ops !== null) {
                                 opsArr.current = JSON.parse(ops)
-                                if (opsArr.current) {
-                                    // TODO: reapply doc changes in Frontend
-                                    for (let op of opsArr.current) {
-
-                                    }
-                                }
                                 setUnsavedChanges(true)
                             }
+                            await selectDocument(reducedDoc._id, opsArr.current)
                         }
                     }
                     idNamePairs.sort((a, b) => a[1] > b[1] ? 1 : b[1] > a[1] ? -1 : 0)
@@ -796,7 +844,7 @@ export default function MainPage({callSnackbar, title}: MainPageProps) {
                                                 sendCorefClusterToParent={sendCorefClustersToMainPage}
                                                 sendCorefTextToParent={sendCorefTextToMainPage}
                                                 allCorefs={allCorefs}
-                                                sendConfidencesToParent={sendConfidencesToMainPage}
+                                                sendConfidencesToParent={convertConfidences}
                                                 changeCurrDocInfo={changeCurrDocumentInfo}
                                             />
 
@@ -808,7 +856,7 @@ export default function MainPage({callSnackbar, title}: MainPageProps) {
                                                 sendCorefClusterToParent={sendCorefClustersToMainPage}
                                                 sendCorefTextToParent={sendCorefTextToMainPage}
                                                 allCorefs={allCorefs}
-                                                sendConfidencesToParent={sendConfidencesToMainPage}
+                                                sendConfidencesToParent={convertConfidences}
                                                 onDownloadDocument={onDownloadDocument}
                                                 clearCurrentMention={clearCurrentMention}
                                                 selectDocument={selectDocument}

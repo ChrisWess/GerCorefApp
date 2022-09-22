@@ -57,12 +57,11 @@ export const getSentenceIdx = function(tokenIdx: number, sentenceOffsets: number
     return sentenceOffsets.length - 2
 };
 
-function flattenClust(buffer: any, clust: any, allCorefs: any, sentenceOffsets: any){
+function flattenClust(buffer: any, clust: any, allCorefs: any, sentenceOffsets: any, isNewDoc: boolean) {
     let flattenedClust = []
     let clustCopy = _.cloneDeep(clust);
     let deletedCumulated: number[][] = Array(buffer.length).fill(null).map(
         (value, index) => Array(buffer[index].length).fill(0))
-    let isNewDoc: boolean = allCorefs.current.length === 0
     for (let i = 0; i < clust.length; i++) {
         if (isNewDoc) {
             allCorefs.current.push(Array<Mention>())
@@ -231,7 +230,8 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
         sentenceOffsets.push(sentenceOffsets[i] + txt[i].length)
     }
 
-    let results = flattenClust(buffer, clust, allCorefs, sentenceOffsets);
+    let isNewDoc: boolean = allCorefs.current.length === 0
+    let results = flattenClust(buffer, clust, allCorefs, sentenceOffsets, isNewDoc);
     let flattenedClust = results[0]
     let deletedCumulated = results[1]
 
