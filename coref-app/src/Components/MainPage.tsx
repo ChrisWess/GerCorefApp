@@ -25,6 +25,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import TextFieldsIcon from '@mui/icons-material/TextFields';
 import DescriptionIcon from '@mui/icons-material/Description';
+import {useParams} from "react-router-dom";
 
 
 
@@ -47,7 +48,6 @@ function Copyright(props: any) {
 // see "ShortcutSnackbar.tsx"
 interface MainPageProps {
     callSnackbar: Function;
-    title: string;
 }
 
 //For Tabs
@@ -111,7 +111,9 @@ export const clearPrevMarking = function(markedWord: number[]) {
 //unused, possibly usable to create a color theme to improve visuals
 const theme = createTheme();
 
-export default function MainPage({callSnackbar, title}: MainPageProps) {
+export default function MainPage({callSnackbar}: MainPageProps) {
+    const {docname} = useParams();
+    const {projectname} = useParams();
     const [corefClusters, setCorefClusters] = React.useState<number[][][]>([]);
     const [corefText, setCorefText] = React.useState<string[][]>([]);
     const [selectedCoref, setSelectedCoref] = React.useState<number[]>([]);
@@ -600,6 +602,7 @@ export default function MainPage({callSnackbar, title}: MainPageProps) {
                 convertConfidences(result.probs)
                 setCurrDocInfo([result._id, result.name]);
                 clearCurrentMention()
+                window.history.replaceState(null, "Coref-App", "/project/"+projectname+"/doc/"+result.name)
             }
         } catch (error) {
             if (axios.isAxiosError(error)) {
@@ -655,6 +658,16 @@ export default function MainPage({callSnackbar, title}: MainPageProps) {
                         clearChanges()
                     }
                     idNamePairs.sort((a, b) => a[1] > b[1] ? 1 : b[1] > a[1] ? -1 : 0)
+
+                    //select document if path is /doc/docname
+                    if(docname){
+                        const selected = idNamePairs.find(element => element[1] === docname);
+                        if (selected) {
+                            selectDocument(selected[0])
+                        }
+                        else
+                            window.history.replaceState(null, "Coref-App", "/project/"+projectname)
+                    }
                     setDocumentIdNamePairs(idNamePairs)
                 }
             } catch (error) {
@@ -670,6 +683,7 @@ export default function MainPage({callSnackbar, title}: MainPageProps) {
     }
 
     React.useEffect(() => {
+        loadDocuments()
         // Create Ctrl+S shortcut for saving files
         onkeydown = function(e){
             if(e.ctrlKey && e.keyCode == 'S'.charCodeAt(0)){
@@ -766,7 +780,7 @@ export default function MainPage({callSnackbar, title}: MainPageProps) {
                         overflow: 'auto',
                     }}
                 >
-                    <h2 style={{textAlign: 'center', marginTop: '10px', marginBottom: '5px'}}>{title}</h2>
+                    <h2 style={{textAlign: 'center', marginTop: '10px', marginBottom: '5px'}}>{projectname}</h2>
                     <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
                         <Grid container spacing={3}>
 
