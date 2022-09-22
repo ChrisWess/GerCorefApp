@@ -2,14 +2,35 @@ import * as React from 'react';
 import {MutableRefObject, useState} from "react";
 import MainView, {Mention} from "./MainView";
 
+
+const Highlighted = ({ text = "", highlight = "" }) => {
+    if (!highlight.trim()) {
+        return <span>{text}</span>;
+    }
+    const regex = new RegExp(`(${highlight})`, "gi");
+    const parts = text.split(regex);
+    return (
+        <span>
+            {parts.filter(String).map((part, i) => {
+                return regex.test(part) ? (
+                    <mark key={i}>{part}</mark>
+                ) : (
+                    <span key={i}>{part}</span>
+                );
+            })}
+        </span>
+    );
+};
+
 interface HoverBoxProps {
     word: any
     mention: any
     cluster: number
     hovertoggle: boolean
+    inputText?: string
 }
 
-const HoverBox: React.FC<HoverBoxProps> = ({word, mention, cluster, hovertoggle}) => {
+const HoverBox: React.FC<HoverBoxProps> = ({word, mention, cluster, hovertoggle, inputText}) => {
 
     const hoverStyle = {
         position: 'absolute',
@@ -50,7 +71,8 @@ const HoverBox: React.FC<HoverBoxProps> = ({word, mention, cluster, hovertoggle}
     return (
         <>
             <a style={hover ? hoverStyle : normalStyle}>Coref-Cluster: {cluster}  Author: {mention.autoCreated ? "Machine" : "User"}</a>
-            <a style={{fontSize: '1em', color: 'none', padding: '0px 2px 0px 2px', marginTop: '6px',  zIndex: '1'}} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>{word}</a>
+            <a style={{fontSize: '1em', color: 'none', padding: '0px 2px 0px 2px', marginTop: '6px',  zIndex: '1'}} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
+            <Highlighted text={word} highlight={inputText} /></a>
         </>
     )
 }

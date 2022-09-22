@@ -127,6 +127,7 @@ export default function MainPage({callSnackbar}: MainPageProps) {
     const [itemsPerPage] = React.useState(10);
     const [sentenceToHighlight, setSentenceToHighlight] = React.useState(0);
     const [wordsToHighlight, setWordsToHighlight] = React.useState<number[]>([]);
+    const [inputText, setInputText] = React.useState<string>("");
 
     const changePage = (sentence: number, words: number[]) => {
         setCurrentPage(Math.ceil(sentence / itemsPerPage));
@@ -520,7 +521,7 @@ export default function MainPage({callSnackbar}: MainPageProps) {
             if (!value) {
                 value = document.getElementById("w" + markRange[0])
             }
-            value.style.backgroundColor = "yellow";
+            value.style.backgroundColor = "deepskyblue";
             setSelectedCoref([markRange[0], markRange[0] + 1])
             markedWord.current = markRange
         } else {
@@ -532,12 +533,12 @@ export default function MainPage({callSnackbar}: MainPageProps) {
             for (let i = markRange[0]; i < markRange[1]; i++) {
                 let prev = document.getElementById("w" + i)
                 if (prev) {
-                    prev.style.backgroundColor = "yellow"
+                    prev.style.backgroundColor = "deepskyblue"
                 }
             }
             setSelectedCoref(markRange)
         }
-        setClusterColor("yellow")
+        setClusterColor("deepskyblue")
         setCurrentMention(undefined)
     }
 
@@ -546,6 +547,8 @@ export default function MainPage({callSnackbar}: MainPageProps) {
     const handleChange = (event: React.SyntheticEvent, newValue: number) => {
         setValue(newValue);
         setSentenceToHighlight(0);
+        setInputText("");
+        setWordsToHighlight([]);
     };
 
     const changeCurrDocumentInfo = (newId: any) => {
@@ -685,10 +688,18 @@ export default function MainPage({callSnackbar}: MainPageProps) {
     React.useEffect(() => {
         loadDocuments()
         // Create Ctrl+S shortcut for saving files
+        // Create Ctrl+F shortcut for opening search
         onkeydown = function(e){
             if(e.ctrlKey && e.keyCode == 'S'.charCodeAt(0)){
                 e.preventDefault();
                 saveChanges()
+            }
+            if (e.ctrlKey && e.keyCode == 'F'.charCodeAt(0)){
+                e.preventDefault();
+                saveChanges()
+                if (value != 2) {
+                    setValue(2);
+                }
             }
         }
         // TODO: recolor coreferences after text selection is removed
@@ -843,7 +854,8 @@ export default function MainPage({callSnackbar}: MainPageProps) {
                                         setSentenceToHighlight={setSentenceToHighlight}
                                         wordsToHighlight={wordsToHighlight}
                                         unsavedChanges={unsavedChanges}
-                                        currDocInfo={currDocInfo}>
+                                        currDocInfo={currDocInfo}
+                                        inputText={inputText}>
                                     </MainView>
                                 </Paper>
                             </Grid>
@@ -902,8 +914,10 @@ export default function MainPage({callSnackbar}: MainPageProps) {
                                                 txt={corefText}
                                                 changePage={changePage}
                                                 setSentenceToHighlight={setSentenceToHighlight}
-                                                setWordsToHighlight = {setWordsToHighlight}
-                                            ></Search>
+                                                setWordsToHighlight = {setWordsToHighlight} 
+                                                prevText={inputText}
+                                                setPrevText={setInputText}>
+                                            </Search>
                                         </TabPanel>
                                         <TabPanel value={value} index={3}>
                                             <Statistics
