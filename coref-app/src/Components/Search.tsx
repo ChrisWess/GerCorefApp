@@ -61,7 +61,6 @@ const Search: React.FC<SearchProps> = ({ currDocInfo, txt, changePage, setSenten
         }
       }
     }
-
   };
 
   const inputHandler = (event: any) => {
@@ -84,6 +83,7 @@ const Search: React.FC<SearchProps> = ({ currDocInfo, txt, changePage, setSenten
   return (
     <div className="main">
       <TextField
+        autoFocus
         value={inputText}
         id="outlined-basic"
         variant="outlined"

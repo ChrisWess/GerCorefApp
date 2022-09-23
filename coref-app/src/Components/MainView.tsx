@@ -288,23 +288,32 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
         let shiftedStartIdx = startIdxInSentence - deleted[startIdxInSentence]
         let id = "w" + mentionIdxStart;
 
+        let toHightlight = (wordsToHighlight.length != 0 && current < wordsToHighlight.length
+            && sentenceIdx == wordsToHighlight[current].num - 1
+            && startIdxInSentence >= wordsToHighlight[current].words[0]
+            && startIdxInSentence <= wordsToHighlight[current].words[1]);
+
         while (wordsToHighlight.length != 0 && current < wordsToHighlight.length 
-            && (wordsToHighlight[current].num - 1 < sentenceIdx
+            && (wordsToHighlight[current].num - 1 < sentenceIdx 
                 || (wordsToHighlight[current].num - 1 <= sentenceIdx 
-                    && (wordsToHighlight[current].words[0] < startIdxInSentence 
-                    )))) {
+                    && wordsToHighlight[current].words[0] < startIdxInSentence))
+                    && !toHightlight) {
             current = current + 1;
+            toHightlight = (wordsToHighlight.length != 0 && current < wordsToHighlight.length
+                && sentenceIdx == wordsToHighlight[current].num - 1
+                && startIdxInSentence >= wordsToHighlight[current].words[0]
+                && startIdxInSentence <= wordsToHighlight[current].words[1])
         }
 
-        let toHightlight = (wordsToHighlight.length != 0 && current < wordsToHighlight.length 
-            && sentenceIdx == wordsToHighlight[current].num - 1 
-            && startIdxInSentence >= wordsToHighlight[current].words[0] 
-            && startIdxInSentence <= wordsToHighlight[current].words[1]);
-        
-         //(sentenceIdx == sentenceToHighlight - 1
-        //    && startIdxInSentence >= wordsToHighlight[0] 
-        //    && startIdxInSentence <= wordsToHighlight[1]);
+
+        if (toHightlight) {
+            console.log(sentenceIdx, startIdxInSentence);
+        }
+
         if (mentionIdxStart === mentionIdxEnd && !(!autoAnnotoggle && cluster[mentionIdx].autoCreated)) {
+            let highlight = toHightlight ? 
+                            inputText.split(" ")[startIdxInSentence - wordsToHighlight[current].words[0]] 
+                            : "";
             sentBuffer.splice(shiftedStartIdx, 1,
             <b key={corefId}
                id={corefId}
@@ -320,7 +329,7 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
                     cluster={currentIndexOfCoref}
                     hovertoggle={hovertoggle}
                     mention={cluster[mentionIdx]} 
-                    inputText={inputText}/>
+                    inputText={highlight}/>
                                     <a key={id+"-4"} id={id} href="#d1c1m1">]</a>
                     <sub key={id+"-5"} id={id}>{currentIndexOfCoref}</sub>
                 </abbr>
@@ -335,14 +344,16 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
                 endIdxInSentence - deleted[startIdxInSentence])
             let id1 = "w" + mentionIdxEnd;
            // style={toHightlight?{fontWeight: "bold", fontSize: "2rem"}:{}}>
-
+            let highlight = toHightlight ? 
+                            (inputText.split(" ").slice(startIdxInSentence - wordsToHighlight[current].words[0],
+                                endIdxInSentence - wordsToHighlight[current].words[0])).join(" ") : "";
             sentBuffer.splice(shiftedStartIdx, mentionIdxEnd + 1 - mentionIdxStart,
                 <b key={corefId} id={corefId} onClick={selectNewCorefEvent} >
                     {" "}
                     <abbr key={id+"-1"} id={id} className={"cr cr-" + currentIndexOfCoref}>
                         <a key={id+"-2"} id={id} href="#d1c1m1">[</a>
                         <HoverBox word={wordArr.current[mentionIdxStart]} cluster={currentIndexOfCoref} 
-                            hovertoggle={hovertoggle} mention={cluster[mentionIdx]} inputText={inputText}/>
+                            hovertoggle={hovertoggle} mention={cluster[mentionIdx]} inputText={highlight}/>
                     </abbr>
                     {mentionSlice.map((elem, index) => (
                         <abbr key={'w' + (mentionIdxStart + index + 1)+"-1"}
@@ -350,13 +361,13 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
                               className={"cr cr-" + currentIndexOfCoref}>
                             {" "}
                             <HoverBox word={wordArr.current[mentionIdxStart + index + 1]} cluster={currentIndexOfCoref} 
-                                    hovertoggle={hovertoggle} mention={cluster[mentionIdx]} inputText={inputText}/>
+                                    hovertoggle={hovertoggle} mention={cluster[mentionIdx]} inputText={highlight}/>
                         </abbr>
                     ))}
                     <abbr key={id1+"-1"} id={id1} className={"cr cr-" + currentIndexOfCoref}>
                         {" "}
                         <HoverBox word={wordArr.current[mentionIdxEnd]} cluster={currentIndexOfCoref} 
-                            hovertoggle={hovertoggle} mention={cluster[mentionIdx]} inputText={inputText}/>
+                            hovertoggle={hovertoggle} mention={cluster[mentionIdx]} inputText={highlight}/>
                         <a key={id1+"-2"} id={id1} href="#d1c1m1">]</a>
                         <sub key={id1+"-3"} id={id1}>{currentIndexOfCoref}</sub>
                     </abbr>

@@ -6,6 +6,9 @@ import CloseIcon from '@mui/icons-material/Close';
 import MainPage from "./MainPage";
 import MuiAlert, { AlertProps } from '@mui/material/Alert';
 import {useParams} from "react-router-dom";
+import axios from "axios";
+import NotFound from "./NotFound";
+import {CircularProgress} from "@mui/material";
 
 
 export interface SnackbarMessage {
@@ -35,8 +38,45 @@ export default function ConsecutiveSnackbars() {
     const [messageInfo, setMessageInfo] = React.useState<SnackbarMessage | undefined>(
         undefined,
     );
+    const [render, setRender] = React.useState(<CircularProgress/>);
+    const {projectname} = useParams();
+
+    async function projectExists(pname: string){
+        try {
+            const {data} = await axios.get(
+                `http://127.0.0.1:5000/project`,
+                {
+                    headers: {
+                        'Access-Control-Allow-Origin': '*',
+                        'Content-Type': 'application/json',
+                    },
+                    params: {_id: 1, name: 1}
+                },
+            );
+            if (data.status === 200) {
+                let result = data.result
+                let idNamePairs: [string, string][] = []
+                for (let i = 0; i < result.length; i++) {
+                    let reducedProject = result[i]
+                    let pair: [string, string] = [reducedProject._id, reducedProject.name]
+                    idNamePairs.push(pair)
+                }
+                const x = idNamePairs.find(element => element[1] === pname);
+                x? setRender(<MainPage callSnackbar={callSnackbar}/>): setRender(<NotFound/>);
+            }
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                console.log('error message: ', error.message);
+                return error.message;
+            } else {
+                console.log('unexpected error: ', error);
+                return 'An unexpected error occurred';
+            }
+        }
+    }
 
     React.useEffect(() => {
+        projectname? projectExists(projectname):setRender(<NotFound/>);
         if (snackPack.length && !messageInfo) {
             // Set a new snack when we don't have an active one
             setMessageInfo({ ...snackPack[0] });
@@ -74,9 +114,7 @@ export default function ConsecutiveSnackbars() {
     if(isAlert) {
         return (
             <div>
-                <MainPage
-                    callSnackbar={callSnackbar}
-                />
+                {render}
                 <Snackbar
                     key={messageInfo ? messageInfo.key : undefined}
                     open={open}
@@ -110,9 +148,7 @@ export default function ConsecutiveSnackbars() {
     }
     return (
         <div>
-            <MainPage
-                callSnackbar={callSnackbar}
-            />
+            {render}
             <Snackbar
                 key={messageInfo ? messageInfo.key : undefined}
                 open={open}

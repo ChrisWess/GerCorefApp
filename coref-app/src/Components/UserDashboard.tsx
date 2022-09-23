@@ -10,7 +10,7 @@ import {
     ListItemIcon,
     Divider,
     Dialog,
-    DialogTitle, DialogContent, DialogContentText, DialogActions, TextField
+    DialogTitle, DialogContent, DialogContentText, DialogActions, TextField, Skeleton
 } from "@mui/material";
 import ResponsiveAppBar from "./ResponsiveAppBar";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -19,6 +19,9 @@ import Grid from "@mui/material/Grid";
 import Paper from "@mui/material/Paper";
 import axios from "axios";
 import ButtonTextfield from "./ButtonTextfield";
+import {ReactComponent} from "*.svg";
+import ListItemText from "@mui/material/ListItemText";
+import ListItemButton from "@mui/material/ListItemButton";
 interface DashboardProps {
 
 }
@@ -41,6 +44,7 @@ const UserDashboard: React.FC<DashboardProps> = ({}) => {
     const [error, setError] = React.useState(false);
     const theme = useTheme();
     const [open, setOpen] = React.useState(false);
+    let projectList: any;
 
     const handleClickOpen = () => {
         setOpen(true);
@@ -80,6 +84,7 @@ const UserDashboard: React.FC<DashboardProps> = ({}) => {
             );
             if (data.status === 201) {
                 let result = data.result
+                openProject(projectname)
             }
             handleClose();
         }
@@ -95,15 +100,6 @@ const UserDashboard: React.FC<DashboardProps> = ({}) => {
             }
         }
     };
-
-
-    let projectList = [
-        <React.Fragment key={0}>
-            <ListItem divider key={"0.1"}>
-                <div key={"0.3"}>no projects</div>
-                <Divider key={"0.4"}/>
-            </ListItem>
-        </React.Fragment>]
 
     async function loadProjects() {
         // load in the list of projects belonging to the current user and set the projectList
@@ -146,13 +142,13 @@ const UserDashboard: React.FC<DashboardProps> = ({}) => {
     if(projectIdNamePairs) {
         projectList = projectIdNamePairs.map((d, index) =>
             <React.Fragment key={index} >
-                <ListItem divider key={index + ".1"} onClick={() => openProject(d[1])} >
+                <ListItemButton divider key={index + ".1"} onClick={() => openProject(d[1])} >
                     <ListItemIcon key={index + ".2"}>
                         {index + 1}
                     </ListItemIcon>
-                    <div key={index + ".3"}>{d[1]}</div>
+                    <ListItemText key={index + ".3"}>{d[1]}</ListItemText>
                     <Divider key={index + ".4"}/>
-                </ListItem>
+                </ListItemButton>
             </React.Fragment>
         );
     }
@@ -193,9 +189,8 @@ const UserDashboard: React.FC<DashboardProps> = ({}) => {
                                         height: 465,
                                         overflow: 'auto'
                                     }}>
-                                    <List className="pagination" key={"mainList"}>
-                                        {projectList}
-                                    </List>
+                                    {projectList ? (<List className="pagination" key={"mainList"}>{projectList}</List>) : (<><Skeleton variant="rectangular" width={'auto'} height={20}/><Skeleton variant="rectangular" style={{marginTop: '10px'}} width={'auto'} height={20}/><Skeleton variant="rectangular" style={{marginTop: '10px'}} width={'auto'} height={20}/></>
+                                    )}
                                 </Paper>
                             </Grid>
                             <Grid item xs={12} md={12} lg={12}>
