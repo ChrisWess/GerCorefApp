@@ -2,3 +2,7 @@
     background-color: #ddd;
     cursor: pointer;
 }
+
+.highlight {
+    white-space:nowrap;
+}

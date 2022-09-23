@@ -16,17 +16,17 @@ function escapeRegExp(string: string) {
 const Highlighted = ({ text = "a", highlight = "a" }) => {
     highlight = escapeRegExp(highlight);
     if (!highlight.trim()) {
-        return <span>{text}</span>;
+        return <span className="highlight">{text}</span>;
     }
     const regex = new RegExp(`(${highlight})`, "gi");
     const parts = text.split(regex);
     return (
-        <span>
+        <span className="highlight">
             {parts.filter(String).map((part, i) => {
                 return regex.test(part) ? (
-                    <mark key={i}>{part}</mark>
+                    <mark className="highlight" key={i}>{part}</mark>
                 ) : (
-                    <span key={i}>{part}</span>
+                    <span className="highlight" key={i}>{part}</span>
                 );
             })}
         </span>
@@ -41,8 +41,8 @@ interface TablewordsProps {
 }
 
 const TableWords: React.FC<TablewordsProps> = ({ rows, inputText, txt, changePage }) => {
-    const createData = (num: any, str: any) => {
-        return { num, str };
+    const createData = (num: any, str: any, coref: any) => {
+        return { num, str, coref };
     }
 
     const handleClick = (index: any) => {
@@ -63,7 +63,7 @@ const TableWords: React.FC<TablewordsProps> = ({ rows, inputText, txt, changePag
                     text += txt[rows[i].num - 1][j];
                 }
             }
-            result.push(createData(rows[i].num, text))
+            result.push(createData(rows[i].num, text, rows[i].words[2].join(', ')));
         }
 
         return (
@@ -71,20 +71,21 @@ const TableWords: React.FC<TablewordsProps> = ({ rows, inputText, txt, changePag
                 <Table sx={{ minWidth: 100 }} size="small" aria-label="a dense table">
                     <TableHead>
                         <TableRow>
-                            <TableCell>Sentence</TableCell>
+                            <TableCell align="right">Sent.</TableCell>
                             <TableCell align="right">Words</TableCell>
+                            <TableCell align="right">Coref</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody> {
-                        result.map((res: { num: string | number; str: string; },
+                        result.map((res: { num: string | number; str: string; coref: any },
                             index: React.Key | null | undefined) => (
                             <TableRow key={index} 
                                         sx={{ '&:last-child td, &:last-child th': { border: 0 } }} 
                                         onClick={() => handleClick(index)} 
                                         className="foundWords">
                                 <TableCell component="th" scope="row">{res.num}</TableCell>
-                                <TableCell align="right"><Highlighted text={res.str} highlight={inputText} />
-                                </TableCell>
+                                <TableCell align="right"> <Highlighted text={res.str} highlight={inputText} /> </TableCell>
+                                <TableCell align="right">{res.coref}</TableCell>
                             </TableRow>
                         ))
                     }

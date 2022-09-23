@@ -33,23 +33,38 @@ def model_file():
     return DocumentDAO().add_doc(args["projectid"], args["docname"], pred, True)
 
 
+def get_cluster(start, end, clust):
+    clusters = []
+    for i in range(len(clust)):
+        for cl in clust[i]:
+            if start <= cl[0] and end >= cl[1]:
+                clusters.append(i+1)
+    return clusters
+
+
 @application.route('/findSentences', methods=['POST'])
 def model_find():
     args = request.json
     input = args['input']
-    _id = args['id']
+    id = args['id']
+    if input.isspace():
+        return jsonify([])
     result = {}
-    text = DocumentDAO().find_by_id(_id)["tokens"]
+    document = DocumentDAO().find_by_id(id)
+    text = document["tokens"]
+    clust = document["clust"]
     punc = set(punctuation)
     input = re.escape(input)
+    sentenceOffset = 0
     for i in range(len(text)):
-        sentence = ''.join(w if set(w) <= punc else ' ' + w for w in text[i]).lstrip().lower()
+        sentence = ''.join(w if set(w) <= punc else ' ' +
+                           w for w in text[i]).lstrip().lower()
         res = [_.start() for _ in re.finditer(input, sentence)]
         if len(res) != 0:
             starts_of_words = [0]
             for j in range(len(text[i])-1):
                 starts_of_words.append(starts_of_words[-1] + len(text[i][j]) +
-                    (0 if set(text[i][j+1]) <= punc else 1))
+                                       (0 if set(text[i][j+1]) <= punc else 1))
             result[i+1] = []
             start = 0
             prev_start = -1
@@ -62,7 +77,9 @@ def model_find():
                     end += 1
                 end -= 1
                 if prev_start != start:
-                    result[i+1].append((start, end))
+                    result[i+1].append((start, end,
+                                        get_cluster(start + sentenceOffset,
+                                                    end + sentenceOffset, clust)))
                 prev_start = start
+        sentenceOffset += len(text[i])
     return jsonify(result)
-
