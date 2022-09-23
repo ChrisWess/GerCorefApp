@@ -1,12 +1,24 @@
 import React, {MutableRefObject} from 'react';
 import {ThemeProvider, useTheme} from '@mui/material/styles';
-import {Button, Box, FormControlLabel, Switch, List, ListItem, ListItemIcon, Divider} from "@mui/material";
+import {
+    Button,
+    Box,
+    FormControlLabel,
+    Switch,
+    List,
+    ListItem,
+    ListItemIcon,
+    Divider,
+    Dialog,
+    DialogTitle, DialogContent, DialogContentText, DialogActions, TextField
+} from "@mui/material";
 import ResponsiveAppBar from "./ResponsiveAppBar";
 import CssBaseline from "@mui/material/CssBaseline";
 import Container from "@mui/material/Container";
 import Grid from "@mui/material/Grid";
 import Paper from "@mui/material/Paper";
 import axios from "axios";
+import ButtonTextfield from "./ButtonTextfield";
 interface DashboardProps {
 
 }
@@ -25,8 +37,66 @@ function openProject(project: string) {
 
 const UserDashboard: React.FC<DashboardProps> = ({}) => {
     const [projectIdNamePairs, setProjectIdNamePairs] = React.useState<[string, string][] | undefined>();
+    const [projectname, setProjectname] = React.useState('');
+    const [error, setError] = React.useState(false);
     const theme = useTheme();
-    const [allProjects, setAllProjects] = React.useState<string[]>(["Project1", "Project2", "Project3", "Project4", "Project5","Project1", "Project2", "Project3", "Project4", "Project5","Project1", "Project2", "Project3", "Project4", "Project5"]);
+    const [open, setOpen] = React.useState(false);
+
+    const handleClickOpen = () => {
+        setOpen(true);
+    };
+
+    const handleClose = () => {
+        setProjectname('');
+        setError(false);
+        setOpen(false);
+    };
+
+    function handleChange(event: any) {
+        setProjectname(event.target.value);
+    };
+
+    async function handleClick(event: any){
+        event.preventDefault();
+        if(projectname === '' || projectname.trim() === '')
+        {
+            setError(true)
+            return
+        }
+        console.log('handleClick 👉️', projectname);
+
+        try {
+            const { data } = await axios.post(
+                `http://127.0.0.1:5000/project`,
+                {projectname: projectname },
+                {
+                    withCredentials: true,
+                    headers: {
+                        'Access-Control-Allow-Origin': '*',
+                        'Content-Type': 'application/json',
+                        Accept: 'application/json',
+                    },
+                },
+            );
+            if (data.status === 201) {
+                let result = data.result
+            }
+            handleClose();
+        }
+        catch (error) {
+            if (axios.isAxiosError(error)) {
+                console.log('error message: ', error.message);
+                handleClose();
+                return error.message;
+            } else {
+                console.log('unexpected error: ', error);
+                handleClose();
+                return 'An unexpected error occurred';
+            }
+        }
+    };
+
+
     let projectList = [
         <React.Fragment key={0}>
             <ListItem divider key={"0.1"}>
@@ -130,8 +200,33 @@ const UserDashboard: React.FC<DashboardProps> = ({}) => {
                             </Grid>
                             <Grid item xs={12} md={12} lg={12}>
                                 <Button variant={"contained"} style={{backgroundColor:"primary" , margin: 1, textTransform: "none", width: "97%" }}
-                                        onClick={startProject} type="submit"> new project </Button>
+                                        onClick={handleClickOpen} type="submit"> new project </Button>
+                                <Dialog open={open} onClose={handleClose}>
+                                        <DialogTitle>new Project</DialogTitle>
+                                        <DialogContent>
+                                            <DialogContentText>
+                                                Please type in the name of the new project!
+                                            </DialogContentText>
+                                                    <TextField
+                                                        error={error}
+                                                        onChange={handleChange}
+                                                        autoFocus
+                                                        margin="dense"
+                                                        id="name"
+                                                        label="Project Name"
+                                                        type="text"
+                                                        fullWidth
+                                                        required={true}
+                                                        variant="standard"
+                                                    />
+                                        </DialogContent>
+                                        <DialogActions>
+                                            <Button onClick={(event) => {handleClick(event); }}>Create</Button>
+                                            <Button onClick={handleClose}>Cancel</Button>
+                                        </DialogActions>
+                                </Dialog>
                             </Grid>
+
                         </Grid>
 
                         <Grid  container spacing={3} rowSpacing={3}  sx={{marginLeft: "10pt", width: "30%", float: "left"}}>
