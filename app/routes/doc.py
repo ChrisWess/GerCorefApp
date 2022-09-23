@@ -10,21 +10,13 @@ from app.db.daos.project_dao import ProjectDAO
 
 @application.route('/doc', methods=['GET'])
 def find_docs():
-    args = request.args  # query params
-    if args:
-        dict_args = args.to_dict()
-        for key, val in args.items():
-            try:
-                val = int(val)
-                if val:
-                    dict_args[key] = val
-                else:
-                    del dict_args[key]
-            except ValueError:
-                del dict_args[key]
-        return DocumentDAO().find_all(dict_args, True)
-    else:
-        return DocumentDAO().find_all(generate_response=True)
+    if request.method == 'GET':
+        args = request.args  # query params
+        if args:
+            projection = DocumentDAO.projection_from_args(args, True)
+            return DocumentDAO().find_all(projection, True)
+        else:
+            return DocumentDAO().find_all(generate_response=True)
 
 
 @application.route('/doc/<doc_id>', methods=['GET'])
@@ -33,7 +25,7 @@ def find_doc_by_id(doc_id=None):
         projection = None
         args = request.args
         if args:
-            projection = [key for key, val in args.items() if int(val)]
+            projection = DocumentDAO.projection_from_args(args)
         try:
             doc = DocumentDAO().find_by_id(doc_id, projection, True)
             if doc is None:
@@ -46,7 +38,36 @@ def find_doc_by_id(doc_id=None):
 
 @application.route('/doc/user/<user_id>', methods=['GET'])
 def find_docs_of_user(user_id=None):
-    return DocumentDAO().find_by_user(user_id, generate_response=True)
+    if request.method == 'GET':
+        args = request.args  # query params
+        if args:
+            projection = DocumentDAO.projection_from_args(args, True)
+            return DocumentDAO().find_by_user(user_id, projection, True)
+        else:
+            return DocumentDAO().find_by_user(user_id, generate_response=True)
+
+
+@application.route('/doc/project/<project_id>', methods=['GET'])
+def find_docs_of_project(project_id=None):
+    if request.method == 'GET':
+        args = request.args  # query params
+        if args:
+            projection = DocumentDAO.projection_from_args(args, True)
+            return DocumentDAO().find_by_project(project_id, projection, True)
+        else:
+            return DocumentDAO().find_by_project(project_id, generate_response=True)
+
+
+@application.route('/doc/projectname/<project_name>', methods=['GET'])
+#@login_required
+def find_docs_by_projectname(project_name=None):
+    if request.method == 'GET':
+        args = request.args  # query params
+        if args:
+            projection = DocumentDAO.projection_from_args(args, True)
+            return DocumentDAO().find_by_projectname(project_name, projection, True)
+        else:
+            return DocumentDAO().find_by_projectname(project_name, generate_response=True)
 
 
 @application.route('/doc/<doc_id>', methods=['DELETE'])

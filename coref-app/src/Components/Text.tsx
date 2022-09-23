@@ -2,8 +2,10 @@ import React, {MutableRefObject, useState} from 'react';
 import { useTheme } from '@mui/material/styles';
 import {Button, TextField} from "@mui/material";
 import axios from 'axios';
+import {useParams} from "react-router-dom";
 
 export default function Text(props: any) {
+    const {projectname} = useParams();
     const theme = useTheme();
     const [text, setText] = useState("")
 
@@ -11,7 +13,7 @@ export default function Text(props: any) {
         try{
             const { data } = await axios.post(
                 `http://127.0.0.1:5000/model`,
-                { "text": input, "docname": "text.txt", "projectid": "TEMP" },  // TODO: project id
+                { "text": input, "docname": "text.txt", "projectname": projectname },
                 {
                     headers: {
                         'Access-Control-Allow-Origin': '*',
@@ -28,7 +30,6 @@ export default function Text(props: any) {
                 props.allCorefs.current = []
                 props.sendConfidencesToParent(result.probs);
                 props.addDocumentInfo(result._id, result.name);
-                // TODO: maybe automatically switch to documents tab and select the newly created document from the list
             }
         }
         catch (error) {

@@ -106,19 +106,27 @@ def find_users():
     if request.method == 'GET':
         args = request.args
         if args:
-            dict_args = args.to_dict()
-            for key, val in args.items():
-                try:
-                    val = int(val)
-                    if val:
-                        dict_args[key] = val
-                    else:
-                        del dict_args[key]
-                except ValueError:
-                    del dict_args[key]
-            return UserDAO().find_all(dict_args, True)
+            projection = UserDAO.projection_from_args(args, True)
+            return UserDAO().find_all(projection, True)
         else:
             return UserDAO().find_all(generate_response=True)
+
+
+def get_user_by_id(user_id):
+    projection = None
+    args = request.args
+    if args:
+        projection = UserDAO.projection_from_args(args)
+    try:
+        user = UserDAO().find_by_id(user_id, projection, True)
+        if user is None:
+            # TODO: handle 404s in frontend (or maybe better return an JSON response with {"response": 404})
+            # TODO: throw 404s in other routes (docs, projects), too
+            abort(404)
+        else:
+            return user
+    except bson.errors.InvalidId:
+        abort(404)  # TODO: this should be prevented in frontend by field validators
 
 
 @application.route('/user/current/', methods=['GET'])
@@ -128,34 +136,13 @@ def find_current_user():
         user_id = session.get("userid", default=None)
         if user_id is None:
             abort(400)
-        try:
-            user = UserDAO().find_by_id(user_id, generate_response=True)
-            if user is None:
-                abort(404)
-            else:
-                return user
-        except bson.errors.InvalidId:
-            abort(404)
+        return get_user_by_id(user_id)
 
 
 @application.route('/user/<user_id>', methods=['GET'])
 def find_user_by_id(user_id=None):
     if request.method == 'GET':
-        projection = None
-        args = request.args
-        if args:
-            # projection in find_one() must be a list of keys to include
-            projection = [key for key, val in args.items() if int(val)]
-        try:
-            user = UserDAO().find_by_id(user_id, projection, True)
-            if user is None:
-                # TODO: handle 404s in frontend (or maybe better return an JSON response with {"response": 404})
-                # TODO: throw 404s in other routes (docs, projects), too
-                abort(404)
-            else:
-                return user
-        except bson.errors.InvalidId:
-            abort(404)  # TODO: this should be prevented in frontend by field validators
+        return get_user_by_id(user_id)
 
 
 @application.route('/user/byEmail', methods=['GET'])

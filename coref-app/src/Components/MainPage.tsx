@@ -606,7 +606,9 @@ export default function MainPage({callSnackbar}: MainPageProps) {
     const renameDocument = (inpt: string) => {
         if (documentIdNamePairs !== undefined) {
             renameDoc(inpt).then(result => {
-                if (typeof result !== 'string' && !(result instanceof String)) {
+                if (typeof result === 'string' || result instanceof String) {
+                    throw result
+                } else {
                     // use unique name from result in case the name already existed
                     let newDocInfo = [result._id, result.name]
                     for (let i = 0; i < documentIdNamePairs.length; i++) {
@@ -691,7 +693,7 @@ export default function MainPage({callSnackbar}: MainPageProps) {
         if (documentIdNamePairs === undefined) {
             try {
                 const {data} = await axios.get(
-                    `http://127.0.0.1:5000/doc`,
+                    `http://127.0.0.1:5000/doc/projectname/${projectname}`,
                     {
                         headers: {
                             'Access-Control-Allow-Origin': '*',
@@ -719,27 +721,31 @@ export default function MainPage({callSnackbar}: MainPageProps) {
                             setCurrDocInfo(pair)
                             let ops: string | null = localStorage.getItem("ops")
                             if (ops !== null) {
-                                opsArr.current = JSON.parse(ops)  // TODO: handle parsing error (in catch => clearChanges())
-                                setUnsavedChanges(true)
+                                try {
+                                    opsArr.current = JSON.parse(ops)
+                                    setUnsavedChanges(true)
+                                } catch (error) {
+                                    // handle parsing error (must clear changes => unrecoverable)
+                                    clearChanges()
+                                }
                             }
                             await selectDocument(reducedDoc._id, opsArr.current)
                         }
                     }
+                    idNamePairs.sort((a, b) => a[1] > b[1] ? 1 : b[1] > a[1] ? -1 : 0)
+                    setDocumentIdNamePairs(idNamePairs)
                     if (!recovered) {
                         clearChanges()
-                    }
-                    idNamePairs.sort((a, b) => a[1] > b[1] ? 1 : b[1] > a[1] ? -1 : 0)
-
-                    //select document if path is /doc/docname
-                    if(docname){
-                        const selected = idNamePairs.find(element => element[1] === docname);
-                        if (selected) {
-                            await selectDocument(selected[0])
+                        //select document if path is /doc/docname
+                        if(docname){
+                            const selected = idNamePairs.find(element => element[1] === docname);
+                            if (selected) {
+                                await selectDocument(selected[0])
+                            } else {
+                                window.history.replaceState(null, "Coref-App", "/project/" + projectname)
+                            }
                         }
-                        else
-                            window.history.replaceState(null, "Coref-App", "/project/"+projectname)
                     }
-                    setDocumentIdNamePairs(idNamePairs)
                 }
             } catch (error) {
                 if (axios.isAxiosError(error)) {
@@ -942,7 +948,7 @@ export default function MainPage({callSnackbar}: MainPageProps) {
                                         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                                             <Tabs value={value} onChange={handleChange}>
                                                 <Tab icon={<TextFieldsIcon />} {...a11yProps(0)} style={{minWidth:"25%"}}/>
-                                                <Tab icon={<DescriptionIcon />} {...a11yProps(1)} onClick={loadDocuments} style ={{minWidth: '25%'}}/>
+                                                <Tab icon={<DescriptionIcon />} {...a11yProps(1)} style ={{minWidth: '25%'}}/>
                                                 <Tab icon={<SearchIcon />}  {...a11yProps(2)} style ={{minWidth: '25%'}}/>
                                                 <Tab icon={<AssessmentIcon />} {...a11yProps(3)} style ={{minWidth: '25%'}}/>
                                             </Tabs>

@@ -11,17 +11,8 @@ from app.db.daos.project_dao import ProjectDAO
 def find_projects():
     args = request.args  # query params (used for projections)
     if args:
-        dict_args = args.to_dict()
-        for key, val in args.items():
-            try:
-                val = int(val)
-                if val:
-                    dict_args[key] = val
-                else:
-                    del dict_args[key]
-            except ValueError:
-                del dict_args[key]
-        return ProjectDAO().find_all(dict_args, True)
+        projection = ProjectDAO.projection_from_args(args, True)
+        return ProjectDAO().find_all(projection, True)
     else:
         return ProjectDAO().find_all(generate_response=True)
 
@@ -31,17 +22,8 @@ def get_projects_of_user(user_id):
     try:
         ObjectId(user_id)
         if args:
-            dict_args = args.to_dict()
-            for key, val in args.items():
-                try:
-                    val = int(val)
-                    if val:
-                        dict_args[key] = val
-                    else:
-                        del dict_args[key]
-                except ValueError:
-                    del dict_args[key]
-            return ProjectDAO().find_by_user(user_id, dict_args, True)
+            projection = ProjectDAO.projection_from_args(args, True)
+            return ProjectDAO().find_by_user(user_id, projection, True)
         else:
             return ProjectDAO().find_by_user(user_id, generate_response=True)
     except bson.errors.InvalidId:
@@ -70,7 +52,7 @@ def get_project_of_user_by_name(user_id, project_name):
         ObjectId(user_id)
         projection = None
         if args:
-            projection = [key for key, val in args.items() if int(val)]
+            projection = ProjectDAO.projection_from_args(args)
         return ProjectDAO().find_by_name(user_id, project_name, projection, True)
     except bson.errors.InvalidId:
         abort(404)

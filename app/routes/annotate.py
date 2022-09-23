@@ -8,29 +8,45 @@ from app.coref.model import model
 from app.db.daos.doc_dao import DocumentDAO
 import re
 
+from app.db.daos.project_dao import ProjectDAO
+
 
 @application.route('/model', methods=['POST'])
 #@login_required
 def model_predict():
     args = request.json
-    if not all(arg in args for arg in ("projectid", "docname", "text")):
+    if "docname" not in args or "text" not in args:
+        abort(400)
+    project_id = None
+    if "projectid" in args:
+        project_id = args["projectid"]
+    elif "projectname" in args:
+        project_id = ProjectDAO().get_project_id_from_name(args["projectname"])
+    else:
         abort(400)
     output_mode = "json_small"
     if 'output_mode' in args and args['output_mode'] == 'long':
         output_mode = "json"
     pred = model.predict(args["text"], output_mode)
-    return DocumentDAO().add_doc(args["projectid"], args["docname"], pred, True)
+    return DocumentDAO().add_doc(project_id, args["docname"], pred, True)
 
 
 @application.route('/uploadfile', methods=['POST'])
 #@login_required
 def model_file():
     args = request.form
-    if "projectid" not in args or "docname" not in args:
+    if "docname" not in args:
+        abort(400)
+    project_id = None
+    if "projectid" in args:
+        project_id = args["projectid"]
+    elif "projectname" in args:
+        project_id = ProjectDAO().get_project_id_from_name(args["projectname"])
+    else:
         abort(400)
     text = request.files.get("myFile").read().decode("utf-8")
     pred = model.predict(text, "json_small")
-    return DocumentDAO().add_doc(args["projectid"], args["docname"], pred, True)
+    return DocumentDAO().add_doc(project_id, args["docname"], pred, True)
 
 
 @application.route('/findSentences', methods=['POST'])

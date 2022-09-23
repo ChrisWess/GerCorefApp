@@ -7,6 +7,7 @@ import "./Documents.css"
 import "./FileConverter"
 import FileConverter from "./FileConverter";
 import ButtonTextfield from "./ButtonTextfield";
+import {useParams} from "react-router-dom";
 
 
 interface DocumentsProps {
@@ -50,6 +51,7 @@ const Documents: React.FC<DocumentsProps> = ({ sendCorefClusterToParent,
     documentsInfo,
     renameDocument }) => {
 
+    const {projectname} = useParams();
     const [selectedFile, setSelectedFile] = React.useState<any | null>(null);
     const supportedDataTypes = ["XML", "CoNLL-2012", "plaintext"];
 
@@ -77,7 +79,7 @@ const Documents: React.FC<DocumentsProps> = ({ sendCorefClusterToParent,
             let formData = new FormData();
             formData.append('myFile', selectedFile);
             formData.append('docname', fileName);
-            formData.append('projectid', "TEMP");  // TODO: ignored for now (workaround for dev tool setup)
+            formData.append('projectname', projectname!);
 
             try {
                 const { data } = await axios.post(

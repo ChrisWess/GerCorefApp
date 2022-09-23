@@ -6,7 +6,7 @@ from flask_login import login_user, logout_user
 from app.db.daos.base import BaseDAO
 from app.db.models.user import User
 from app.db.daos.project_dao import ProjectDAO
-from app import application, mdb, login_manager
+from app import application, mdb, config, login_manager
 
 
 class UserDAO(BaseDAO):
@@ -61,6 +61,11 @@ class UserDAO(BaseDAO):
                 raise ValueError('Incorrect Credentials')
         else:
             raise ValueError('Email not registered')
+
+    def get_current_user_id(self):
+        # FIXME: Workaround (session not available with react dev server)
+        #   Could be fixed with setting authorization & session in headers (e.g. JWT)
+        return str(self.find_by_email("demo", ['_id'])['_id']) if config.DEBUG else session['userid']
 
     def find_by_email(self, email, projection=None, generate_response=False):
         """

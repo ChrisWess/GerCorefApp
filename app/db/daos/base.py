@@ -11,6 +11,24 @@ class BaseDAO:
         self.collection = None
         self.model = None
 
+    @staticmethod
+    def projection_from_args(args, find_many=False):
+        if find_many:
+            projection = args.to_dict()
+            for key, val in args.items():
+                try:
+                    val = int(val)
+                    if val:
+                        projection[key] = val
+                    else:
+                        del projection[key]
+                except ValueError:
+                    del projection[key]
+            return projection
+        else:
+            # projection in find_one() must be a list of keys to include
+            return [key for key, val in args.items() if int(val)]
+
     def list_response(self, result_list):
         return {"result": result_list, "numResults": len(result_list),
                 "status": 200, 'model': self.model.__name__}

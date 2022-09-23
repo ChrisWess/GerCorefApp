@@ -23,16 +23,47 @@ class DocumentDAO(BaseDAO):
     def find_by_user(self, user_id, projection=None, generate_response=False):
         """
         Find Documents of user with given user id
+        :param user_id: Id of the user
         :param projection:
         :param generate_response:
-        :param user_id: Id of the user
-        :return: Document object if found, None otherwise
+        :return: list of Document objects
         """
         result = [doc for doc in self.collection.find({"createdBy": user_id}, projection)]
         if generate_response:
             return self.to_response(result, not projection)
         else:
             return result
+
+    def find_by_project(self, project_id, projection=None, generate_response=False):
+        """
+        Find Documents of a project with the given project id
+        :param project_id: Id of the project
+        :param projection:
+        :param generate_response:
+        :return: list of Document objects
+        """
+        result = [doc for doc in self.collection.find({"projectFk": project_id}, projection)]
+        if generate_response:
+            return self.to_response(result, not projection)
+        else:
+            return result
+
+    def find_by_projectname(self, project_name, projection=None, generate_response=False):
+        """
+        Find Documents of a project with the given project name
+        :param project_name: name of the project
+        :param projection:
+        :param generate_response:
+        :return: list of Document objects
+        """
+        user_id = UserDAO().get_current_user_id()
+        project = ProjectDAO().find_by_name(user_id, project_name, ['_id'])
+        if project is None:
+            if generate_response:
+                return {"result": f'Project with name "{project_name}" could not be found!', "status": 404}
+            else:
+                return None
+        return self.find_by_project(str(project['_id']), projection, generate_response)
 
     def delete_by_docname(self, name, userid=None, generate_response=False):
         if userid is None:
@@ -68,14 +99,7 @@ class DocumentDAO(BaseDAO):
 
     def add_doc(self, project_id, name, model_pred, generate_response=False):
         # creates a new document in the docs collection
-        # FIXME: BEGIN Workaround (session not available with react dev server)
-        #   Could be fixed with setting authorization & session in headers (e.g. JWT)
-        if config.DEBUG:
-            user_id = str(UserDAO().find_by_email("demo")['_id'])
-            project_id = str(ProjectDAO().find_by_name(user_id, 'misc')['_id'])
-        else:
-            user_id = session['userid']
-        # FIXME: END Workaround
+        user_id = UserDAO().get_current_user_id()
         unique_name = self._unique_docname_for_project(project_id, name)
         doc = self._insert_autoannotated_doc(unique_name, user_id, project_id, model_pred)
         ProjectDAO().add_doc_to_project(project_id, doc['_id'])
@@ -97,7 +121,7 @@ class DocumentDAO(BaseDAO):
             return doc_id
 
     def update_doc(self, doc_id, ops, generate_response=False):
-        user_id = str(UserDAO().find_by_email("demo", ['_id'])['_id'])  # FIXME: session['userid']
+        user_id = UserDAO().get_current_user_id()
         doc = self.find_by_id(doc_id)
         # TODO: when a coref model prediction is re-added, the probs should be available again (requires versioning)
         clust = doc['clust']

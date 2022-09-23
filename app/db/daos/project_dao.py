@@ -18,6 +18,11 @@ class ProjectDAO(BaseDAO):
         self.collection = mdb.projects
         self.model = Project
 
+    def get_project_id_from_name(self, project_name):
+        from app.db.daos.user_dao import UserDAO
+        user_id = UserDAO().get_current_user_id()
+        return str(self.find_by_name(user_id, project_name, ['_id'])['_id'])
+
     def find_by_user(self, user_id, projection=None, generate_response=False):
         """
         Find Project of user with given user id
@@ -74,14 +79,9 @@ class ProjectDAO(BaseDAO):
 
     def add_project(self, name, user_id=None, generate_response=False):
         # creates a new project in the projects collection
-        # FIXME: BEGIN Workaround (session not available with react dev server)
-        #   Could be fixed with setting authorization & session in headers (e.g. JWT)
-        if config.DEBUG:
+        if user_id is None:
             from app.db.daos.user_dao import UserDAO
-            user_id = str(UserDAO().find_by_email("demo")['_id'])
-        # FIXME: END Workaround
-        elif user_id is None:
-            user_id = session['userid']
+            user_id = UserDAO().get_current_user_id()
         name = self._unique_projectname_for_user(name, user_id)
         project = Project(name=name, created_by=user_id)
         project = project.to_dict()
