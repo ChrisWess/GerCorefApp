@@ -25,6 +25,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import TextFieldsIcon from '@mui/icons-material/TextFields';
 import DescriptionIcon from '@mui/icons-material/Description';
+import {useParams} from "react-router-dom";
 const _ = require('lodash');
 
 
@@ -47,7 +48,6 @@ function Copyright(props: any) {
 // see "ShortcutSnackbar.tsx"
 interface MainPageProps {
     callSnackbar: Function;
-    title: string;
 }
 
 //For Tabs
@@ -111,7 +111,9 @@ export const clearPrevMarking = function(markedWord: number[]) {
 //unused, possibly usable to create a color theme to improve visuals
 const theme = createTheme();
 
-export default function MainPage({callSnackbar, title}: MainPageProps) {
+export default function MainPage({callSnackbar}: MainPageProps) {
+    const {docname} = useParams();
+    const {projectname} = useParams();
     const [corefClusters, setCorefClusters] = React.useState<number[][][]>([]);
     const [corefText, setCorefText] = React.useState<string[][]>([]);
     const [selectedCoref, setSelectedCoref] = React.useState<number[]>([]);
@@ -125,6 +127,7 @@ export default function MainPage({callSnackbar, title}: MainPageProps) {
     const [itemsPerPage] = React.useState(10);
     const [sentenceToHighlight, setSentenceToHighlight] = React.useState(0);
     const [wordsToHighlight, setWordsToHighlight] = React.useState<number[]>([]);
+    const [inputText, setInputText] = React.useState<string>("");
 
     const changePage = (sentence: number, words: number[]) => {
         setCurrentPage(Math.ceil(sentence / itemsPerPage));
@@ -523,7 +526,7 @@ export default function MainPage({callSnackbar, title}: MainPageProps) {
             if (!value) {
                 value = document.getElementById("w" + markRange[0])
             }
-            value.style.backgroundColor = "yellow";
+            value.style.backgroundColor = "deepskyblue";
             setSelectedCoref([markRange[0], markRange[0] + 1])
             markedWord.current = markRange
         } else {
@@ -535,12 +538,12 @@ export default function MainPage({callSnackbar, title}: MainPageProps) {
             for (let i = markRange[0]; i < markRange[1]; i++) {
                 let prev = document.getElementById("w" + i)
                 if (prev) {
-                    prev.style.backgroundColor = "yellow"
+                    prev.style.backgroundColor = "deepskyblue"
                 }
             }
             setSelectedCoref(markRange)
         }
-        setClusterColor("yellow")
+        setClusterColor("deepskyblue")
         setCurrentMention(undefined)
     }
 
@@ -549,6 +552,8 @@ export default function MainPage({callSnackbar, title}: MainPageProps) {
     const handleChange = (event: React.SyntheticEvent, newValue: number) => {
         setValue(newValue);
         setSentenceToHighlight(0);
+        setInputText("");
+        setWordsToHighlight([]);
     };
 
     const addDocumentInfo = (newDocId: string, newDocName: string) => {
@@ -656,6 +661,7 @@ export default function MainPage({callSnackbar, title}: MainPageProps) {
                 convertConfidences(result.probs)
                 setCurrDocInfo([result._id, result.name]);
                 clearCurrentMention()
+                window.history.replaceState(null, "Coref-App", "/project/"+projectname+"/doc/"+result.name)
             }
         } catch (error) {
             if (axios.isAxiosError(error)) {
@@ -711,6 +717,16 @@ export default function MainPage({callSnackbar, title}: MainPageProps) {
                         clearChanges()
                     }
                     idNamePairs.sort((a, b) => a[1] > b[1] ? 1 : b[1] > a[1] ? -1 : 0)
+
+                    //select document if path is /doc/docname
+                    if(docname){
+                        const selected = idNamePairs.find(element => element[1] === docname);
+                        if (selected) {
+                            selectDocument(selected[0])
+                        }
+                        else
+                            window.history.replaceState(null, "Coref-App", "/project/"+projectname)
+                    }
                     setDocumentIdNamePairs(idNamePairs)
                 }
             } catch (error) {
@@ -726,11 +742,20 @@ export default function MainPage({callSnackbar, title}: MainPageProps) {
     }
 
     React.useEffect(() => {
+        loadDocuments()
         // Create Ctrl+S shortcut for saving files
+        // Create Ctrl+F shortcut for opening search
         onkeydown = function(e){
             if(e.ctrlKey && e.keyCode == 'S'.charCodeAt(0)){
                 e.preventDefault();
                 saveChanges()
+            }
+            if (e.ctrlKey && e.keyCode == 'F'.charCodeAt(0)){
+                e.preventDefault();
+                saveChanges()
+                if (value != 2) {
+                    setValue(2);
+                }
             }
         }
         // TODO: recolor coreferences after text selection is removed
@@ -822,7 +847,7 @@ export default function MainPage({callSnackbar, title}: MainPageProps) {
                         overflow: 'auto',
                     }}
                 >
-                    <h2 style={{textAlign: 'center', marginTop: '10px', marginBottom: '5px'}}>{title}</h2>
+                    <h2 style={{textAlign: 'center', marginTop: '10px', marginBottom: '5px'}}>{projectname}</h2>
                     <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
                         <Grid container spacing={3}>
 
@@ -885,7 +910,8 @@ export default function MainPage({callSnackbar, title}: MainPageProps) {
                                         setSentenceToHighlight={setSentenceToHighlight}
                                         wordsToHighlight={wordsToHighlight}
                                         unsavedChanges={unsavedChanges}
-                                        currDocInfo={currDocInfo}>
+                                        currDocInfo={currDocInfo}
+                                        inputText={inputText}>
                                     </MainView>
                                 </Paper>
                             </Grid>
@@ -945,7 +971,9 @@ export default function MainPage({callSnackbar, title}: MainPageProps) {
                                                 changePage={changePage}
                                                 setSentenceToHighlight={setSentenceToHighlight}
                                                 setWordsToHighlight = {setWordsToHighlight}
-                                            ></Search>
+                                                prevText={inputText}
+                                                setPrevText={setInputText}>
+                                            </Search>
                                         </TabPanel>
                                         <TabPanel value={value} index={3}>
                                             <Statistics

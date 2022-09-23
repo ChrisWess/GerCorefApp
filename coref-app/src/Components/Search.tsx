@@ -13,12 +13,15 @@ interface SearchProps {
   changePage: any
   setSentenceToHighlight: any
   setWordsToHighlight: any
+  setPrevText: any
+  prevText: any
+  children: any
 }
 
-const Search: React.FC<SearchProps> = ({ currDocInfo, txt, changePage, setSentenceToHighlight, setWordsToHighlight }) => {
+const Search: React.FC<SearchProps> = ({ currDocInfo, txt, changePage, setSentenceToHighlight,
+                                          setWordsToHighlight, setPrevText, prevText }) => {
   const [rows, setRows] = React.useState<any[]>([]);
   const [inputText, setInputText] = React.useState<string>("");
-  const [prevText, setPrevText] = React.useState<string>("");
 
   const createData = (num: any, words: any) => {
     return { num, words };
@@ -64,6 +67,7 @@ const Search: React.FC<SearchProps> = ({ currDocInfo, txt, changePage, setSenten
   const inputHandler = (event: any) => {
     var lowerCase = event.target.value.toLowerCase();
     setInputText(lowerCase);
+    setPrevText('');
     setRows([]);
     setSentenceToHighlight(0);
     setWordsToHighlight([]);
@@ -86,14 +90,14 @@ const Search: React.FC<SearchProps> = ({ currDocInfo, txt, changePage, setSenten
         fullWidth
         label="Search"
         onChange={inputHandler}
-        onKeyPress={inputHandlerEnter} 
+        onKeyPress={inputHandlerEnter}
         InputProps={{
           endAdornment: (
-          <IconButton sx={{visibility: inputText? "visible": "hidden"}} onClick={clearButton}>
-            <ClearIcon />
-          </IconButton>
+            <IconButton sx={{ visibility: inputText ? "visible" : "hidden" }} onClick={clearButton}>
+              <ClearIcon />
+            </IconButton>
           ),
-        }}/>
+        }} />
       <TableWords rows={rows} inputText={prevText} txt={txt} changePage={changePage} />
     </div>
   );

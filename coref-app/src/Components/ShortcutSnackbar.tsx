@@ -27,7 +27,6 @@ export interface State {
 }
 
 export default function ConsecutiveSnackbars() {
-    const {title} = useParams();
     const [snackPack, setSnackPack] = React.useState<readonly SnackbarMessage[]>([]);
     const [open, setOpen] = React.useState(false);
     const [position, setPosition] = React.useState("bottom" as ("bottom" | "top") );
@@ -77,7 +76,6 @@ export default function ConsecutiveSnackbars() {
             <div>
                 <MainPage
                     callSnackbar={callSnackbar}
-                    title={title? title: "NONAME"}
                 />
                 <Snackbar
                     key={messageInfo ? messageInfo.key : undefined}
@@ -114,7 +112,6 @@ export default function ConsecutiveSnackbars() {
         <div>
             <MainPage
                 callSnackbar={callSnackbar}
-                title={title? title: "NONAME"}
             />
             <Snackbar
                 key={messageInfo ? messageInfo.key : undefined}

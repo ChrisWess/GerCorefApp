@@ -16,7 +16,9 @@ function App() {
         <Routes>
           <Route path="/" element={<Outlet/>}>
               <Route index element={<ShortcutSnackbar />} />
-              <Route path="project/:title" element={<ShortcutSnackbar />} />
+              <Route path="project/:projectname" element={<ShortcutSnackbar />}>
+                <Route path="doc/:docname" element={<ShortcutSnackbar />}/>
+              </Route>
               <Route path="dashboard" element={<UserDashboard />} />
               {/* Using path="*"" means "match anything", so this route
                   acts like a catch-all for URLs that we don't have explicit

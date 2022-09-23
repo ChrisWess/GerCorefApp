@@ -71,7 +71,7 @@ const TableWords: React.FC<TablewordsProps> = ({ rows, inputText, txt, changePag
                 <Table sx={{ minWidth: 100 }} size="small" aria-label="a dense table">
                     <TableHead>
                         <TableRow>
-                            <TableCell>Num</TableCell>
+                            <TableCell>Sentence</TableCell>
                             <TableCell align="right">Words</TableCell>
                         </TableRow>
                     </TableHead>

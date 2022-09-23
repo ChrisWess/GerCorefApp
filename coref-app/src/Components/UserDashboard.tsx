@@ -6,12 +6,9 @@ import CssBaseline from "@mui/material/CssBaseline";
 import Container from "@mui/material/Container";
 import Grid from "@mui/material/Grid";
 import Paper from "@mui/material/Paper";
+import axios from "axios";
 interface DashboardProps {
 
-}
-
-function getProjects() {
-    return ["Project1", "Project2", "Project3", "Project4", "Project5"]
 }
 
 function startProject() {
@@ -27,6 +24,7 @@ function openProject(project: string) {
 
 
 const UserDashboard: React.FC<DashboardProps> = ({}) => {
+    const [projectIdNamePairs, setProjectIdNamePairs] = React.useState<[string, string][] | undefined>();
     const theme = useTheme();
     const [allProjects, setAllProjects] = React.useState<string[]>(["Project1", "Project2", "Project3", "Project4", "Project5","Project1", "Project2", "Project3", "Project4", "Project5","Project1", "Project2", "Project3", "Project4", "Project5"]);
     let projectList = [
@@ -37,20 +35,61 @@ const UserDashboard: React.FC<DashboardProps> = ({}) => {
             </ListItem>
         </React.Fragment>]
 
-    //setAllProjects(getProjects())
-    if(allProjects) {
-        projectList = allProjects.map((d, index) =>
+    async function loadProjects() {
+        // load in the list of projects belonging to the current user and set the projectList
+        if (projectIdNamePairs === undefined) {
+            try {
+                const {data} = await axios.get(
+                    `http://127.0.0.1:5000/project`,
+                    {
+                        headers: {
+                            'Access-Control-Allow-Origin': '*',
+                            'Content-Type': 'application/json',
+                        },
+                        params: {_id: 1, name: 1}
+                    },
+                );
+
+                if (data.status === 200) {
+                    let result = data.result
+                    let idNamePairs: [string, string][] = []
+                    for (let i = 0; i < result.length; i++) {
+                        let reducedProject = result[i]
+                        let pair: [string, string] = [reducedProject._id, reducedProject.name]
+                        idNamePairs.push(pair)
+                    }
+                    idNamePairs.sort((a, b) => a[1] > b[1] ? 1 : b[1] > a[1] ? -1 : 0)
+                    setProjectIdNamePairs(idNamePairs)
+                }
+            } catch (error) {
+                if (axios.isAxiosError(error)) {
+                    console.log('error message: ', error.message);
+                    return error.message;
+                } else {
+                    console.log('unexpected error: ', error);
+                    return 'An unexpected error occurred';
+                }
+            }
+        }
+    }
+
+    if(projectIdNamePairs) {
+        projectList = projectIdNamePairs.map((d, index) =>
             <React.Fragment key={index} >
-                <ListItem divider key={index + ".1"} onClick={() => openProject(d)} >
+                <ListItem divider key={index + ".1"} onClick={() => openProject(d[1])} >
                     <ListItemIcon key={index + ".2"}>
                         {index + 1}
                     </ListItemIcon>
-                    <div key={index + ".3"}>{d}</div>
+                    <div key={index + ".3"}>{d[1]}</div>
                     <Divider key={index + ".4"}/>
                 </ListItem>
             </React.Fragment>
         );
     }
+
+    React.useEffect(() => {
+        loadProjects();
+    });
 
 
     return (

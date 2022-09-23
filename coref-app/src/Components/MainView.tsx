@@ -36,6 +36,7 @@ interface MainViewProps {
     wordsToHighlight: any
     unsavedChanges: boolean
     currDocInfo: string[]
+    inputText: any
 }
 
 export const parseMentionId = function(mentionId: string) {
@@ -109,14 +110,35 @@ function flattenClust(buffer: any, clust: any, allCorefs: any, sentenceOffsets: 
 }
 
 
+const Highlighted = ({ text = "a", highlight = "a" }) => {
+    if (highlight == ".") {
+        return <span style={{backgroundColor: "yellow"}}>{text}</span>;
+    }
+    if (!highlight.trim()) {
+        return <span>{text}</span>;
+    }
+    const regex = new RegExp(`(${highlight})`, "gi");
+    const parts = text.split(regex);
+    return (
+        <span>
+            {parts.filter(String).map((part, i) => {
+                return regex.test(part) ? (
+                    <mark key={i}>{part}</mark>
+                ) : (
+                    <span key={i}>{part}</span>
+                );
+            })}
+        </span>
+    );
+};
+
 const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
                                                wordArr, wordFlags,
                                                setNewCorefSelection, markWords, keyShortcutExecuted, 
                                                hovertoggle, autoAnnotoggle, setCurrentPage,
                                                currentPage, itemsPerPage, sentenceToHighlight,
                                                setSentenceToHighlight, wordsToHighlight, unsavedChanges,
-                                               currDocInfo}) => {
-
+                                               currDocInfo, inputText}) => {
     //For Pagination
     const [listItem, setListItems] = useState([]);
     const indexOfLastItem = currentPage*itemsPerPage;
@@ -187,8 +209,8 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
                     && i == wordsToHighlight[current].num - 1 
                     && j >= wordsToHighlight[current].words[0] 
                     && j <= wordsToHighlight[current].words[1]) {
-                    sentence.push(<abbr key={currentId} id={currentId} style={{backgroundColor: "yellow"}}>
-                                    {token}</abbr>);
+                    sentence.push(<abbr key={currentId} id={currentId}>
+                        <Highlighted text={token} highlight={inputText} /></abbr>);
                     if (j == wordsToHighlight[current].words[1]) {
                         current += 1;
                     }
@@ -206,14 +228,16 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
                     && i == wordsToHighlight[current].num - 1 
                     && j >= wordsToHighlight[current].words[0] 
                     && j <= wordsToHighlight[current].words[1]) {  
-                   if  (j == wordsToHighlight[current].words[0]) {   
-                        sentence.push(<span> <abbr key={currentId} id={currentId} className="wregular" onClick={wordClickEvent} 
-                            style={{backgroundColor: "yellow"}}>{token}</abbr></span>
-                                );
+                    if  (j == wordsToHighlight[current].words[0]) {
+                        sentence.push(<abbr id={currentId} className="wregular" onClick={wordClickEvent} 
+                            ><Highlighted text={" " + token} highlight={inputText.split(" ")[0]} /></abbr>);
+                    } else if (j == wordsToHighlight[current].words[1]) {
+                        sentence.push(<abbr key={currentId} id={currentId} className="wregular" onClick={wordClickEvent} 
+                            ><Highlighted text={" " + token} highlight={" " + inputText.split(" ").at(-1)} />
+                        </abbr>);
                     } else {
                         sentence.push(<abbr key={currentId} id={currentId} className="wregular" onClick={wordClickEvent} 
-                        style={{backgroundColor: "yellow"}}>
-                            {token}</abbr>);
+                            style={{backgroundColor: "yellow"}}>{" " + token} </abbr>);
                     }
                     if (j == wordsToHighlight[current].words[1]) {
                         current += 1;
@@ -267,7 +291,8 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
         while (wordsToHighlight.length != 0 && current < wordsToHighlight.length 
             && (wordsToHighlight[current].num - 1 < sentenceIdx
                 || (wordsToHighlight[current].num - 1 <= sentenceIdx 
-                    && wordsToHighlight[current].words[0] < startIdxInSentence))) {
+                    && (wordsToHighlight[current].words[0] < startIdxInSentence 
+                    )))) {
             current = current + 1;
         }
 
@@ -288,14 +313,14 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
                 <abbr
                     key={id+"-1"}
                     id={id}
-                    className={"cr cr-" + currentIndexOfCoref}
-                    style={toHightlight?{backgroundColor: "yellow"}:{}}>
+                    className={"cr cr-" + currentIndexOfCoref}>
                     <a key={id+"-2"} id={id} href="#d1c1m1" >[</a>
                     <HoverBox
                     word={wordArr.current[mentionIdxStart]}
                     cluster={currentIndexOfCoref}
                     hovertoggle={hovertoggle}
-                    mention={cluster[mentionIdx]}/>
+                    mention={cluster[mentionIdx]} 
+                    inputText={inputText}/>
                                     <a key={id+"-4"} id={id} href="#d1c1m1">]</a>
                     <sub key={id+"-5"} id={id}>{currentIndexOfCoref}</sub>
                 </abbr>
@@ -314,24 +339,24 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
             sentBuffer.splice(shiftedStartIdx, mentionIdxEnd + 1 - mentionIdxStart,
                 <b key={corefId} id={corefId} onClick={selectNewCorefEvent} >
                     {" "}
-                    <abbr key={id+"-1"} id={id} className={"cr cr-" + currentIndexOfCoref}
-                        style={toHightlight?{backgroundColor: "yellow"}:{}}>
+                    <abbr key={id+"-1"} id={id} className={"cr cr-" + currentIndexOfCoref}>
                         <a key={id+"-2"} id={id} href="#d1c1m1">[</a>
-                        <HoverBox word={wordArr.current[mentionIdxStart]} cluster={currentIndexOfCoref} hovertoggle={hovertoggle} mention={cluster[mentionIdx]}/>
+                        <HoverBox word={wordArr.current[mentionIdxStart]} cluster={currentIndexOfCoref} 
+                            hovertoggle={hovertoggle} mention={cluster[mentionIdx]} inputText={inputText}/>
                     </abbr>
                     {mentionSlice.map((elem, index) => (
                         <abbr key={'w' + (mentionIdxStart + index + 1)+"-1"}
                               id={'w' + (mentionIdxStart + index + 1)}
-                              className={"cr cr-" + currentIndexOfCoref}
-                              style={toHightlight?{backgroundColor: "yellow"}:{}}>
+                              className={"cr cr-" + currentIndexOfCoref}>
                             {" "}
-                            <HoverBox word={wordArr.current[mentionIdxStart + index + 1]} cluster={currentIndexOfCoref} hovertoggle={hovertoggle} mention={cluster[mentionIdx]}/>
+                            <HoverBox word={wordArr.current[mentionIdxStart + index + 1]} cluster={currentIndexOfCoref} 
+                                    hovertoggle={hovertoggle} mention={cluster[mentionIdx]} inputText={inputText}/>
                         </abbr>
                     ))}
-                    <abbr key={id1+"-1"} id={id1} className={"cr cr-" + currentIndexOfCoref}
-                        style={toHightlight?{backgroundColor: "yellow"}:{}}>
+                    <abbr key={id1+"-1"} id={id1} className={"cr cr-" + currentIndexOfCoref}>
                         {" "}
-                        <HoverBox word={wordArr.current[mentionIdxEnd]} cluster={currentIndexOfCoref} hovertoggle={hovertoggle} mention={cluster[mentionIdx]}/>
+                        <HoverBox word={wordArr.current[mentionIdxEnd]} cluster={currentIndexOfCoref} 
+                            hovertoggle={hovertoggle} mention={cluster[mentionIdx]} inputText={inputText}/>
                         <a key={id1+"-2"} id={id1} href="#d1c1m1">]</a>
                         <sub key={id1+"-3"} id={id1}>{currentIndexOfCoref}</sub>
                     </abbr>
