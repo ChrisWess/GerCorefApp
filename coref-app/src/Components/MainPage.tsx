@@ -586,17 +586,10 @@ export default function MainPage({callSnackbar}: MainPageProps) {
                         },
                     },
                 );
-                if (data.status === 200 && documentIdNamePairs !== undefined) {
-                    let result = data.result
-                    currDocInfo[1] = result.name  // use unique name from result in case the name already existed
-                    for (let i = 0; i < documentIdNamePairs.length; i++) {
-                        if (currDocInfo[0] === documentIdNamePairs[i][0]) {
-                            documentIdNamePairs[i][1] = result.name
-                            break
-                        }
-                    }
-                    setDocumentIdNamePairs(documentIdNamePairs)
-                    setCurrDocInfo(currDocInfo)
+                if (data.status === 200) {
+                    return data.result
+                } else {
+                    return "error status: " + data.status
                 }
             } catch (error) {
                 if (axios.isAxiosError(error)) {
@@ -607,6 +600,25 @@ export default function MainPage({callSnackbar}: MainPageProps) {
                     return 'An unexpected error occurred';
                 }
             }
+        }
+    }
+
+    const renameDocument = (inpt: string) => {
+        if (documentIdNamePairs !== undefined) {
+            renameDoc(inpt).then(result => {
+                if (typeof result !== 'string' && !(result instanceof String)) {
+                    // use unique name from result in case the name already existed
+                    let newDocInfo = [result._id, result.name]
+                    for (let i = 0; i < documentIdNamePairs.length; i++) {
+                        if (newDocInfo[0] === documentIdNamePairs[i][0]) {
+                            documentIdNamePairs[i][1] = result.name
+                            break
+                        }
+                    }
+                    setDocumentIdNamePairs(documentIdNamePairs)
+                    setCurrDocInfo(newDocInfo)
+                }
+            })
         }
     }
 
@@ -722,7 +734,7 @@ export default function MainPage({callSnackbar}: MainPageProps) {
                     if(docname){
                         const selected = idNamePairs.find(element => element[1] === docname);
                         if (selected) {
-                            selectDocument(selected[0])
+                            await selectDocument(selected[0])
                         }
                         else
                             window.history.replaceState(null, "Coref-App", "/project/"+projectname)
@@ -961,7 +973,7 @@ export default function MainPage({callSnackbar}: MainPageProps) {
                                                 currDocInfo={currDocInfo}
                                                 addDocumentInfo={addDocumentInfo}
                                                 documentsInfo={documentIdNamePairs}
-                                                renameDoc={renameDoc}
+                                                renameDocument={renameDocument}
                                             />
                                         </TabPanel>
                                         <TabPanel value={value} index={2}>

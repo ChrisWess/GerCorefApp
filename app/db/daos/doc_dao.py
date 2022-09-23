@@ -90,6 +90,7 @@ class DocumentDAO(BaseDAO):
         filtr = {"_id": ObjectId(doc_id)}
         name_update = {"$set": {'name': unique_name}}
         self.collection.update_one(filtr, name_update)
+        print("Document renamed to", unique_name)
         if generate_response:
             return self.to_response({"_id": doc_id, "name": unique_name}, operation=BaseDAO.UPDATE)
         else:
