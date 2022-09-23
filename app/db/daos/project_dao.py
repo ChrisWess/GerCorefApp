@@ -3,7 +3,7 @@ from flask import session
 
 from app.db.daos.base import BaseDAO
 from app.db.models.project import Project
-from app import mdb
+from app import mdb, config
 
 
 class ProjectDAO(BaseDAO):
@@ -74,7 +74,13 @@ class ProjectDAO(BaseDAO):
 
     def add_project(self, name, user_id=None, generate_response=False):
         # creates a new project in the projects collection
-        if user_id is None:
+        # FIXME: BEGIN Workaround (session not available with react dev server)
+        #   Could be fixed with setting authorization & session in headers (e.g. JWT)
+        if config.DEBUG:
+            from app.db.daos.user_dao import UserDAO
+            user_id = str(UserDAO().find_by_email("demo")['_id'])
+        # FIXME: END Workaround
+        elif user_id is None:
             user_id = session['userid']
         name = self._unique_projectname_for_user(name, user_id)
         project = Project(name=name, created_by=user_id)
