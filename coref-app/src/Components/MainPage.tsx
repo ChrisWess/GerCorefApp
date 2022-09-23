@@ -25,7 +25,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import AssessmentIcon from '@mui/icons-material/Assessment';
 import TextFieldsIcon from '@mui/icons-material/TextFields';
 import DescriptionIcon from '@mui/icons-material/Description';
-
+const _ = require('lodash');
 
 
 
@@ -186,7 +186,6 @@ export default function MainPage({callSnackbar, title}: MainPageProps) {
     }
 
     async function saveChanges() {
-        // TODO: create Ctrl+S shortcut
         let ops: string | null = localStorage.getItem("ops")
         let docId: string | null = localStorage.getItem("docId")
         if (!!ops && !!docId) {
@@ -375,8 +374,14 @@ export default function MainPage({callSnackbar, title}: MainPageProps) {
     function reapplyChanges(target: number[][][], ops: number[][]) {
         if (ops) {
             // re-apply doc changes in Frontend
-            for (let op of ops) {
-                target = applyDocOperation(target, op)
+            let targetCopy: number[][][] = _.cloneDeep(target)
+            try {
+                for (let op of ops) {
+                    targetCopy = applyDocOperation(targetCopy, op)
+                }
+                target = targetCopy
+            } catch (error) {
+                clearChanges()
             }
         }
         return target
@@ -546,9 +551,59 @@ export default function MainPage({callSnackbar, title}: MainPageProps) {
         setSentenceToHighlight(0);
     };
 
-    const changeCurrDocumentInfo = (newId: any) => {
-        setCurrDocInfo(newId);
+    const addDocumentInfo = (newDocId: string, newDocName: string) => {
+        let newDocInfo: [string, string] = [newDocId, newDocName]
+        if (documentIdNamePairs !== undefined) {
+            let insertIndex = documentIdNamePairs.length
+            for (let i = 0; i < insertIndex; i++) {
+                let a = documentIdNamePairs[i][1]
+                if (newDocName < a) {
+                    insertIndex = 0
+                    break
+                }
+            }
+            documentIdNamePairs.splice(insertIndex, 0, newDocInfo)
+            setDocumentIdNamePairs(documentIdNamePairs)
+            setCurrDocInfo(newDocInfo)
+        }
     };
+
+    const renameDoc = async (inpt: string) => {
+        if (currDocInfo.length > 0) {
+            try {
+                const {data} = await axios.put(
+                    `http://127.0.0.1:5000/doc/rename`,
+                    {docid: currDocInfo[0], docname: inpt},
+                    {
+                        withCredentials: true,
+                        headers: {
+                            'Access-Control-Allow-Origin': '*',
+                        },
+                    },
+                );
+                if (data.status === 200 && documentIdNamePairs !== undefined) {
+                    let result = data.result
+                    currDocInfo[1] = result.name  // use unique name from result in case the name already existed
+                    for (let i = 0; i < documentIdNamePairs.length; i++) {
+                        if (currDocInfo[0] === documentIdNamePairs[i][0]) {
+                            documentIdNamePairs[i][1] = result.name
+                            break
+                        }
+                    }
+                    setDocumentIdNamePairs(documentIdNamePairs)
+                    setCurrDocInfo(currDocInfo)
+                }
+            } catch (error) {
+                if (axios.isAxiosError(error)) {
+                    console.log('error message: ', error.message);
+                    return error.message;
+                } else {
+                    console.log('unexpected error: ', error);
+                    return 'An unexpected error occurred';
+                }
+            }
+        }
+    }
 
     async function selectDocument(docId: string, ops: number[][] | undefined = undefined) {
         try {
@@ -595,6 +650,7 @@ export default function MainPage({callSnackbar, title}: MainPageProps) {
                 } else {
                     allCorefs.current = []
                 }
+                // TODO: create and set state for handling annotators (createdByUser field in Mentions)
                 setCorefClusters(clust)
                 setCorefText(result.tokens)
                 convertConfidences(result.probs)
@@ -645,7 +701,7 @@ export default function MainPage({callSnackbar, title}: MainPageProps) {
                             setCurrDocInfo(pair)
                             let ops: string | null = localStorage.getItem("ops")
                             if (ops !== null) {
-                                opsArr.current = JSON.parse(ops)
+                                opsArr.current = JSON.parse(ops)  // TODO: handle parsing error (in catch => clearChanges())
                                 setUnsavedChanges(true)
                             }
                             await selectDocument(reducedDoc._id, opsArr.current)
@@ -861,7 +917,7 @@ export default function MainPage({callSnackbar, title}: MainPageProps) {
                                                 sendCorefTextToParent={sendCorefTextToMainPage}
                                                 allCorefs={allCorefs}
                                                 sendConfidencesToParent={convertConfidences}
-                                                changeCurrDocInfo={changeCurrDocumentInfo}
+                                                addDocumentInfo={addDocumentInfo}
                                             />
 
 
@@ -877,9 +933,9 @@ export default function MainPage({callSnackbar, title}: MainPageProps) {
                                                 clearCurrentMention={clearCurrentMention}
                                                 selectDocument={selectDocument}
                                                 currDocInfo={currDocInfo}
-                                                changeCurrDocInfo={changeCurrDocumentInfo}
+                                                addDocumentInfo={addDocumentInfo}
                                                 documentsInfo={documentIdNamePairs}
-                                                setDocumentsInfo={setDocumentIdNamePairs}
+                                                renameDoc={renameDoc}
                                             />
                                         </TabPanel>
                                         <TabPanel value={value} index={2}>

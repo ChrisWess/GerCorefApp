@@ -13,6 +13,7 @@ class Document(BaseModel):
     annotated_by: list[list[str]] = Field(alias="annotatedBy")
     probs: list[list[list[float]]] = Field()
     created_at_ts: datetime = Field(default=datetime.now(), alias="createdAt")
+    project_fk: str = Field(alias="projectFk")
 
     def __init__(self, **data):
         if '_id' in data:
@@ -33,7 +34,8 @@ class Document(BaseModel):
                 "clust": [[[0, 0], [3, 3]]],
                 "annotatedBy": [["066de609-b04a-4b30-b46c-32537c7f1f6e", "066de609-b04a-4b30-b46c-32537c7f1f6e"]],
                 "probs": [[[1, 0], [.1, 0, .9]]],
-                "createdAt": datetime.now()
+                "createdAt": datetime.now(),
+                "projectFk": "066de609-b04a-4b30-b46c-32537c7f1eee"
             }
         }
 
@@ -43,7 +45,8 @@ class Document(BaseModel):
     def to_dict(self):
         result = {"name": self.name, "createdBy": self.created_by, "sharedWith": self.shared_with,
                   "tokens": self.tokens, "clust": self.clust, "annotatedBy": self.annotated_by,
-                  "probs": self.probs, "createdAt": self.created_at_ts.isoformat(' ')}
+                  "probs": self.probs, "createdAt": self.created_at_ts.isoformat(' '),
+                  "projectFk": self.project_fk}
         if self.id is not None:
             result["_id"] = self.id
         return result

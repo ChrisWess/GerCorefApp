@@ -11,7 +11,7 @@ export default function Text(props: any) {
         try{
             const { data } = await axios.post(
                 `http://127.0.0.1:5000/model`,
-                { "text": input, "docname": "default_name", "projectid": "TEMP" },  // TODO: project id
+                { "text": input, "docname": "text.txt", "projectid": "TEMP" },  // TODO: project id
                 {
                     headers: {
                         'Access-Control-Allow-Origin': '*',
@@ -27,8 +27,7 @@ export default function Text(props: any) {
                 props.sendCorefTextToParent(result.tokens);
                 props.allCorefs.current = []
                 props.sendConfidencesToParent(result.probs);
-                let newDoc: string[] = [data._id, "temp.txt"]  // TODO: create a default file name
-                props.changeCurrDocInfo(newDoc);
+                props.addDocumentInfo(result._id, result.name);
                 // TODO: maybe automatically switch to documents tab and select the newly created document from the list
             }
         }
@@ -44,7 +43,6 @@ export default function Text(props: any) {
         }
     }
 
-    // TODO: use a default file name when submitting text (e.g. doc1, doc2 => increment by looking at all previously created doc names with that pattern)
     return (
         <>
             <TextField

@@ -13,7 +13,7 @@ import re
 #@login_required
 def model_predict():
     args = request.json
-    if any(arg not in args for arg in ("projectid", "docname", "text")):
+    if not all(arg in args for arg in ("projectid", "docname", "text")):
         abort(400)
     output_mode = "json_small"
     if 'output_mode' in args and args['output_mode'] == 'long':

@@ -54,11 +54,12 @@ class DocumentDAO(BaseDAO):
             unique_name = f"{name} ({i})"
         return unique_name
 
-    def _insert_autoannotated_doc(self, name, user_id, model_pred):
+    def _insert_autoannotated_doc(self, name, user_id, project_id, model_pred):
         # The model's annotations are marked with a 0 (zero)
         annotated_by = [[0] * len(cluster) for cluster in model_pred['clusters']]
         doc = Document(name=name, created_by=user_id, tokens=model_pred['tokens'],
-                       clust=model_pred['clusters'], annotated_by=annotated_by, probs=model_pred['probs'])
+                       clust=model_pred['clusters'], annotated_by=annotated_by,
+                       probs=model_pred['probs'], project_fk=project_id)
         doc = doc.to_dict()
         result = self.collection.insert_one(doc)  # save doc
         doc['_id'] = str(result.inserted_id)
@@ -76,7 +77,7 @@ class DocumentDAO(BaseDAO):
             user_id = session['userid']
         # FIXME: END Workaround
         unique_name = self._unique_docname_for_project(project_id, name)
-        doc = self._insert_autoannotated_doc(unique_name, user_id, model_pred)
+        doc = self._insert_autoannotated_doc(unique_name, user_id, project_id, model_pred)
         ProjectDAO().add_doc_to_project(project_id, doc['_id'])
         if generate_response:
             return self.to_response(doc, True, BaseDAO.CREATE, True)
@@ -84,11 +85,13 @@ class DocumentDAO(BaseDAO):
             return doc
 
     def rename_doc(self, doc_id, name, generate_response=False):
+        project_id = self.find_by_id(doc_id, ['projectFk'])['projectFk']
+        unique_name = self._unique_docname_for_project(project_id, name)
         filtr = {"_id": ObjectId(doc_id)}
-        new_name = {"$set": {'name': name}}
-        self.collection.update_one(filtr, new_name)
+        name_update = {"$set": {'name': unique_name}}
+        self.collection.update_one(filtr, name_update)
         if generate_response:
-            return self.to_response(doc_id, operation=BaseDAO.UPDATE)
+            return self.to_response({"_id": doc_id, "name": unique_name}, operation=BaseDAO.UPDATE)
         else:
             return doc_id
 

@@ -47,6 +47,9 @@ class BaseDAO:
                 if isinstance(result, str):
                     response["numUpdated"] = 1
                     response["result"] = {'locations': [result]}
+                elif isinstance(result, dict):
+                    response["numUpdated"] = 1
+                    response["result"] = result
                 else:
                     response["numUpdated"] = result.modified_count
             else:

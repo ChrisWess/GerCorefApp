@@ -17,9 +17,9 @@ const ButtonTextfield: React.FC<ButtonTextfieldProps> = ({ tfLabel, buttonText, 
         setTextInput(event.target.value);
     }
 
-    const doSomethingWithInput = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+    const handleInput = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
         event.preventDefault();
-        submitFunc(textInput);  // TODO: Use textFieldInput
+        submitFunc(textInput);  // Use textFieldInput
     }
 
     return (
@@ -30,7 +30,7 @@ const ButtonTextfield: React.FC<ButtonTextfieldProps> = ({ tfLabel, buttonText, 
             />
             <Button
                 variant="outlined"
-                onClick={(e) => doSomethingWithInput(e)}
+                onClick={(e) => handleInput(e)}
                 disabled={!textInput}
                 style={{ margin: 5, textTransform: "none", width: "15%", height: 40 }}
             >{buttonText}</Button>

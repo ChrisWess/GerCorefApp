@@ -76,6 +76,6 @@ def share_doc(doc_id, user_id):
 @application.route('/doc/rename', methods=['PUT'])
 def rename_doc():
     args = request.json
-    if "docname" not in args or "docid" not in args:
+    if "docid" not in args or "docname" not in args:
         abort(400)
     return DocumentDAO().rename_doc(args["docid"], args["docname"], True)

@@ -18,14 +18,10 @@ interface DocumentsProps {
     clearCurrentMention: Function
     selectDocument: Function
     currDocInfo: string[]
-    changeCurrDocInfo: Function
+    addDocumentInfo: Function
     documentsInfo: [string, string][] | undefined
-    setDocumentsInfo: Function
+    renameDoc: Function
 }
-
-type dict = {
-    [key: string]: any
-};
 
 // Close the dropdown if the user clicks outside of it
 window.onclick = function (event) {
@@ -50,9 +46,9 @@ const Documents: React.FC<DocumentsProps> = ({ sendCorefClusterToParent,
     clearCurrentMention,
     selectDocument,
     currDocInfo,
-    changeCurrDocInfo,
+    addDocumentInfo,
     documentsInfo,
-    setDocumentsInfo }) => {
+    renameDoc }) => {
 
     const [selectedFile, setSelectedFile] = React.useState<any | null>(null);
     const supportedDataTypes = ["XML", "CoNLL-2012", "plaintext"];
@@ -80,9 +76,8 @@ const Documents: React.FC<DocumentsProps> = ({ sendCorefClusterToParent,
             let fileName = selectedFile.name
             let formData = new FormData();
             formData.append('myFile', selectedFile);
-            // TODO: default to file name from file system, but create textfield for renaming documents
             formData.append('docname', fileName);
-            formData.append('projectid', "TEMP");  // TODO: ignored for now
+            formData.append('projectid', "TEMP");  // TODO: ignored for now (workaround for dev tool setup)
 
             try {
                 const { data } = await axios.post(
@@ -98,23 +93,11 @@ const Documents: React.FC<DocumentsProps> = ({ sendCorefClusterToParent,
                 );
                 if (data.status === 201) {
                     let result = data.result
-                    let insertIndex = documentsInfo.length
-                    for (let i = 0; i < insertIndex; i++) {
-                        let a = documentsInfo[i][1]
-                        if (result.name < a) {
-                            insertIndex = 0
-                            break
-                        }
-                    }
-                    let newDocInfo: [string, string] = [result._id, result.name]
-                    documentsInfo.splice(insertIndex, 0, newDocInfo)
-                    setDocumentsInfo(documentsInfo)
-
+                    addDocumentInfo(result._id, result.name)
                     sendCorefClusterToParent(result.clust)
                     sendCorefTextToParent(result.tokens)
                     allCorefs.current = []
                     sendConfidencesToParent(result.probs)
-                    changeCurrDocInfo(newDocInfo);
                     clearCurrentMention()
                     // TODO: trigger pop-up if changes in current doc should be changed
                 }  // TODO: handle unauthorized and other errors (make button not clickable when not logged in?)
@@ -134,10 +117,6 @@ const Documents: React.FC<DocumentsProps> = ({ sendCorefClusterToParent,
             (document.getElementById('file') as HTMLInputElement).value = '';
         }
     };
-
-    const renameDoc = (inpt: string) => {
-        console.log(inpt)
-    }
 
     return (
         <div>
