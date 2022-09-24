@@ -12,27 +12,101 @@ import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import MenuItem from '@mui/material/MenuItem';
 import {Link} from "react-router-dom";
+import {Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, TextField} from "@mui/material";
 
 //The app bar is mostly copy-pasted from https://mui.com/material-ui/react-app-bar/
 
-function handlePage(page: string){
-    console.log("Pressed "+page+"-button")
-    switch (page) {
-        case "Logout":
-            window.location.href = 'http://localhost:5000/login'
-            break;
-        case "Dashboard":
-            window.location.href = 'http://localhost:3000/Dashboard'
-            break;
-    }
-}
 
-const pages = ['Help', 'Info'];
+const pages = ['Help', 'GitHub'];
 const settings = ['Dashboard', 'Logout'];
 
 const ResponsiveAppBar = () => {
     const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
     const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
+    const [open, setOpen] = React.useState(false);
+
+    const helpContent =
+        <DialogContent>
+            <DialogContentText>
+                Welcome to the GerCoref-App. Here are some instructions to help you.
+            </DialogContentText>
+            <DialogTitle>Get started:</DialogTitle>
+            <DialogContentText>
+                First you will need to upload a document. You can do this in the block on the right by
+                swtiching to the <b>documents</b>-tab. Alternatively you can simply write your own text in the <b>textfield</b>.
+                Just click on <i>upload</i> or <i>submit</i> to send it to the neural network. The neural network is designed to annotate german text.
+                After your submission the annotated document will appear in the middle block, sentence by sentence.
+            </DialogContentText>
+                <DialogTitle>Coreference information:</DialogTitle>
+            <DialogContentText>
+            Each color + number represents an entity. You can click on an annotated word to see other
+                appearances of that entity on the left block. Further, if it is an annotation made by the neural network you can see its confidence
+                values if you switch to the <b>statistics</b>-tab on the right block. In the <b>search</b>-tab you can look for words and letter combinations.
+            </DialogContentText>
+                <DialogTitle>Editing yourself:</DialogTitle>
+        <DialogContentText>
+            You can use the editing functions to edit the annotation made by the neural network.
+                Simply highlight words with your mouse by clicking and dragging. The words will be highlighted in a bright blue color and
+                appear in the window on the left block. Now you can use the buttons on the left block to add an annotation the your selected words. If
+                that is too slow for you, you can use shortcuts.
+        </DialogContentText>
+                <DialogTitle>Shortcuts:</DialogTitle>
+        <DialogContentText>
+            The shortcuts are activated by pressing and releasing the <i>a</i>-key.Select words, press and hold <i>a</i> and use any of the following combinations:
+                <br/>
+                <br/>
+                <b><i>your number</i></b>: The selected words will be annotated as instance of coref-entity nr.<i>your number</i>.
+                <br/>
+                <br/>
+                <b><i>n</i></b>: The selected words will be annotated as instance of a new coref-entity.
+                <br/>
+                <br/>
+                <b><i>c</i></b>: If the selected words are an instance of coref-entity nr. x, you copy x.
+                <br/>
+                <br/>
+                <b><i>v</i></b>: If you already copied coref-entity nr. x, the selected words will be annotated as instance of coref-entity nr.x.
+                <br/>
+                <br/>
+                <b><i>d</i></b>:  If the selected words are an instance of a coref-entity, that annotation will be deleted.
+                <br/>
+                <br/>
+            After typing your input, release <i>a</i>.
+            </DialogContentText>
+            <DialogTitle>Other shortcuts:</DialogTitle>
+            <DialogContentText>
+                <b><i>Ctrl + s</i></b>: Save current changes made to the document.
+                <br/>
+                <br/>
+                <b><i>Ctrl + f</i></b>: Switch to the <b>search</b>-tab
+            </DialogContentText>
+        </DialogContent>
+
+    function handlePage(page: string){
+        console.log("Pressed "+page+"-button")
+        switch (page) {
+            case "Logout":
+                window.location.href = 'http://localhost:5000/login'
+                break;
+            case "Dashboard":
+                window.location.href = 'http://localhost:3000/Dashboard'
+                break;
+            case "Help":
+                handleOpen()
+                break;
+            case "GitHub":
+                window.open("https://github.com/ChrisWess/GerCorefApp");
+                break;
+
+        }
+    }
+
+    const handleOpen = () => {
+        setOpen(true);
+    };
+
+    const handleClose = () => {
+        setOpen(false);
+    };
 
     const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorElNav(event.currentTarget);
@@ -106,6 +180,13 @@ const ResponsiveAppBar = () => {
                             ))}
                         </Menu>
                     </Box>
+                    <Dialog open={open} onClose={handleClose}>
+                        <DialogTitle>Help</DialogTitle>
+                            {helpContent}
+                        <DialogActions>
+                            <Button onClick={handleClose}>Cancel</Button>
+                        </DialogActions>
+                    </Dialog>
                     <Typography
                         variant="h5"
                         noWrap
