@@ -38,7 +38,9 @@ export default function ConsecutiveSnackbars() {
     const [messageInfo, setMessageInfo] = React.useState<SnackbarMessage | undefined>(
         undefined,
     );
-    const [render, setRender] = React.useState(<CircularProgress/>);
+    const [render, setRender] = React.useState(
+        <CircularProgress style={{marginLeft: '50%', marginTop: '20%'}}/>
+    );
     const {projectname} = useParams();
 
     async function projectExists(pname: string){

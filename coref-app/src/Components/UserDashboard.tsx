@@ -10,7 +10,7 @@ import {
     ListItemIcon,
     Divider,
     Dialog,
-    DialogTitle, DialogContent, DialogContentText, DialogActions, TextField, Skeleton
+    DialogTitle, DialogContent, DialogContentText, DialogActions, TextField, Skeleton, Typography
 } from "@mui/material";
 import ResponsiveAppBar from "./ResponsiveAppBar";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -22,6 +22,7 @@ import ButtonTextfield from "./ButtonTextfield";
 import {ReactComponent} from "*.svg";
 import ListItemText from "@mui/material/ListItemText";
 import ListItemButton from "@mui/material/ListItemButton";
+import Avatar from "@mui/material/Avatar";
 interface DashboardProps {
 
 }
@@ -36,6 +37,7 @@ function openProject(project: string) {
 const UserDashboard: React.FC<DashboardProps> = ({}) => {
     const [projectIdNamePairs, setProjectIdNamePairs] = React.useState<[string, string][] | undefined>();
     const [projectname, setProjectname] = React.useState('');
+    const [userInfo, setUserInfo] = React.useState<JSX.Element | undefined>();
     const [error, setError] = React.useState(false);
     const theme = useTheme();
     const [open, setOpen] = React.useState(false);
@@ -96,6 +98,46 @@ const UserDashboard: React.FC<DashboardProps> = ({}) => {
         }
     };
 
+    async function loadUserInfo() {
+        // load in the list of projects belonging to the current user and set the projectList
+        if (userInfo === undefined) {
+            try {
+                const {data} = await axios.get(
+                    `http://127.0.0.1:5000/user`,
+                    {
+                        headers: {
+                            'Access-Control-Allow-Origin': '*',
+                            'Content-Type': 'application/json',
+                        },
+                        params: {email: 1, name: 1}
+                    },
+                );
+
+                if (data.status === 200) {
+                    let result = data.result
+                    setUserInfo(<Box sx={{width: '100%', maxWidth: 500}}>
+                        <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" style={{marginLeft: '45%'}}/>
+                        <br/>
+                        <Typography variant={"overline"}>Username:</Typography>
+                        <Typography variant={"h5"} color={"gray"} align={'center'}>{data.result[0].name}</Typography>
+                        <br/>
+                        <Typography variant={"overline"}>Email:</Typography>
+                        <Typography variant={"h5"} color={"gray"} align={'center'}>{data.result[0].email}</Typography>
+                    </Box>)
+                    console.log(result)
+                }
+            } catch (error) {
+                if (axios.isAxiosError(error)) {
+                    console.log('error message: ', error.message);
+                    return error.message;
+                } else {
+                    console.log('unexpected error: ', error);
+                    return 'An unexpected error occurred';
+                }
+            }
+        }
+    }
+
     async function loadProjects() {
         // load in the list of projects belonging to the current user and set the projectList
         if (projectIdNamePairs === undefined) {
@@ -149,6 +191,7 @@ const UserDashboard: React.FC<DashboardProps> = ({}) => {
     }
 
     React.useEffect(() => {
+        loadUserInfo();
         loadProjects();
     });
 
@@ -181,16 +224,26 @@ const UserDashboard: React.FC<DashboardProps> = ({}) => {
                                         p: 2,
                                         display: 'flex',
                                         flexDirection: 'column',
-                                        height: 465,
+                                        height: 525,
                                         overflow: 'auto'
                                     }}>
+                                    <Paper
+                                        elevation={0}
+                                        sx={{
+                                            p: 2,
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            height: 485,
+                                            overflow: 'auto'
+                                        }}>
                                     {projectList ? (<List className="pagination" key={"mainList"}>{projectList}</List>) : (<><Skeleton variant="rectangular" width={'auto'} height={20}/><Skeleton variant="rectangular" style={{marginTop: '10px'}} width={'auto'} height={20}/><Skeleton variant="rectangular" style={{marginTop: '10px'}} width={'auto'} height={20}/></>
                                     )}
+                                    </Paper>
+                                    <Button variant={"contained"} style={{backgroundColor:"primary" , margin: 1, textTransform: "none", width: "97%" }}
+                                            onClick={handleClickOpen} type="submit"> new project </Button>
                                 </Paper>
                             </Grid>
                             <Grid item xs={12} md={12} lg={12}>
-                                <Button variant={"contained"} style={{backgroundColor:"primary" , margin: 1, textTransform: "none", width: "97%" }}
-                                        onClick={handleClickOpen} type="submit"> new project </Button>
                                 <Dialog open={open} onClose={handleClose}>
                                         <DialogTitle>new Project</DialogTitle>
                                         <DialogContent>
@@ -229,7 +282,7 @@ const UserDashboard: React.FC<DashboardProps> = ({}) => {
                                         flexDirection: 'column',
                                         height: 250,
                                     }}>
-                                    User Information
+                                    {userInfo? userInfo: <><Skeleton variant="rectangular" width={'auto'} height={20}/><Skeleton variant="rectangular" style={{marginTop: '10px'}} width={'auto'} height={20}/><Skeleton variant="rectangular" style={{marginTop: '10px'}} width={'auto'} height={20}/></>}
                                 </Paper>
                             </Grid>
 
