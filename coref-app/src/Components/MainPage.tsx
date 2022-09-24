@@ -770,7 +770,6 @@ export default function MainPage({callSnackbar}: MainPageProps) {
             }
             if (e.ctrlKey && e.keyCode == 'F'.charCodeAt(0)){
                 e.preventDefault();
-                saveChanges()
                 if (value != 2) {
                     setValue(2);
                 }
