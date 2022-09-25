@@ -137,7 +137,7 @@ export default function MainPage({callSnackbar}: MainPageProps) {
     const [hovertoggle, setHovertoggle] = React.useState(true);
     const [autoAnnotoggle, setAutoAnnoToggle] = React.useState(true);
     //currently on the "c" button for the shortcuts
-    const [shortcutSaved, setShortcutSaved] = React.useState<number>(0);
+    const [shortcutSaved, setShortcutSaved] = React.useState<number>(1);
 
     const allCorefs = React.useRef<Mention[][]>([]);
     const wordArr = React.useRef<string[]>([]);
@@ -314,6 +314,7 @@ export default function MainPage({callSnackbar}: MainPageProps) {
             let clusterIdx: number = clusterId - 1
             addCurrCorefMain(clusterIdx)
         } catch (e) {
+            console.log(clusterId)
             callSnackbar("An Error occurred: "+ e, "top", "error")
         }
     }
@@ -391,52 +392,79 @@ export default function MainPage({callSnackbar}: MainPageProps) {
     }
 
     //for the key-shortcuts used in MainView
-    //todo: handle overwrite of current cluster (leads to error atm)
-    //todo: fix error:  when words are selected by pressing their "[]" the main view gets unselected and shortcuts stop working
+    //todo: handle overwrite of current cluster (not possible atm)
     const keyShortcutExecuted = (newCoref: string) => {
 
-        if (newCoref === "" || (!markedWord.current[0] && !currentMention)) {
-            callSnackbar("No words selected!", "top", "error")
+        //stop function if nothing was typed
+        if (newCoref === "")
+        {
+            //callSnackbar("Invalid command!", "top", "error")
+            return;
+        }
+        let clusterId = parseInt(newCoref)
+
+        //if a coref is selected (if no unmarked word is selected)
+        if (currentMention && markedWord.current[0] == undefined) {
+            if (isNaN(clusterId)) {
+                switch (newCoref) {
+                    case "d":
+                        deleteCurrCoref()
+                        callSnackbar("deleted coreference", "top", "info")
+                        break;
+                    case "n":
+                        //addCurrCorefShort(corefClusters.length + 1)
+                        callSnackbar("Coref is already assigned, please delete first.", "top", "info")
+                        break;
+                    case "c":
+                        setShortcutSaved(currentMention.clusterIdx + 1)
+                        callSnackbar("Current copy: Coref cluster Nr." + (currentMention.clusterIdx + 1), "top", "info")
+                        break;
+                    case "v":
+                        callSnackbar("Coref is already assigned, please delete first.", "top", "info")
+                        break;
+                    default:
+                        callSnackbar("No such command: " + newCoref, "top", "warning")
+                        break;
+                }
+            } else {
+                if(clusterId > corefClusters.length+1){
+                    callSnackbar("No such Cluster: "+newCoref, "top", "error")
+                }else {
+                    //addCurrCorefShort(clusterId)
+                    callSnackbar("Coref is already assigned, please delete first.", "top", "normal")
+                }
+            }
             return;
         }
 
-        console.log(newCoref)
-        let clusterId = parseInt(newCoref)
-
-        if (isNaN(clusterId)) {
-            switch (newCoref) {
-                case "d":
-                    deleteCurrCoref()
-                    callSnackbar("deleted coreference", "top", "info")
-                    break;
-                case "n":
-                    addCurrCorefShort(corefClusters.length + 1)
-                    callSnackbar("new cluster created", "top", "info")
-                    break;
-                case "c":
-                    if (currentMention) {
-                        setShortcutSaved(currentMention.clusterIdx + 1)
-                        callSnackbar("Current copy: Coref cluster Nr." + (currentMention.clusterIdx + 1), "top", "info")
-                    } else {
-                        callSnackbar("Please select a word with an assigned coref cluster to copy!", "top", "warning")
-                    }
-                    break;
-                case "v":
-                    addCurrCorefShort(shortcutSaved)
-                    break;
-                default:
-                    callSnackbar("No such command: " + newCoref, "top", "warning")
-                    break;
+        //if an unmarked is selected (if no coref is selected)
+        if (markedWord.current[0] != undefined && !currentMention) {
+            if (isNaN(clusterId)) {
+                switch (newCoref) {
+                    case "n":
+                        addCurrCorefShort(corefClusters.length + 1)
+                        callSnackbar("new cluster created", "top", "info")
+                        break;
+                    case "v":
+                        addCurrCorefShort(shortcutSaved)
+                        callSnackbar("Assigned to cluster: " +shortcutSaved, "top", "info")
+                        break;
+                    default:
+                        callSnackbar("No such command for unmarked words: " + newCoref, "top", "warning")
+                        break;
+                }
+            } else {
+                if(clusterId > corefClusters.length+1){
+                    callSnackbar("No such Cluster: "+newCoref, "top", "error")
+                }else {
+                    addCurrCorefShort(clusterId)
+                    callSnackbar("Assigned to: " + newCoref, "top", "normal")
+                }
             }
-        } else {
-            if(clusterId > corefClusters.length+1){
-                callSnackbar("No such Cluster: "+newCoref, "top", "error")
-            }else {
-                addCurrCorefShort(clusterId)
-                callSnackbar("Added to Cluster: " + newCoref, "top", "normal")
-            }
+            return;
         }
-        console.log("keyshortCutInvoked:"+newCoref)
+        callSnackbar("No words selected!", "top", "error")
+        return;
     }
 
     //Functions used by Child-Component "Text" to send the received data to the

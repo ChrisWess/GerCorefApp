@@ -9,7 +9,6 @@ import NotFound from "./Components/NotFound";
 
 
 function App() {
-    //todo: check if project with the title exists or not
   return (
 
       <div>
