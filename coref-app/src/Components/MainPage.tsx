@@ -90,17 +90,17 @@ export type ConfidenceValues = {
     clusterProbs: number[]
 }
 
-export const clearPrevMarking = function(markedWord: number[]) {
+export const clearPrevMarking = function(markedWord: number[], markedWordsPrevColors: any[]) {
     if (markedWord.length === 1) {
         let prev = document.getElementById("w" + markedWord[0])
         if (prev) {  // && prev.classList.contains("wregular")
-            prev.style.backgroundColor = "transparent"
+            prev.style.backgroundColor = markedWordsPrevColors[0]
         }
     } else if (markedWord.length === 2) {
         for (let i = markedWord[0]; i < markedWord[1]; i++) {
             let prev = document.getElementById("w" + i)
             if (prev) {  // && prev.classList.contains("wregular")
-                prev.style.backgroundColor = "transparent"
+                prev.style.backgroundColor = markedWordsPrevColors[i - markedWord[0]]
             }
         }
     }
@@ -144,6 +144,7 @@ export default function MainPage({callSnackbar}: MainPageProps) {
     const wordArr = React.useRef<string[]>([]);
     const wordFlags = React.useRef<(boolean | null)[]>([]);
     const markedWord = React.useRef<number[]>([])
+    const markedWordsPrevColors = React.useRef<any[]>([])
     const opsArr = React.useRef<number[][] | undefined>();
 
     function onDownloadDocument(dataType: string, documentName: string) {
@@ -527,7 +528,7 @@ export default function MainPage({callSnackbar}: MainPageProps) {
 
     function clearCurrentMention() {
         setCurrentMention(undefined)
-        clearPrevMarking(markedWord.current)
+        clearPrevMarking(markedWord.current, markedWordsPrevColors.current)
         setSelectedCoref([])
         setClusterColor("black")
     }
@@ -566,7 +567,7 @@ export default function MainPage({callSnackbar}: MainPageProps) {
     }
 
     const setNewCorefSelection = (value: any) => {
-        clearPrevMarking(markedWord.current)
+        clearPrevMarking(markedWord.current, markedWordsPrevColors.current)
         markedWord.current = []
         let mention: Mention
         if (!value) {
@@ -600,11 +601,13 @@ export default function MainPage({callSnackbar}: MainPageProps) {
     }
 
     const markWords = (markRange: number[], value: any) => {
-        clearPrevMarking(markedWord.current)
+        clearPrevMarking(markedWord.current, markedWordsPrevColors.current);
+        markedWordsPrevColors.current = []
         if (markRange.length === 1) {
             if (!value) {
                 value = document.getElementById("w" + markRange[0])
             }
+            markedWordsPrevColors.current.push(getStyle(value, "background-color"));
             value.style.backgroundColor = "deepskyblue";
             setSelectedCoref([markRange[0], markRange[0] + 1])
             markedWord.current = markRange
@@ -617,6 +620,7 @@ export default function MainPage({callSnackbar}: MainPageProps) {
             for (let i = markRange[0]; i < markRange[1]; i++) {
                 let prev = document.getElementById("w" + i)
                 if (prev) {
+                    markedWordsPrevColors.current.push(getStyle(prev, "background-color"));
                     prev.style.backgroundColor = "deepskyblue"
                 }
             }
@@ -967,6 +971,7 @@ export default function MainPage({callSnackbar}: MainPageProps) {
                                         allCorefs={allCorefs}
                                         clusterColor={clusterColor}
                                         markedWord={markedWord}
+                                        markedWordsPrevColors={markedWordsPrevColors}
                                         currentMention={currentMention}
                                         handleSelectCoref={setSelectedCoref}
                                         setCurrentMention={setCurrentMention}

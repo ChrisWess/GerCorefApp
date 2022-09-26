@@ -11,16 +11,17 @@ interface MyListProps {
     currentMention: Mention | undefined
     allCorefs: MutableRefObject<Mention[][]>
     markedWord: MutableRefObject<number[]>
+    markedWordsPrevColors: MutableRefObject<any[]>
     handleSelectCoref: Function;
     setCurrentMention: Function
 }
 
 const MyList: React.FC<MyListProps> = ({ currentMention, allCorefs,
-                                           markedWord, handleSelectCoref, setCurrentMention }) => {
+                                           markedWord, markedWordsPrevColors, handleSelectCoref, setCurrentMention }) => {
 
     const handleClick = (mention: Mention) => {
         return function () {
-          clearPrevMarking(markedWord.current)
+          clearPrevMarking(markedWord.current, markedWordsPrevColors.current)
           handleSelectCoref(mention.selectionRange)
           setCurrentMention(mention)
         }

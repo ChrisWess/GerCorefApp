@@ -11,6 +11,7 @@ interface CorefViewProps {
     allCorefs: MutableRefObject<Mention[][]>
     clusterColor: string
     markedWord: MutableRefObject<number[]>
+    markedWordsPrevColors: MutableRefObject<any[]>
     currentMention: Mention | undefined
     handleSelectCoref: Function;
     setCurrentMention: Function
@@ -30,7 +31,7 @@ export const getCluster = function(mention: Mention, allCorefs: Mention[][]) {
 }
 
 const CorefView: React.FC<CorefViewProps> = ({ selectedCoref, wordArr,
-                                                 allCorefs, clusterColor, markedWord,
+                                                 allCorefs, clusterColor, markedWord, markedWordsPrevColors,
                                                  currentMention, handleSelectCoref, setCurrentMention,
                                                  addCoref, deleteCoref, setHovertoggle, hovertoggle, autoAnnotoggle,
                                                  setAutoAnnotoggle, unsavedChanges, saveChanges}) => {
@@ -66,6 +67,7 @@ const CorefView: React.FC<CorefViewProps> = ({ selectedCoref, wordArr,
                 currentMention={currentMention}
                 allCorefs={allCorefs}
                 markedWord={markedWord}
+                markedWordsPrevColors={markedWordsPrevColors}
                 handleSelectCoref={handleSelectCoref}
                 setCurrentMention={setCurrentMention}/>
 
