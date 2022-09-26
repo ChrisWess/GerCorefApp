@@ -138,7 +138,7 @@ export default function MainPage({callSnackbar}: MainPageProps) {
     const [hovertoggle, setHovertoggle] = React.useState(true);
     const [autoAnnotoggle, setAutoAnnoToggle] = React.useState(true);
     //currently on the "c" button for the shortcuts
-    const [shortcutSaved, setShortcutSaved] = React.useState<number>(0);
+    const [shortcutSaved, setShortcutSaved] = React.useState<number>(1);
 
     const allCorefs = React.useRef<Mention[][]>([]);
     const wordArr = React.useRef<string[]>([]);
@@ -149,7 +149,7 @@ export default function MainPage({callSnackbar}: MainPageProps) {
     function onDownloadDocument(dataType: string, documentName: string) {
         let converter = new FileConverter()
         console.log("directed to mainpage")
-        converter.convertFile(dataType ,documentName, corefClusters, corefText)
+        converter.convertFile(dataType ,documentName, allCorefs, corefText, autoAnnotoggle)
     }
 
     function getCurrDocInfoFromList(docId: string) {
@@ -258,6 +258,9 @@ export default function MainPage({callSnackbar}: MainPageProps) {
     }
 
     function addCoref(clusterIdx: number, idxStart: number, idxEnd: number) {
+        console.log(clusterIdx)
+        console.log(idxStart)
+        console.log(idxEnd)
         let mentionIdx: number
         if (clusterIdx >= corefClusters.length) {
             corefClusters.push([])
@@ -317,6 +320,7 @@ export default function MainPage({callSnackbar}: MainPageProps) {
             let clusterIdx: number = clusterId - 1
             addCurrCorefMain(clusterIdx)
         } catch (e) {
+            console.log(clusterId)
             callSnackbar("An Error occurred: "+ e, "top", "error")
         }
     }
@@ -346,6 +350,45 @@ export default function MainPage({callSnackbar}: MainPageProps) {
             }
         }
         return clusters
+    }
+
+    const overwriteCurrCoref = function(newCluster: number) {
+        // TODO: implement versioning of the documents in order to keep track of previous annotation states
+        //  (model inference should create a new version => if a coreference, that was created by the model,
+        //  is deleted and re-added, the system should still be able to show the plots afterwards)
+
+        let start = currentMention!.selectionRange[0]
+        let end = currentMention!.selectionRange[1]
+        let prevClust = currentMention!.clusterIdx
+        let clustersTotal = corefClusters.length
+        //nothing happens if overwrite with same cluster
+        if (newCluster === (prevClust+1)){
+            return
+        }
+
+        //delete part
+        let clusterIdx = currentMention!.clusterIdx
+        let mentionIdx = currentMention!.mentionIdx
+        let clusters = deleteCoref(corefClusters, clusterIdx, mentionIdx)
+        setCorefClusters(clusters)
+        setNewCorefSelection(undefined)
+        let opEntry: number[] = [1, clusterIdx, mentionIdx]
+        addOperationToStorage(opEntry)
+        let newMention: Mention;
+        //add part
+        if(newCluster < (prevClust+1)){
+            newMention = addCoref(newCluster -1, start, end-1)
+        } else if (clustersTotal > clusters.length){
+            //if this coref was the last one of its index
+            newMention = addCoref(newCluster -2, start, end-1)
+        } else
+            newMention = addCoref(newCluster -1, start, end-1)
+
+
+        setNewCorefSelection(newMention)
+        setCorefClusters(corefClusters)
+        let opEntry2: number[] = [0, newCluster, newMention.mentionIdx, start, end-1]
+        addOperationToStorage(opEntry2)
     }
 
     const deleteCurrCoref = function() {
@@ -394,52 +437,80 @@ export default function MainPage({callSnackbar}: MainPageProps) {
     }
 
     //for the key-shortcuts used in MainView
-    //todo: handle overwrite of current cluster (leads to error atm)
-    //todo: fix error:  when words are selected by pressing their "[]" the main view gets unselected and shortcuts stop working
+    //todo: handle overwrite of current cluster (not possible atm)
     const keyShortcutExecuted = (newCoref: string) => {
 
-        if (newCoref === "" || (!markedWord.current[0] && !currentMention)) {
-            callSnackbar("No words selected!", "top", "error")
+        //stop function if nothing was typed
+        if (newCoref === "")
+        {
+            //callSnackbar("Invalid command!", "top", "error")
+            return;
+        }
+        let clusterId = parseInt(newCoref)
+
+        //if a coref is selected (if no unmarked word is selected)
+        if (currentMention && markedWord.current[0] == undefined) {
+            if (isNaN(clusterId)) {
+                switch (newCoref) {
+                    case "d":
+                        deleteCurrCoref()
+                        callSnackbar("deleted coreference", "top", "normal")
+                        break;
+                    case "n":
+                        overwriteCurrCoref(corefClusters.length + 1)
+                        callSnackbar("Coref overwritten.", "top", "normal")
+                        break;
+                    case "c":
+                        setShortcutSaved(currentMention.clusterIdx + 1)
+                        callSnackbar("Current copy: Coref cluster Nr." + (currentMention.clusterIdx + 1), "top", "info")
+                        break;
+                    case "v":
+                        overwriteCurrCoref(shortcutSaved)
+                        callSnackbar("Coref overwritten.", "top", "normal")
+                        break;
+                    default:
+                        callSnackbar("No such command: " + newCoref, "top", "warning")
+                        break;
+                }
+            } else {
+                if(clusterId > corefClusters.length+1){
+                    callSnackbar("No such Cluster: "+newCoref, "top", "warning")
+                }else {
+                    overwriteCurrCoref(clusterId)
+                    callSnackbar("Coref overwritten.", "top", "normal")
+                }
+            }
             return;
         }
 
-        console.log(newCoref)
-        let clusterId = parseInt(newCoref)
-
-        if (isNaN(clusterId)) {
-            switch (newCoref) {
-                case "d":
-                    deleteCurrCoref()
-                    callSnackbar("deleted coreference", "top", "info")
-                    break;
-                case "n":
-                    addCurrCorefShort(corefClusters.length + 1)
-                    callSnackbar("new cluster created", "top", "info")
-                    break;
-                case "c":
-                    if (currentMention) {
-                        setShortcutSaved(currentMention.clusterIdx + 1)
-                        callSnackbar("Current copy: Coref cluster Nr." + (currentMention.clusterIdx + 1), "top", "info")
-                    } else {
-                        callSnackbar("Please select a word with an assigned coref cluster to copy!", "top", "warning")
-                    }
-                    break;
-                case "v":
-                    addCurrCorefShort(shortcutSaved)
-                    break;
-                default:
-                    callSnackbar("No such command: " + newCoref, "top", "warning")
-                    break;
+        //if an unmarked is selected (if no coref is selected)
+        if (markedWord.current[0] != undefined && !currentMention) {
+            if (isNaN(clusterId)) {
+                switch (newCoref) {
+                    case "n":
+                        addCurrCorefShort(corefClusters.length + 1)
+                        callSnackbar("new cluster created", "top", "normal")
+                        break;
+                    case "v":
+                        addCurrCorefShort(shortcutSaved)
+                        callSnackbar("Assigned to cluster: " +shortcutSaved, "top", "normal")
+                        break;
+                    default:
+                        callSnackbar("No such command for unmarked words: " + newCoref, "top", "warning")
+                        break;
+                }
+            } else {
+                if(clusterId > corefClusters.length+1){
+                    callSnackbar("No such Cluster: "+newCoref, "top", "error")
+                }else {
+                    addCurrCorefShort(clusterId)
+                    callSnackbar("Assigned to: " + newCoref, "top", "normal")
+                }
             }
-        } else {
-            if(clusterId > corefClusters.length+1){
-                callSnackbar("No such Cluster: "+newCoref, "top", "error")
-            }else {
-                addCurrCorefShort(clusterId)
-                callSnackbar("Added to Cluster: " + newCoref, "top", "normal")
-            }
+            return;
         }
-        console.log("keyshortCutInvoked:"+newCoref)
+        callSnackbar("No words selected!", "top", "error")
+        return;
     }
 
     //Functions used by Child-Component "Text" to send the received data to the
@@ -782,7 +853,6 @@ export default function MainPage({callSnackbar}: MainPageProps) {
             }
             if (e.ctrlKey && e.keyCode == 'F'.charCodeAt(0)){
                 e.preventDefault();
-                saveChanges()
                 if (value != 2) {
                     setValue(2);
                 }

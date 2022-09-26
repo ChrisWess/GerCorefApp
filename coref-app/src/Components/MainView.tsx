@@ -230,7 +230,7 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
                     && j >= wordsToHighlight[current].words[0] 
                     && j <= wordsToHighlight[current].words[1]) {  
                     if  (j == wordsToHighlight[current].words[0]) {
-                        sentence.push(<abbr id={currentId} className="wregular" onClick={wordClickEvent} 
+                        sentence.push(<abbr key={currentId} id={currentId} className="wregular" onClick={wordClickEvent} 
                             ><Highlighted text={" " + token} highlight={inputText.split(" ")[0]} /></abbr>);
                     } else if (j == wordsToHighlight[current].words[1]) {
                         sentence.push(<abbr key={currentId} id={currentId} className="wregular" onClick={wordClickEvent} 
@@ -305,11 +305,6 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
                 && sentenceIdx == wordsToHighlight[current].num - 1
                 && startIdxInSentence >= wordsToHighlight[current].words[0]
                 && startIdxInSentence <= wordsToHighlight[current].words[1])
-        }
-
-
-        if (toHightlight) {
-            console.log(sentenceIdx, startIdxInSentence);
         }
 
         if (mentionIdxStart === mentionIdxEnd && !(!autoAnnotoggle && cluster[mentionIdx].autoCreated)) {

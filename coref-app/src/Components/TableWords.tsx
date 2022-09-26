@@ -76,7 +76,7 @@ const TableWords: React.FC<TablewordsProps> = ({ rows, inputText, txt, changePag
                             <TableCell align="right">Coref</TableCell>
                         </TableRow>
                     </TableHead>
-                    <TableBody> {
+                    <TableBody>{
                         result.map((res: { num: string | number; str: string; coref: any },
                             index: React.Key | null | undefined) => (
                             <TableRow key={index} 
