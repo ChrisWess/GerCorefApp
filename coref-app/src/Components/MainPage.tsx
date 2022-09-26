@@ -255,6 +255,9 @@ export default function MainPage({callSnackbar}: MainPageProps) {
     }
 
     function addCoref(clusterIdx: number, idxStart: number, idxEnd: number) {
+        console.log(clusterIdx)
+        console.log(idxStart)
+        console.log(idxEnd)
         let mentionIdx: number
         if (clusterIdx >= corefClusters.length) {
             corefClusters.push([])
@@ -346,6 +349,45 @@ export default function MainPage({callSnackbar}: MainPageProps) {
         return clusters
     }
 
+    const overwriteCurrCoref = function(newCluster: number) {
+        // TODO: implement versioning of the documents in order to keep track of previous annotation states
+        //  (model inference should create a new version => if a coreference, that was created by the model,
+        //  is deleted and re-added, the system should still be able to show the plots afterwards)
+
+        let start = currentMention!.selectionRange[0]
+        let end = currentMention!.selectionRange[1]
+        let prevClust = currentMention!.clusterIdx
+        let clustersTotal = corefClusters.length
+        //nothing happens if overwrite with same cluster
+        if (newCluster === (prevClust+1)){
+            return
+        }
+
+        //delete part
+        let clusterIdx = currentMention!.clusterIdx
+        let mentionIdx = currentMention!.mentionIdx
+        let clusters = deleteCoref(corefClusters, clusterIdx, mentionIdx)
+        setCorefClusters(clusters)
+        setNewCorefSelection(undefined)
+        let opEntry: number[] = [1, clusterIdx, mentionIdx]
+        addOperationToStorage(opEntry)
+        let newMention: Mention;
+        //add part
+        if(newCluster < (prevClust+1)){
+            newMention = addCoref(newCluster -1, start, end-1)
+        } else if (clustersTotal > clusters.length){
+            //if this coref was the last one of its index
+            newMention = addCoref(newCluster -2, start, end-1)
+        } else
+            newMention = addCoref(newCluster -1, start, end-1)
+
+
+        setNewCorefSelection(newMention)
+        setCorefClusters(corefClusters)
+        let opEntry2: number[] = [0, newCluster, newMention.mentionIdx, start, end-1]
+        addOperationToStorage(opEntry2)
+    }
+
     const deleteCurrCoref = function() {
         // TODO: implement versioning of the documents in order to keep track of previous annotation states
         //  (model inference should create a new version => if a coreference, that was created by the model,
@@ -409,18 +451,19 @@ export default function MainPage({callSnackbar}: MainPageProps) {
                 switch (newCoref) {
                     case "d":
                         deleteCurrCoref()
-                        callSnackbar("deleted coreference", "top", "info")
+                        callSnackbar("deleted coreference", "top", "normal")
                         break;
                     case "n":
-                        //addCurrCorefShort(corefClusters.length + 1)
-                        callSnackbar("Coref is already assigned, please delete first.", "top", "info")
+                        overwriteCurrCoref(corefClusters.length + 1)
+                        callSnackbar("Coref overwritten.", "top", "normal")
                         break;
                     case "c":
                         setShortcutSaved(currentMention.clusterIdx + 1)
                         callSnackbar("Current copy: Coref cluster Nr." + (currentMention.clusterIdx + 1), "top", "info")
                         break;
                     case "v":
-                        callSnackbar("Coref is already assigned, please delete first.", "top", "info")
+                        overwriteCurrCoref(shortcutSaved)
+                        callSnackbar("Coref overwritten.", "top", "normal")
                         break;
                     default:
                         callSnackbar("No such command: " + newCoref, "top", "warning")
@@ -428,10 +471,10 @@ export default function MainPage({callSnackbar}: MainPageProps) {
                 }
             } else {
                 if(clusterId > corefClusters.length+1){
-                    callSnackbar("No such Cluster: "+newCoref, "top", "error")
+                    callSnackbar("No such Cluster: "+newCoref, "top", "warning")
                 }else {
-                    //addCurrCorefShort(clusterId)
-                    callSnackbar("Coref is already assigned, please delete first.", "top", "normal")
+                    overwriteCurrCoref(clusterId)
+                    callSnackbar("Coref overwritten.", "top", "normal")
                 }
             }
             return;
@@ -443,11 +486,11 @@ export default function MainPage({callSnackbar}: MainPageProps) {
                 switch (newCoref) {
                     case "n":
                         addCurrCorefShort(corefClusters.length + 1)
-                        callSnackbar("new cluster created", "top", "info")
+                        callSnackbar("new cluster created", "top", "normal")
                         break;
                     case "v":
                         addCurrCorefShort(shortcutSaved)
-                        callSnackbar("Assigned to cluster: " +shortcutSaved, "top", "info")
+                        callSnackbar("Assigned to cluster: " +shortcutSaved, "top", "normal")
                         break;
                     default:
                         callSnackbar("No such command for unmarked words: " + newCoref, "top", "warning")
