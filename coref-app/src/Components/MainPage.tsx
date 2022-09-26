@@ -148,7 +148,7 @@ export default function MainPage({callSnackbar}: MainPageProps) {
     function onDownloadDocument(dataType: string, documentName: string) {
         let converter = new FileConverter()
         console.log("directed to mainpage")
-        converter.convertFile(dataType ,documentName, corefClusters, corefText)
+        converter.convertFile(dataType ,documentName, allCorefs, corefText, autoAnnotoggle)
     }
 
     function getCurrDocInfoFromList(docId: string) {

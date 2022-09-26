@@ -1,14 +1,14 @@
 class FileConverter {
 
 
-    //todo: needs to ignore autoannotaded corefs when the toggle is off
-    public convertFile(datatype: string ,name: string, clusts: any, tokens: any) {
+    public convertFile(datatype: string ,name: string, clusts: any, tokens: any, autoAnno: boolean) {
         switch (datatype) {
             case "CoNLL-2012":
-                this.convertToCoNLL2012(name, clusts, tokens)
+                console.log(clusts.current)
+                this.convertToCoNLL2012(name, clusts, tokens, autoAnno)
                 break;
             case "XML":
-                this.convertToXML(name, clusts, tokens)
+                this.convertToXML(name, clusts, tokens, autoAnno)
                 break;
             case "plaintext":
                 this.convertToPlaintext(name, clusts, tokens)
@@ -34,7 +34,7 @@ class FileConverter {
         link.click();
     }
 
-     convertToCoNLL2012(name: string, clusts: any, tokens: any) {
+    convertToCoNLL2012(name: string, clusts: any, tokens: any, autoAnno: boolean) {
 
         //get amount of tokens
          let count = 0
@@ -47,15 +47,18 @@ class FileConverter {
         let fileData = "#begin document ("+name+"); part 000\n";
          const arr = new Array(count).fill("-");
 
-         for (let i = 0; i < clusts.length; i++) {
-             for (let j = 0; j < clusts[i].length; j++) {
-                 let x = ""
-                 let y = null
-                 clusts[i][j][0] === clusts[i][j][1] ? x = "("+(i+1)+")": (x = "("+(i+1), y = (i+1)+")")
-                 arr[clusts[i][j][0]] === "-" ? arr[clusts[i][j][0]] = x : arr[clusts[i][j][0]]+= "|" + x
-                 if(y){
-                     arr[clusts[i][j][1]] === "-" ? arr[clusts[i][j][1]] = y : arr[clusts[i][j][1]]+= "|" + y
-                 }
+         for (let i = 0; i < clusts.current.length; i++) {
+             for (let j = 0; j < clusts.current[i].length; j++) {
+
+              if (!(clusts.current[i][j].autoCreated && !autoAnno)) {
+                  let x = ""
+                  let y = null
+                  clusts.current[i][j].selectionRange[0] === (clusts.current[i][j].selectionRange[1]-1) ? x = "("+(i+1)+")": (x = "("+(i+1), y = (i+1)+")")
+                  arr[clusts.current[i][j].selectionRange[0]] === "-" ? arr[clusts.current[i][j].selectionRange[0]] = x : arr[clusts.current[i][j].selectionRange[0]]+= "|" + x
+                  if(y){
+                      arr[(clusts.current[i][j].selectionRange[1])-1] === "-" ? arr[(clusts.current[i][j].selectionRange[1])-1] = y : arr[(clusts.current[i][j].selectionRange[1])-1]+= "|" + y
+                  }
+              }
              }
          }
          
@@ -78,8 +81,32 @@ class FileConverter {
         link.click();
     }
 
-    convertToXML(name: string, clusts: any, tokens: any) {
-        const fileData = "TODO"
+    convertToXML(name: string, clusts: any, tokens: any, autoAnno: boolean) {
+        let fileData = name+"\n\n"
+        let arr = [];
+
+        for (let i = 0; i < tokens.length; i++) {
+            for (let j = 0; j < tokens[i].length; j++) {
+                j === tokens[i].length -2 ?  arr.push(tokens[i][j]) : arr.push(tokens[i][j]+ " ")
+            }
+        }
+
+        for (let i = 0; i < clusts.current.length; i++) {
+            for (let j = 0; j < clusts.current[i].length; j++) {
+
+                if (!(clusts.current[i][j].autoCreated && !autoAnno)) {
+                    let x = ""
+                    let y = null
+                    arr[clusts.current[i][j].selectionRange[0]] = "<rs ref=\"#"+(i+1)+"\">"+arr[clusts.current[i][j].selectionRange[0]]
+                    arr[clusts.current[i][j].selectionRange[1]-1] = arr[clusts.current[i][j].selectionRange[1]-1]+"</rs>"
+                }
+            }
+        }
+
+        for(let i = 0; i < arr.length; i++){
+            fileData += arr[i];
+        }
+
         const blob = new Blob([fileData], { type: "text/plain" });
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
