@@ -15,6 +15,7 @@ interface DocumentsProps {
     sendCorefTextToParent: any,
     allCorefs: MutableRefObject<Mention[][]>
     sendConfidencesToParent: Function
+    sendAnnotatorsToParent: Function
     onDownloadDocument: Function
     clearCurrentMention: Function
     selectDocument: Function
@@ -43,6 +44,7 @@ const Documents: React.FC<DocumentsProps> = ({ sendCorefClusterToParent,
     sendCorefTextToParent,
     allCorefs,
     sendConfidencesToParent,
+    sendAnnotatorsToParent,
     onDownloadDocument,
     clearCurrentMention,
     selectDocument,
@@ -96,6 +98,7 @@ const Documents: React.FC<DocumentsProps> = ({ sendCorefClusterToParent,
                 if (data.status === 201) {
                     let result = data.result
                     addDocumentInfo(result._id, result.name)
+                    sendAnnotatorsToParent(result.annotatedBy)
                     sendCorefClusterToParent(result.clust)
                     sendCorefTextToParent(result.tokens)
                     allCorefs.current = []

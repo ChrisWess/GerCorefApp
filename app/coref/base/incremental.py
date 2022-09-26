@@ -562,18 +562,20 @@ class IncrementalCorefModel(CorefModel):
                                     is_training, gold_starts=None, gold_ends=None, gold_mention_cluster_map=None,
                                     global_loss_chance=0.0, teacher_forcing=False):
         max_segments = 5
-        entities = None
+        entities = prob_info = None
         if torch.rand(1) < global_loss_chance:
             loss_strategy = GoldLabelStrategy.ORIGINAL
         else:
             loss_strategy = GoldLabelStrategy.MOST_RECENT
         cpu_entities = IncrementalEntities(conf=self.config, device="cpu", gold_strategy=loss_strategy)
 
-        do_loss = False
         if gold_mention_cluster_map is not None:
             assert gold_starts is not None
             assert gold_ends is not None
             do_loss = True
+        else:
+            do_loss = False
+            prob_info = ([], [])
 
         offset = 0
         total_loss = torch.tensor([0.0], requires_grad=True, device=self.device)
@@ -613,13 +615,14 @@ class IncrementalCorefModel(CorefModel):
                 offset=offset,
                 loss_strategy=loss_strategy,
                 teacher_forcing=teacher_forcing,
+                prob_info=prob_info
             )
             offset += torch.sum(input_mask[start:end], (0, 1)).item()
             if do_loss:
                 entities, new_cpu_entities, loss = res
                 total_loss = loss + total_loss
             else:
-                entities, new_cpu_entities, probs = res
+                entities, new_cpu_entities = res
             cpu_entities.extend(new_cpu_entities)
         cpu_entities.extend(entities)
         starts, ends, mention_to_cluster_id, predicted_clusters = cpu_entities.get_result(
@@ -634,12 +637,12 @@ class IncrementalCorefModel(CorefModel):
         if do_loss:
             return out, loss
         else:
-            return out, probs
+            return out, prob_info[0]
 
     def get_predictions_incremental_internal(self, input_ids, input_mask, speaker_ids, sentence_len, genre, sentence_map,
                                              is_training, gold_starts=None, gold_ends=None, gold_mention_cluster_map=None,
                                              entities=None, do_loss=None, offset=0, loss_strategy=GoldLabelStrategy.MOST_RECENT,
-                                             teacher_forcing=False):
+                                             teacher_forcing=False, prob_info=None):
         device = self.device
         conf = self.config
         return_singletons = conf['incremental_singletons']
@@ -653,7 +656,7 @@ class IncrementalCorefModel(CorefModel):
 
         num_words = mention_doc.shape[0]
 
-        curr_clusters = probs = None
+        probs = curr_clusters = None
         if do_loss:
             gold_info = {
                 'gold_starts': gold_starts,
@@ -662,8 +665,7 @@ class IncrementalCorefModel(CorefModel):
             }
             labels_for_starts = {(s.item(), e.item()): v.item() for s, e, v in zip(gold_starts, gold_ends, gold_mention_cluster_map)}
         else:
-            curr_clusters = []
-            probs = []
+            probs, curr_clusters = prob_info
             gold_info = None
             labels_for_starts = {}
 
@@ -811,4 +813,4 @@ class IncrementalCorefModel(CorefModel):
         if do_loss:
             return entities, cpu_entities, cpu_loss
         else:
-            return entities, cpu_entities, probs
+            return entities, cpu_entities

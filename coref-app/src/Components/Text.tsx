@@ -29,6 +29,7 @@ export default function Text(props: any) {
                 props.sendCorefTextToParent(result.tokens);
                 props.allCorefs.current = []
                 props.sendConfidencesToParent(result.probs);
+                props.sendAnnotatorsToParent(result.annotatedBy)
                 props.addDocumentInfo(result._id, result.name);
             }
         }

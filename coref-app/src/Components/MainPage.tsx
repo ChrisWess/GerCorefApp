@@ -1046,6 +1046,7 @@ export default function MainPage({callSnackbar}: MainPageProps) {
                                                 sendCorefTextToParent={sendCorefTextToMainPage}
                                                 allCorefs={allCorefs}
                                                 sendConfidencesToParent={convertConfidences}
+                                                sendAnnotatorsToParent={setAnnotators}
                                                 addDocumentInfo={addDocumentInfo}
                                             />
 
@@ -1058,6 +1059,7 @@ export default function MainPage({callSnackbar}: MainPageProps) {
                                                 sendCorefTextToParent={sendCorefTextToMainPage}
                                                 allCorefs={allCorefs}
                                                 sendConfidencesToParent={convertConfidences}
+                                                sendAnnotatorsToParent={setAnnotators}
                                                 onDownloadDocument={onDownloadDocument}
                                                 clearCurrentMention={clearCurrentMention}
                                                 selectDocument={selectDocument}
