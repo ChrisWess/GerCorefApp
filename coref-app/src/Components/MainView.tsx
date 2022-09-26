@@ -273,7 +273,7 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
         let coref = wordArr.current.slice(mentionIdxStart, mentionIdxEnd + 1).join(" ")
         let corefId = `d1c${clusterIdx}m${mentionIdx}`
         let cluster: Mention[] = allCorefs.current[clusterIdx]
-        if (mentionIdx > cluster.length) {
+        if (mentionIdx >= cluster.length) {
             cluster[mentionIdx] = {
                 id: corefId,
                 content: coref,

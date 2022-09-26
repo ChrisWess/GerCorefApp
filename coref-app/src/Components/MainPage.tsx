@@ -354,12 +354,8 @@ export default function MainPage({callSnackbar}: MainPageProps) {
     }
 
     const overwriteCurrCoref = function(newCluster: number) {
-        // TODO: implement versioning of the documents in order to keep track of previous annotation states
-        //  (model inference should create a new version => if a coreference, that was created by the model,
-        //  is deleted and re-added, the system should still be able to show the plots afterwards)
-
         let start = currentMention!.selectionRange[0]
-        let end = currentMention!.selectionRange[1]
+        let end = currentMention!.selectionRange[1] - 1
         let prevClust = currentMention!.clusterIdx
         let clustersTotal = corefClusters.length
         //nothing happens if overwrite with same cluster
@@ -377,19 +373,20 @@ export default function MainPage({callSnackbar}: MainPageProps) {
         addOperationToStorage(opEntry)
         let newMention: Mention;
         //add part
-        if(newCluster < (prevClust+1)){
-            newMention = addCoref(newCluster -1, start, end-1)
+        if(newCluster < (prevClust + 1)) {
+            clusterIdx = newCluster - 1
         } else if (clustersTotal > clusters.length){
             //if this coref was the last one of its index
-            newMention = addCoref(newCluster -2, start, end-1)
-        } else
-            newMention = addCoref(newCluster -1, start, end-1)
-
+            clusterIdx = newCluster - 2
+        } else {
+            clusterIdx = newCluster - 1
+        }
+        newMention = addCoref(clusterIdx, start, end)
 
         setNewCorefSelection(newMention)
         setCorefClusters(corefClusters)
-        let opEntry2: number[] = [0, newCluster, newMention.mentionIdx, start, end-1]
-        addOperationToStorage(opEntry2)
+        opEntry = [0, clusterIdx, newMention.mentionIdx, start, end]
+        addOperationToStorage(opEntry)
     }
 
     const deleteCurrCoref = function() {
