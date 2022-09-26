@@ -1,5 +1,6 @@
 import json
 from datetime import datetime
+from typing import Optional
 from pydantic import BaseModel, Field
 
 
@@ -11,7 +12,7 @@ class Document(BaseModel):
     tokens: list[list[str]] = Field()
     clust: list[list[list[int]]] = Field()
     annotated_by: list[list[str]] = Field(alias="annotatedBy")
-    probs: list[list[list[float]]] = Field()
+    probs: list[list[Optional[list[float]]]] = Field()
     created_at_ts: datetime = Field(default=datetime.now(), alias="createdAt")
     project_fk: str = Field(alias="projectFk")
 

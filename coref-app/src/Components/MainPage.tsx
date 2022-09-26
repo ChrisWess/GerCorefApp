@@ -116,10 +116,11 @@ export default function MainPage({callSnackbar}: MainPageProps) {
     const {projectname} = useParams();
     const [corefClusters, setCorefClusters] = React.useState<number[][][]>([]);
     const [corefText, setCorefText] = React.useState<string[][]>([]);
+    const [annotators, setAnnotators] = React.useState<string[][]>([]);
     const [selectedCoref, setSelectedCoref] = React.useState<number[]>([]);
     const [clusterColor, setClusterColor] = React.useState<string>("black");
     const [currentMention, setCurrentMention] = React.useState<Mention | undefined>(undefined);
-    const [confidences, setConfidences] = React.useState<ConfidenceValues[][]>([]);
+    const [confidences, setConfidences] = React.useState<(ConfidenceValues | null)[][]>([]);
     const [currDocInfo, setCurrDocInfo] = React.useState<string[]>([]);
     const [documentIdNamePairs, setDocumentIdNamePairs] = React.useState<[string, string][] | undefined>();
     const [unsavedChanges, setUnsavedChanges] = React.useState<boolean>(false);
@@ -163,6 +164,8 @@ export default function MainPage({callSnackbar}: MainPageProps) {
     }
 
     function addOperationToStorage(opEntry: number[]) {
+        // TODO: check if new opEntry reverses operation that is already in ops list =>
+        //   if there are any, just cancel out both operations
         if (currDocInfo.length === 0) {
             throw "No document id set in current state"
         }
@@ -231,7 +234,7 @@ export default function MainPage({callSnackbar}: MainPageProps) {
                 content: wordArr.current[idxStart],
                 selectionRange: [idxStart, idxStart + 1],
                 documentIdx: 0, clusterIdx: clusterIdx, mentionIdx: mentionIdx,
-                autoCreated: false
+                autoCreated: false, createdByUser: "You"
             }
         } else {
             ++idxEnd
@@ -240,7 +243,7 @@ export default function MainPage({callSnackbar}: MainPageProps) {
                 content: wordArr.current.slice(idxStart, idxEnd).join(" "),
                 selectionRange: [idxStart, idxEnd],
                 documentIdx: 0, clusterIdx: clusterIdx, mentionIdx: mentionIdx,
-                autoCreated: false
+                autoCreated: false, createdByUser: "You"
             }
         }
         let cluster: Mention[] = allCorefs.current[clusterIdx]
@@ -460,19 +463,24 @@ export default function MainPage({callSnackbar}: MainPageProps) {
 
     const convertConfidences = (probs: number[][][]) => {
         probs[0][0].push(0)
-        let confids: ConfidenceValues[][] = []
+        let confids: (ConfidenceValues | null)[][] = []
         for (let i = 0; i < probs.length; i++) {
-            let probsList: ConfidenceValues[] = []
+            let probsList: (ConfidenceValues | null)[] = []
             let clust = probs[i]
             for (let j = 0; j < clust.length; j++) {
-                probsList.push({
-                    newClusterProb: clust[j][0] * 100.0,
-                    noClusterProb: clust[j][1] * 100.0,
-                    clusterProbs: clust[j].slice(2).map((x: number) => x * 100.0)
-                })
+                if (clust[j] === null) {
+                    probsList.push(null)
+                } else {
+                    probsList.push({
+                        newClusterProb: clust[j][0] * 100.0,
+                        noClusterProb: clust[j][1] * 100.0,
+                        clusterProbs: clust[j].slice(2).map((x: number) => x * 100.0)
+                    })
+                }
             }
             confids.push(probsList)
         }
+        console.log(confids)
         setConfidences(confids)
     }
 
@@ -619,6 +627,7 @@ export default function MainPage({callSnackbar}: MainPageProps) {
                     }
                     setDocumentIdNamePairs(documentIdNamePairs)
                     setCurrDocInfo(newDocInfo)
+                    window.history.replaceState(null, "Coref-App", "/project/"+projectname+"/doc/"+result.name)
                 }
             })
         }
@@ -640,6 +649,7 @@ export default function MainPage({callSnackbar}: MainPageProps) {
                 // TODO: could keep a cache of (perhaps) 5 documents
                 let result = data.result
                 let clust: number[][][] = result.clust
+                allCorefs.current = []
                 if (ops !== undefined && ops.length > 0) {
                     // fill allCorefs already when ops need to be applied
                     for (let i = 0; i < result.tokens.length; i++) {
@@ -661,19 +671,21 @@ export default function MainPage({callSnackbar}: MainPageProps) {
                                 content: coref,
                                 selectionRange: [mentionIdxStart, mentionIdxEnd + 1],
                                 documentIdx: 0, clusterIdx: i, mentionIdx: j,
-                                autoCreated: true
+                                autoCreated: result.annotatedBy[i][j] === "0",
+                                createdByUser: result.annotatedBy[i][j]
                             }
                         }
                     }
                     clust = reapplyChanges(clust, ops)
-                } else {
-                    allCorefs.current = []
                 }
                 // TODO: create and set state for handling annotators (createdByUser field in Mentions)
+                setCurrDocInfo([result._id, result.name]);
                 setCorefClusters(clust)
                 setCorefText(result.tokens)
+                // TODO: the following two arrays need to be manipulated by reapplyChanges, too
+                setAnnotators(result.annotatedBy)
                 convertConfidences(result.probs)
-                setCurrDocInfo([result._id, result.name]);
+                console.log()
                 clearCurrentMention()
                 window.history.replaceState(null, "Coref-App", "/project/"+projectname+"/doc/"+result.name)
             }
@@ -929,6 +941,7 @@ export default function MainPage({callSnackbar}: MainPageProps) {
                                         wordsToHighlight={wordsToHighlight}
                                         unsavedChanges={unsavedChanges}
                                         currDocInfo={currDocInfo}
+                                        annotators={annotators}
                                         inputText={inputText}>
                                     </MainView>
                                 </Paper>

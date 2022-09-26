@@ -36,6 +36,7 @@ interface MainViewProps {
     wordsToHighlight: any
     unsavedChanges: boolean
     currDocInfo: string[]
+    annotators: string[][]
     inputText: any
 }
 
@@ -138,7 +139,7 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
                                                hovertoggle, autoAnnotoggle, setCurrentPage,
                                                currentPage, itemsPerPage, sentenceToHighlight,
                                                setSentenceToHighlight, wordsToHighlight, unsavedChanges,
-                                               currDocInfo, inputText}) => {
+                                               currDocInfo, annotators, inputText}) => {
     //For Pagination
     const [listItem, setListItems] = useState([]);
     const indexOfLastItem = currentPage*itemsPerPage;
@@ -272,13 +273,14 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
         let coref = wordArr.current.slice(mentionIdxStart, mentionIdxEnd + 1).join(" ")
         let corefId = `d1c${clusterIdx}m${mentionIdx}`
         let cluster: Mention[] = allCorefs.current[clusterIdx]
-        if (mentionIdx >= cluster.length) {
+        if (mentionIdx > cluster.length) {
             cluster[mentionIdx] = {
                 id: corefId,
                 content: coref,
                 selectionRange: [mentionIdxStart, mentionIdxEnd + 1],
                 documentIdx: 0, clusterIdx: clusterIdx, mentionIdx: mentionIdx,
-                autoCreated: true
+                autoCreated: annotators[clusterIdx][mentionIdx] === "0",
+                createdByUser: annotators[clusterIdx][mentionIdx]
             }
         }
         let sentenceIdx: number = getSentenceIdx(mentionIdxEnd, sentenceOffsets)!

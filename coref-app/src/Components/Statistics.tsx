@@ -12,7 +12,7 @@ const theme = createTheme();
 
 interface StatisticsProps {
     currentMention?: Mention | undefined
-    confidences: ConfidenceValues[][]
+    confidences: (ConfidenceValues | null)[][]
     allCorefs: MutableRefObject<Mention[][]>
 }
 
@@ -20,18 +20,7 @@ const Statistics: React.FC<StatisticsProps> = ({ currentMention, confidences, al
 
     function CustomPlot() {
         if (currentMention && currentMention.autoCreated) {
-            let probs: ConfidenceValues
-            let clusterIdx = currentMention.clusterIdx
-            let numPrevAutoCreated = 0
-            if (currentMention.mentionIdx !== 0) {
-                let cluster: Mention[] = allCorefs.current[clusterIdx]
-                for (let i = 0; i < currentMention.mentionIdx; i++) {
-                    if (cluster[i].autoCreated) {
-                        ++numPrevAutoCreated
-                    }
-                }
-            }
-            probs = confidences[clusterIdx][numPrevAutoCreated]
+            let probs: ConfidenceValues = confidences[currentMention.clusterIdx][currentMention.mentionIdx]!
             let x: number[] = [probs.noClusterProb, probs.newClusterProb]
             let y: string[] = ['No Mention ', 'New Cluster ']
             for (let i = 0; i < probs.clusterProbs.length; i++) {

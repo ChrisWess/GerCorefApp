@@ -51,6 +51,7 @@ export default function Text(props: any) {
                 fullWidth
                 multiline rows={26}
                 variant={"outlined"}
+                autoFocus
                 onChange={(e) => setText(e.target.value)}>
             </TextField>
             <Button onClick={() => submitText(text)} color={"primary"} variant={"contained"} style={{marginTop: 15}}>Submit</Button>

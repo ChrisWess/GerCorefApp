@@ -136,21 +136,16 @@ class DocumentDAO(BaseDAO):
                 if cidx == len(clust):
                     clust.append([])
                     annotated_by.append([])
+                    probs.append([])
                 clust[cidx].insert(midx, [start, end])
                 annotated_by[cidx].insert(midx, user_id)
+                probs[cidx].insert(midx, None)
             elif op_type == 1:
                 cidx, midx = op[1:]
-                if annotated_by[cidx][midx] == "0":
-                    # TODO: combine probs, annotated_by and coref into objects in one list
-                    #   make a new model Mention: {probs: ..., annotatedBy: ..., range: ...}
-                    #   "clust" is then list[list[Mention]]
-                    probs_idx = 0
-                    for i, c in enumerate(annotated_by[cidx]):
-                        if midx >= i:
-                            break
-                        if c == "0":
-                            probs_idx += 1
-                    del probs[cidx][probs_idx]
+                # TODO: combine probs, annotated_by and coref into objects in one list
+                #   make a new model Mention: {probs: ..., annotatedBy: ..., range: ...}
+                #   "clust" is then list[list[Mention]]
+                del probs[cidx][midx]
                 del annotated_by[cidx][midx]
                 del clust[cidx][midx]
                 if not clust[cidx]:
