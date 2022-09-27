@@ -135,6 +135,10 @@ export default function MainPage({callSnackbar}: MainPageProps) {
         setSentenceToHighlight(sentence);
     }
 
+    const clearText = () => {
+        setCorefText([]);
+    }
+
     const [hovertoggle, setHovertoggle] = React.useState(true);
     const [autoAnnotoggle, setAutoAnnoToggle] = React.useState(true);
     //currently on the "c" button for the shortcuts
@@ -1070,6 +1074,7 @@ export default function MainPage({callSnackbar}: MainPageProps) {
                                                 addDocumentInfo={addDocumentInfo}
                                                 documentsInfo={documentIdNamePairs}
                                                 renameDocument={renameDocument}
+                                                clearText={clearText}
                                             />
                                         </TabPanel>
                                         <TabPanel value={value} index={2}>
