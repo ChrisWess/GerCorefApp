@@ -257,13 +257,14 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
 
     let isNewDoc: boolean = allCorefs.current.length === 0
     let results = flattenClust(buffer, clust, allCorefs, sentenceOffsets, isNewDoc);
-    let flattenedClust = results[0]
-    let deletedCumulated = results[1]
+    let flattenedClust: number[][] = results[0]
+    let deletedCumulated: number[][] = results[1]
 
     //for each coref cluster it puts an html element in front of its first word and behind its last word
     //
     // !! overlapping corefs cause many errors, also when trying to make new overlapping corefs !!
     current = 0;
+    let overlapsBuffer: number[][] = []
     for (let i = 0; i < flattenedClust.length; i++) {
         let mentionIdxStart = flattenedClust[i][0]
         let mentionIdxEnd = flattenedClust[i][1]
@@ -307,68 +308,71 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
                 && startIdxInSentence <= wordsToHighlight[current].words[1])
         }
 
-        if (mentionIdxStart === mentionIdxEnd && !(!autoAnnotoggle && cluster[mentionIdx].autoCreated)) {
-            let highlight = toHightlight ? 
-                            inputText.split(" ")[startIdxInSentence - wordsToHighlight[current].words[0]] 
-                            : "";
-            sentBuffer.splice(shiftedStartIdx, 1,
-            <b key={corefId}
-               id={corefId}
-               onClick={selectNewCorefEvent}>
-                {" "}
-                <abbr
-                    key={id+"-1"}
-                    id={id}
-                    className={"cr cr-" + currentIndexOfCoref}>
-                    <a key={id+"-2"} id={id} href="#d1c1m1" >[</a>
-                    <HoverBox
-                    word={wordArr.current[mentionIdxStart]}
-                    cluster={currentIndexOfCoref}
-                    hovertoggle={hovertoggle}
-                    mention={cluster[mentionIdx]} 
-                    inputText={highlight}/>
-                                    <a key={id+"-4"} id={id} href="#d1c1m1">]</a>
-                    <sub key={id+"-5"} id={id}>{currentIndexOfCoref}</sub>
-                </abbr>
-            </b>);
-        } else if (!(!autoAnnotoggle && cluster[mentionIdx].autoCreated)){
-            // TODO: implement correct handling of overlapping coreferences
-            //   => check if any mentionIdxRanges overlap (can be done on the "flattenedClust" array) &
-            //      make a function that makes the correct JSXElement for these overlapping corefs.
-            //      (also use the entire span of the overlapping annotations to set deletedCumulated)
-            let endIdxInSentence = mentionIdxEnd - sentenceOffsets[sentenceIdx]
-            let mentionSlice: JSX.Element[] = sentBuffer.slice(shiftedStartIdx + 1,
-                endIdxInSentence - deleted[startIdxInSentence])
-            let id1 = "w" + mentionIdxEnd;
-           // style={toHightlight?{fontWeight: "bold", fontSize: "2rem"}:{}}>
-            let highlight = toHightlight ? 
-                            (inputText.split(" ").slice(startIdxInSentence - wordsToHighlight[current].words[0],
-                                endIdxInSentence - wordsToHighlight[current].words[0])).join(" ") : "";
-            sentBuffer.splice(shiftedStartIdx, mentionIdxEnd + 1 - mentionIdxStart,
-                <b key={corefId} id={corefId} onClick={selectNewCorefEvent} >
+        if (autoAnnotoggle || !cluster[mentionIdx].autoCreated) {
+            let overlap = i < flattenedClust.length - 1 && flattenedClust[i + 1]
+            if (mentionIdxStart === mentionIdxEnd) {
+                let highlight = toHightlight ?
+                                inputText.split(" ")[startIdxInSentence - wordsToHighlight[current].words[0]]
+                                : "";
+                sentBuffer.splice(shiftedStartIdx, 1,
+                <b key={corefId}
+                   id={corefId}
+                   onClick={selectNewCorefEvent}>
                     {" "}
-                    <abbr key={id+"-1"} id={id} className={"cr cr-" + currentIndexOfCoref}>
-                        <a key={id+"-2"} id={id} href="#d1c1m1">[</a>
-                        <HoverBox word={wordArr.current[mentionIdxStart]} cluster={currentIndexOfCoref} 
-                            hovertoggle={hovertoggle} mention={cluster[mentionIdx]} inputText={highlight}/>
-                    </abbr>
-                    {mentionSlice.map((elem, index) => (
-                        <abbr key={'w' + (mentionIdxStart + index + 1)+"-1"}
-                              id={'w' + (mentionIdxStart + index + 1)}
-                              className={"cr cr-" + currentIndexOfCoref}>
-                            {" "}
-                            <HoverBox word={wordArr.current[mentionIdxStart + index + 1]} cluster={currentIndexOfCoref} 
-                                    hovertoggle={hovertoggle} mention={cluster[mentionIdx]} inputText={highlight}/>
-                        </abbr>
-                    ))}
-                    <abbr key={id1+"-1"} id={id1} className={"cr cr-" + currentIndexOfCoref}>
-                        {" "}
-                        <HoverBox word={wordArr.current[mentionIdxEnd]} cluster={currentIndexOfCoref} 
-                            hovertoggle={hovertoggle} mention={cluster[mentionIdx]} inputText={highlight}/>
-                        <a key={id1+"-2"} id={id1} href="#d1c1m1">]</a>
-                        <sub key={id1+"-3"} id={id1}>{currentIndexOfCoref}</sub>
+                    <abbr
+                        key={id+"-1"}
+                        id={id}
+                        className={"cr cr-" + currentIndexOfCoref}>
+                        <a key={id+"-2"} id={id} href="#d1c1m1" >[</a>
+                        <HoverBox
+                        word={wordArr.current[mentionIdxStart]}
+                        cluster={currentIndexOfCoref}
+                        hovertoggle={hovertoggle}
+                        mention={cluster[mentionIdx]}
+                        inputText={highlight}/>
+                                        <a key={id+"-4"} id={id} href="#d1c1m1">]</a>
+                        <sub key={id+"-5"} id={id}>{currentIndexOfCoref}</sub>
                     </abbr>
                 </b>);
+            } else {
+                // TODO: implement correct handling of overlapping coreferences
+                //   => check if any mentionIdxRanges overlap (can be done on the "flattenedClust" array) &
+                //      make a function that makes the correct JSXElement for these overlapping corefs.
+                //      (also use the entire span of the overlapping annotations to set deletedCumulated)
+                let endIdxInSentence = mentionIdxEnd - sentenceOffsets[sentenceIdx]
+                let mentionSlice: JSX.Element[] = sentBuffer.slice(shiftedStartIdx + 1,
+                    endIdxInSentence - deleted[startIdxInSentence])
+                let id1 = "w" + mentionIdxEnd;
+               // style={toHightlight?{fontWeight: "bold", fontSize: "2rem"}:{}}>
+                let highlight = toHightlight ?
+                                (inputText.split(" ").slice(startIdxInSentence - wordsToHighlight[current].words[0],
+                                    endIdxInSentence - wordsToHighlight[current].words[0])).join(" ") : "";
+                sentBuffer.splice(shiftedStartIdx, mentionIdxEnd + 1 - mentionIdxStart,
+                    <b key={corefId} id={corefId} onClick={selectNewCorefEvent} >
+                        {" "}
+                        <abbr key={id+"-1"} id={id} className={"cr cr-" + currentIndexOfCoref}>
+                            <a key={id+"-2"} id={id} href="#d1c1m1">[</a>
+                            <HoverBox word={wordArr.current[mentionIdxStart]} cluster={currentIndexOfCoref}
+                                hovertoggle={hovertoggle} mention={cluster[mentionIdx]} inputText={highlight}/>
+                        </abbr>
+                        {mentionSlice.map((elem, index) => (
+                            <abbr key={'w' + (mentionIdxStart + index + 1)+"-1"}
+                                  id={'w' + (mentionIdxStart + index + 1)}
+                                  className={"cr cr-" + currentIndexOfCoref}>
+                                {" "}
+                                <HoverBox word={wordArr.current[mentionIdxStart + index + 1]} cluster={currentIndexOfCoref}
+                                        hovertoggle={hovertoggle} mention={cluster[mentionIdx]} inputText={highlight}/>
+                            </abbr>
+                        ))}
+                        <abbr key={id1+"-1"} id={id1} className={"cr cr-" + currentIndexOfCoref}>
+                            {" "}
+                            <HoverBox word={wordArr.current[mentionIdxEnd]} cluster={currentIndexOfCoref}
+                                hovertoggle={hovertoggle} mention={cluster[mentionIdx]} inputText={highlight}/>
+                            <a key={id1+"-2"} id={id1} href="#d1c1m1">]</a>
+                            <sub key={id1+"-3"} id={id1}>{currentIndexOfCoref}</sub>
+                        </abbr>
+                    </b>);
+            }
         }
     }
 

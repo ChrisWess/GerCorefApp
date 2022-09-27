@@ -1,9 +1,8 @@
 from bson.objectid import ObjectId
-from flask import session
 
 from app.db.daos.base import BaseDAO
 from app.db.models.project import Project
-from app import mdb, config
+from app import mdb
 
 
 class ProjectDAO(BaseDAO):
@@ -56,6 +55,10 @@ class ProjectDAO(BaseDAO):
     def delete_by_id(self, project_id, generate_response=False):
         # TODO: remove all docs of the project, if not being shared with anyone
         # TODO: when last person with whom a project got shared with, also removes project, remove project and docs then
+        docs = self.find_by_id(project_id, ['docIds'])['docIds']
+        if docs:
+            from app.db.daos.doc_dao import DocumentDAO
+            DocumentDAO().delete_many(docs)
         self.collection.delete_one({"_id": ObjectId(project_id)})
 
     def delete_by_projectname(self, name, userid=None, generate_response=False):

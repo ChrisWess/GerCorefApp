@@ -74,7 +74,6 @@ def find_docs_by_projectname(project_name=None):
 def delete_doc_by_id(doc_id):
     if request.method == 'DELETE':
         try:
-            ProjectDAO().remove_doc_from_any_project(doc_id)
             return DocumentDAO().delete_by_id(doc_id, True)
         except bson.errors.InvalidId:
             abort(404)

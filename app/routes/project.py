@@ -88,3 +88,12 @@ def rename_project():
     if "projectname" not in args or "projectid" not in args:
         abort(400)
     return ProjectDAO().rename_project(args["projectid"], args["projectname"], True)
+
+
+@application.route('/project/<project_id>', methods=['DELETE'])
+def delete_project_by_id(project_id):
+    if request.method == 'DELETE':
+        try:
+            return ProjectDAO().delete_by_id(project_id, True)
+        except bson.errors.InvalidId:
+            abort(404)

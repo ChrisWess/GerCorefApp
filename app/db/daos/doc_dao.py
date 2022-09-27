@@ -1,11 +1,10 @@
 from bson.objectid import ObjectId
-from flask import session
 
 from app.db.daos.base import BaseDAO
 from app.db.daos.user_dao import UserDAO
 from app.db.models.doc import Document
 from app.db.daos.project_dao import ProjectDAO
-from app import mdb, config
+from app import mdb
 
 
 class DocumentDAO(BaseDAO):
@@ -65,6 +64,11 @@ class DocumentDAO(BaseDAO):
                 return None
         return self.find_by_project(str(project['_id']), projection, generate_response)
 
+    def delete_many(self, doc_ids, generate_response=False):
+        result = self.collection.delete_many({"_id": {"$in": doc_ids}})  # FIXME: or if must be ObjectIds: [ObjectId(did) for did in doc_ids]
+        if generate_response:
+            return self.to_response(result, operation=BaseDAO.DELETE)
+
     def delete_by_docname(self, name, userid=None, generate_response=False):
         if userid is None:
             result = self.collection.delete_many({"name": name})
@@ -72,6 +76,14 @@ class DocumentDAO(BaseDAO):
             result = self.collection.delete_many({"name": name, "createdBy": userid})
         if generate_response:
             return self.to_response(result, operation=BaseDAO.DELETE)
+
+    def delete_by_id(self, doc_id, generate_response=False):
+        ProjectDAO().remove_doc_from_any_project(doc_id)
+        result = self.collection.delete_one({"_id": ObjectId(doc_id)})
+        if generate_response:
+            return self.to_response(result, operation=BaseDAO.DELETE)
+        else:
+            return result
 
     def _unique_docname_for_project(self, project_id, name):
         project_docs = ProjectDAO().find_by_id(project_id, ['docIds'])['docIds']
