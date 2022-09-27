@@ -6,7 +6,7 @@ import ListItemText from '@mui/material/ListItemText';
 import Divider from '@mui/material/Divider';
 import ListSubheader from '@mui/material/ListSubheader';
 import { FC, ReactNode } from "react";
-import { IconButton } from '@mui/material';
+import {Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton} from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import "./TableDocuments.css";
 import * as React from 'react';
@@ -26,6 +26,15 @@ const TableDocuments: FC<TableDocumentsProps> = ({ selectDocument, currDocInfo,
     documentsInfo, clearText, changePage, clearCurrentMention }) => {
 
     const [items, setItems] = React.useState<[string, string][] | undefined>(documentsInfo);
+    const [open, setOpen] = React.useState(false);
+
+    const handleOpen = () => {
+        setOpen(true);
+    };
+
+    const handleClose = () => {
+        setOpen(false);
+    };
 
     const createClickHandler = (docId: string) => {
         if (currDocInfo[0] !== docId) {
@@ -37,6 +46,7 @@ const TableDocuments: FC<TableDocumentsProps> = ({ selectDocument, currDocInfo,
     };
 
     const clearButton = async (index: number) => {
+        handleClose()
         if (documentsInfo) {
             let name = documentsInfo[index][0];
             documentsInfo = documentsInfo.splice(index, 1)
@@ -90,11 +100,23 @@ const TableDocuments: FC<TableDocumentsProps> = ({ selectDocument, currDocInfo,
                 } : { height: 40 }}
                     className="toSelect"
                     secondaryAction={
-                        <IconButton aria-label="comment" onClick={() => clearButton(index)}>
+                        <IconButton aria-label="comment" onClick={() => handleOpen()}>
                             <DeleteIcon />
                         </IconButton>}>
                     <ListItemText primary={item[1]} onClick={createClickHandler(item[0])} />
                 </ListItem>
+                <Dialog open={open} onClose={handleClose}>
+                    <DialogTitle sx={{color: 'red'}}>Delete document:?</DialogTitle>
+                    <DialogContent>
+                        <DialogContentText>
+                            Do you really want to delete this document?
+                        </DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button variant="contained" color="error" sx={{marginRight: '50%'}} onClick={() => clearButton(index)}>delete</Button>
+                        <Button onClick={handleClose}>Cancel</Button>
+                    </DialogActions>
+                </Dialog>
                 <Divider />
             </div>
         ));
