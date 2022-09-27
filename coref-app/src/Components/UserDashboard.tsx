@@ -1,5 +1,6 @@
 import React, {MutableRefObject} from 'react';
 import {ThemeProvider, useTheme} from '@mui/material/styles';
+import DeleteIcon from '@mui/icons-material/Delete';
 import {
     Button,
     Box,
@@ -10,7 +11,7 @@ import {
     ListItemIcon,
     Divider,
     Dialog,
-    DialogTitle, DialogContent, DialogContentText, DialogActions, TextField, Skeleton, Typography
+    DialogTitle, DialogContent, DialogContentText, DialogActions, TextField, Skeleton, Typography, IconButton
 } from "@mui/material";
 import ResponsiveAppBar from "./ResponsiveAppBar";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -138,6 +139,10 @@ const UserDashboard: React.FC<DashboardProps> = ({}) => {
         }
     }
 
+    async function deleteProject(projectId: string){
+        //todo
+    }
+
     async function loadProjects() {
         // load in the list of projects belonging to the current user and set the projectList
         if (projectIdNamePairs === undefined) {
@@ -179,15 +184,22 @@ const UserDashboard: React.FC<DashboardProps> = ({}) => {
     if(projectIdNamePairs) {
         projectList = projectIdNamePairs.map((d, index) =>
             <React.Fragment key={index} >
-                <ListItemButton divider key={index + ".1"} onClick={() => openProject(d[1])} >
-                    <ListItemIcon key={index + ".2"}>
-                        {index + 1}
+                <ListItem divider>
+                    <ListItemButton key={index + ".1"} onClick={() => openProject(d[1])} >
+                        <ListItemIcon key={index + ".2"}>
+                            {index + 1}
+                        </ListItemIcon>
+                        <ListItemText key={index + ".3"}>{d[1]}</ListItemText>
+                    </ListItemButton>
+                    <ListItemIcon>
+                        <IconButton aria-label="comment" onClick={() => deleteProject(d[0])}>
+                            <DeleteIcon />
+                        </IconButton>
                     </ListItemIcon>
-                    <ListItemText key={index + ".3"}>{d[1]}</ListItemText>
-                    <Divider key={index + ".4"}/>
-                </ListItemButton>
+                </ListItem>
             </React.Fragment>
         );
+
     }
 
     React.useEffect(() => {
@@ -209,7 +221,7 @@ const UserDashboard: React.FC<DashboardProps> = ({}) => {
                                 ? theme.palette.grey[100]
                                 : theme.palette.grey[900],
                         flexGrow: 1,
-                        height: '100vh',
+                        height: '92.9vh',
                         overflow: 'auto',
                     }}
                 >
@@ -280,23 +292,9 @@ const UserDashboard: React.FC<DashboardProps> = ({}) => {
                                         p: 2,
                                         display: 'flex',
                                         flexDirection: 'column',
-                                        height: 250,
+                                        height: 525,
                                     }}>
                                     {userInfo? userInfo: <><Skeleton variant="rectangular" width={'auto'} height={20}/><Skeleton variant="rectangular" style={{marginTop: '10px'}} width={'auto'} height={20}/><Skeleton variant="rectangular" style={{marginTop: '10px'}} width={'auto'} height={20}/></>}
-                                </Paper>
-                            </Grid>
-
-
-                            <Grid item xs={12} md={12} lg={12}>
-                                <Paper
-                                    elevation={6}
-                                    sx={{
-                                        p: 2,
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        height: 250,
-                                    }}>
-                                    Not sure yet.
                                 </Paper>
                             </Grid>
                         </Grid>

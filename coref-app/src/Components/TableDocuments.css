@@ -1,0 +1,4 @@
+.toSelect:hover {
+    background-color: #ddd;
+    cursor: pointer;
+}

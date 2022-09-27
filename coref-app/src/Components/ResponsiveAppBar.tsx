@@ -187,24 +187,7 @@ const ResponsiveAppBar = () => {
                             <Button onClick={handleClose}>Cancel</Button>
                         </DialogActions>
                     </Dialog>
-                    <Typography
-                        variant="h5"
-                        noWrap
-                        component="a"
-                        href=""
-                        sx={{
-                            mr: 2,
-                            display: { xs: 'flex', md: 'none' },
-                            flexGrow: 1,
-                            fontFamily: 'monospace',
-                            fontWeight: 700,
-                            letterSpacing: '.3rem',
-                            color: 'inherit',
-                            textDecoration: 'none',
-                        }}
-                    >
-                        LOGO
-                    </Typography>
+
                     <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
                         {pages.map((page) => (
                             <Button
@@ -216,6 +199,25 @@ const ResponsiveAppBar = () => {
                             </Button>
                         ))}
                     </Box>
+
+                    <Typography
+                        variant="h5"
+                        noWrap
+                        component="a"
+                        href=""
+                        sx={{
+                            mr: '6%',
+                            display: { xs: 'flex', md: 'flex' },
+                            flexGrow: 1,
+                            fontWeight: 700,
+                            letterSpacing: '.1rem',
+                            color: 'inherit',
+                            textDecoration: 'none',
+                            textShadow: '1px 1px #00AAFF'
+                        }}
+                    >
+                        GerCoref-App
+                    </Typography>
 
                     <Box sx={{ flexGrow: 0 }}>
                         <Tooltip title="Open settings">

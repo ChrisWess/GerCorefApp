@@ -135,6 +135,10 @@ export default function MainPage({callSnackbar}: MainPageProps) {
         setSentenceToHighlight(sentence);
     }
 
+    const clearText = () => {
+        setCorefText([]);
+    }
+
     const [hovertoggle, setHovertoggle] = React.useState(true);
     const [autoAnnotoggle, setAutoAnnoToggle] = React.useState(true);
     //currently on the "c" button for the shortcuts
@@ -934,7 +938,7 @@ export default function MainPage({callSnackbar}: MainPageProps) {
     return (
         <ThemeProvider theme={theme}>
             <ResponsiveAppBar></ResponsiveAppBar>
-            <Box sx={{ display: 'flex' }}>
+            <Box sx={{ display: 'flex'}}>
                 <CssBaseline />
                 <Box
                     component="main"
@@ -944,12 +948,12 @@ export default function MainPage({callSnackbar}: MainPageProps) {
                                 ? theme.palette.grey[100]
                                 : theme.palette.grey[900],
                         flexGrow: 1,
-                        height: '100vh',
-                        overflow: 'auto',
+                        height: '92.9vh',
+                        overflow: 'hidden',
                     }}
                 >
-                    <h2 style={{textAlign: 'center', marginTop: '10px', marginBottom: '5px'}}>{projectname}</h2>
-                    <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
+                    <h2 style={{textAlign: 'center', marginTop: '10px', marginBottom: '0px'}}>{projectname}</h2>
+                    <Container maxWidth="xl" sx={{ mt: 4, mb: 4, marginTop: '5px'}}>
                         <Grid container spacing={3}>
 
                             {/* Corefview */}
@@ -961,6 +965,7 @@ export default function MainPage({callSnackbar}: MainPageProps) {
                                     display: 'flex',
                                     flexDirection: 'column',
                                     height: 800,
+                                        overflow: 'hidden'
                                 }}>
                                     <CorefView
                                         selectedCoref={selectedCoref}
@@ -993,6 +998,7 @@ export default function MainPage({callSnackbar}: MainPageProps) {
                                     display: 'flex',
                                     flexDirection: 'column',
                                     height: 800,
+                                        overflow: 'hidden'
                                 }}>
                                     <MainView
                                         txt={corefText}
@@ -1028,6 +1034,7 @@ export default function MainPage({callSnackbar}: MainPageProps) {
                                     display: 'flex',
                                     flexDirection: 'column',
                                     height: 800,
+                                        overflow: 'hidden'
                                 }}>
                                     <Box sx={{ width: '100%' }}>
                                         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
@@ -1067,6 +1074,7 @@ export default function MainPage({callSnackbar}: MainPageProps) {
                                                 addDocumentInfo={addDocumentInfo}
                                                 documentsInfo={documentIdNamePairs}
                                                 renameDocument={renameDocument}
+                                                clearText={clearText}
                                             />
                                         </TabPanel>
                                         <TabPanel value={value} index={2}>
