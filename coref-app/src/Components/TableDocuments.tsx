@@ -5,7 +5,7 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import Divider from '@mui/material/Divider';
 import ListSubheader from '@mui/material/ListSubheader';
-import {FC, ReactNode} from "react";
+import { FC, ReactNode } from "react";
 import { IconButton } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import "./TableDocuments.css";
@@ -20,8 +20,8 @@ interface TableDocumentsProps {
 }
 
 
-const TableDocuments: FC<TableDocumentsProps> = ({ selectDocument, currDocInfo, 
-                                                documentsInfo, clearText }) => {
+const TableDocuments: FC<TableDocumentsProps> = ({ selectDocument, currDocInfo,
+    documentsInfo, clearText }) => {
 
     const [items, setItems] = React.useState<[string, string][] | undefined>(documentsInfo);
 
@@ -31,18 +31,41 @@ const TableDocuments: FC<TableDocumentsProps> = ({ selectDocument, currDocInfo,
                 // TODO: don't allow change document when there are unsaved changes => show pop-up if user wants to save/discard/cancel
                 return selectDocument(docId)
             }
-        } 
+        }
     };
 
-    const clearButton = (index: number) => {
+    const clearButton = async (index: number) => {
         if (documentsInfo) {
-            if (currDocInfo[0] === documentsInfo[index][0]) {
+            let name = documentsInfo[index][0];
+            documentsInfo = documentsInfo.splice(index, 1)
+            setItems(documentsInfo);
+            if (currDocInfo[0] === name) {
                 clearText();
             }
-            console.log(index);
-            if (index > -1) { 
-                documentsInfo = documentsInfo.splice(index, 1)
-                setItems(documentsInfo);
+            try {
+                const { data } = await axios.delete(
+                    `http://127.0.0.1:5000/doc/${name}`,
+                    {
+                        withCredentials: true,
+                        headers: {
+                            'Access-Control-Allow-Origin': '*',
+                            'Content-Type': 'multipart/form-data',
+                        },
+                    },
+                );
+                if (data.status === 200) {
+                    return data.result
+                } else {
+                    return "error status: " + data.status
+                }
+            } catch (error) {
+                if (axios.isAxiosError(error)) {
+                    console.log('error message: ', error.message);
+                    return error.message;
+                } else {
+                    console.log('unexpected error: ', error);
+                    return 'An unexpected error occurred';
+                }
             }
         }
     }
@@ -57,24 +80,27 @@ const TableDocuments: FC<TableDocumentsProps> = ({ selectDocument, currDocInfo,
         }
         const tableBody = documentsInfo.map((item, index) => (
             <div key={index}>
-            <ListItem style={ index === currIndex ? { backgroundColor: 'darkgrey', 
-                height: 40 } : {height: 40 }}
-                className="toSelect"
-                secondaryAction={
-                <IconButton aria-label="comment" onClick={() => clearButton(index)}>
-                     <DeleteIcon />
-                </IconButton> }>
-            <ListItemText primary={item[1]} onClick={createClickHandler(item[0])}/>
-            </ListItem>
-            <Divider />
-          </div>
+                <ListItem style={index === currIndex ? {
+                    backgroundColor: 'darkgrey',
+                    height: 40
+                } : { height: 40 }}
+                    className="toSelect"
+                    secondaryAction={
+                        <IconButton aria-label="comment" onClick={() => clearButton(index)}>
+                            <DeleteIcon />
+                        </IconButton>}>
+                    <ListItemText primary={item[1]} onClick={createClickHandler(item[0])} />
+                </ListItem>
+                <Divider />
+            </div>
         ));
 
         return (
             <List key='list' component="nav" sx={{
                 width: '100%', maxWidth: 360,
                 bgcolor: 'background.paper', height: 300,
-                overflow: 'auto' }}
+                overflow: 'auto'
+            }}
                 subheader={<ListSubheader>Files</ListSubheader>}>
                 <Divider />
                 {tableBody}
