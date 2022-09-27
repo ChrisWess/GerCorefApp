@@ -24,6 +24,7 @@ interface CorefViewProps {
     unsavedChanges: boolean
     saveChanges: Function
     changePage: Function
+    setSentenceToHighlight: Function
 }
 
 export const getCluster = function(mention: Mention, allCorefs: Mention[][]) {
@@ -36,11 +37,12 @@ const CorefView: React.FC<CorefViewProps> = ({ selectedCoref, wordArr,
                                                  currentMention, handleSelectCoref, setCurrentMention,
                                                  addCoref, deleteCoref, setHovertoggle, hovertoggle, autoAnnotoggle,
                                                  setAutoAnnotoggle, unsavedChanges, saveChanges, 
-                                                 changePage }) => {
+                                                 changePage, setSentenceToHighlight }) => {
     const theme = useTheme();
 
     function deleteC() {
         deleteCoref()
+        setSentenceToHighlight(0)
     }
 
     function saveChange() {

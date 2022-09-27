@@ -994,6 +994,7 @@ export default function MainPage({callSnackbar}: MainPageProps) {
                                         unsavedChanges={unsavedChanges}
                                         saveChanges={saveChanges}
                                         changePage={changePage}
+                                        setSentenceToHighlight={setSentenceToHighlight}
                                     />
                                 </Paper>
                             </Grid>
