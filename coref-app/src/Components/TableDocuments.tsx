@@ -17,11 +17,13 @@ interface TableDocumentsProps {
     currDocInfo: string[]
     documentsInfo: [string, string][] | undefined
     clearText: Function
+    changePage: Function
+    clearCurrentMention: Function
 }
 
 
 const TableDocuments: FC<TableDocumentsProps> = ({ selectDocument, currDocInfo,
-    documentsInfo, clearText }) => {
+    documentsInfo, clearText, changePage, clearCurrentMention }) => {
 
     const [items, setItems] = React.useState<[string, string][] | undefined>(documentsInfo);
 
@@ -41,6 +43,8 @@ const TableDocuments: FC<TableDocumentsProps> = ({ selectDocument, currDocInfo,
             setItems(documentsInfo);
             if (currDocInfo[0] === name) {
                 clearText();
+                changePage(0);
+                clearCurrentMention();
             }
             try {
                 const { data } = await axios.delete(

@@ -14,16 +14,19 @@ interface MyListProps {
     markedWordsPrevColors: MutableRefObject<any[]>
     handleSelectCoref: Function;
     setCurrentMention: Function
+    changePage: Function
 }
 
 const MyList: React.FC<MyListProps> = ({ currentMention, allCorefs,
-                                           markedWord, markedWordsPrevColors, handleSelectCoref, setCurrentMention }) => {
+                                           markedWord, markedWordsPrevColors, handleSelectCoref, 
+                                           setCurrentMention, changePage }) => {
 
     const handleClick = (mention: Mention) => {
         return function () {
           clearPrevMarking(markedWord.current, markedWordsPrevColors.current)
           handleSelectCoref(mention.selectionRange)
           setCurrentMention(mention)
+          changePage(mention.sentence);
         }
     };
 

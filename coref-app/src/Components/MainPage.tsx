@@ -130,9 +130,15 @@ export default function MainPage({callSnackbar}: MainPageProps) {
     const [wordsToHighlight, setWordsToHighlight] = React.useState<number[]>([]);
     const [inputText, setInputText] = React.useState<string>("");
 
-    const changePage = (sentence: number, words: number[]) => {
-        setCurrentPage(Math.ceil(sentence / itemsPerPage));
-        setSentenceToHighlight(sentence);
+    const changePage = (sentence: number) => {
+        if (sentence === 0) {
+            setCurrentPage(1);
+            setSentenceToHighlight(0);
+        }
+        else {
+            setCurrentPage(Math.ceil(sentence / itemsPerPage));
+            setSentenceToHighlight(sentence);
+        }
     }
 
     const clearText = () => {
@@ -748,7 +754,8 @@ export default function MainPage({callSnackbar}: MainPageProps) {
                                 selectionRange: [mentionIdxStart, mentionIdxEnd + 1],
                                 documentIdx: 0, clusterIdx: i, mentionIdx: j,
                                 autoCreated: result.annotatedBy[i][j] === "0",
-                                createdByUser: result.annotatedBy[i][j]
+                                createdByUser: result.annotatedBy[i][j],
+                                sentence: -1
                             }
                         }
                     }
@@ -764,6 +771,7 @@ export default function MainPage({callSnackbar}: MainPageProps) {
                 console.log()
                 clearCurrentMention()
                 window.history.replaceState(null, "Coref-App", "/project/"+projectname+"/doc/"+result.name)
+                changePage(0);
             }
         } catch (error) {
             if (axios.isAxiosError(error)) {
@@ -985,6 +993,7 @@ export default function MainPage({callSnackbar}: MainPageProps) {
                                         setAutoAnnotoggle={setAutoAnnoToggle}
                                         unsavedChanges={unsavedChanges}
                                         saveChanges={saveChanges}
+                                        changePage={changePage}
                                     />
                                 </Paper>
                             </Grid>
@@ -1075,6 +1084,7 @@ export default function MainPage({callSnackbar}: MainPageProps) {
                                                 documentsInfo={documentIdNamePairs}
                                                 renameDocument={renameDocument}
                                                 clearText={clearText}
+                                                changePage={changePage}
                                             />
                                         </TabPanel>
                                         <TabPanel value={value} index={2}>

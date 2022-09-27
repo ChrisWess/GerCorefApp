@@ -46,7 +46,7 @@ const TableWords: React.FC<TablewordsProps> = ({ rows, inputText, txt, changePag
     }
 
     const handleClick = (index: any) => {
-        changePage(rows[index].num, rows[index].words);
+        changePage(rows[index].num);
     };
 
     if (rows.length) {

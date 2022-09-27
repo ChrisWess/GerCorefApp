@@ -24,6 +24,7 @@ interface DocumentsProps {
     documentsInfo: [string, string][] | undefined
     renameDocument: Function
     clearText: Function
+    changePage: Function
 }
 
 // Close the dropdown if the user clicks outside of it
@@ -53,7 +54,8 @@ const Documents: React.FC<DocumentsProps> = ({ sendCorefClusterToParent,
     addDocumentInfo,
     documentsInfo,
     renameDocument,
-    clearText }) => {
+    clearText,
+    changePage }) => {
 
     const {projectname} = useParams();
     const [selectedFile, setSelectedFile] = React.useState<any | null>(null);
@@ -134,7 +136,9 @@ const Documents: React.FC<DocumentsProps> = ({ sendCorefClusterToParent,
                 selectDocument={selectDocument}
                 currDocInfo={currDocInfo}
                 documentsInfo={documentsInfo}
-                clearText={clearText}/>
+                clearText={clearText}
+                changePage={changePage}
+                clearCurrentMention={clearCurrentMention}/>
             <ButtonTextfield tfLabel="New Document Name" buttonText="Rename" submitFunc={renameDocument} />
             <Button variant="outlined" style={{ margin: 5, textTransform: "none", width: "97%" }} disabled>
                 Share selected document</Button>
