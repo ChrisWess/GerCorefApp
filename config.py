@@ -26,7 +26,7 @@ class Common:
 class Debug(Common):
     # Your local database name
     MONGODB_DATABASE_URI = "mongodb://localhost:27017/" + Common.DB_NAME
-    WORKSPACE_URL = "http://localhost:3000/"
+    WORKSPACE_URL = "http://localhost:3000/dashboard"
 
 
 # Production specific configurations

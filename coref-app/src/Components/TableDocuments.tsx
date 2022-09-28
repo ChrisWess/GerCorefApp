@@ -36,20 +36,19 @@ const TableDocuments: FC<TableDocumentsProps> = ({ selectDocument, currDocInfo,
 
     const clearButton = async (index: number) => {
         if (documentsInfo) {
-            let name = documentsInfo[index][0];
+            let docId = documentsInfo[index][0];
             documentsInfo = documentsInfo.splice(index, 1)
             setItems(documentsInfo);
-            if (currDocInfo[0] === name) {
+            if (currDocInfo[0] === docId) {
                 clearText();
             }
             try {
                 const { data } = await axios.delete(
-                    `http://127.0.0.1:5000/doc/${name}`,
+                    `http://127.0.0.1:5000/doc/${docId}`,
                     {
                         withCredentials: true,
                         headers: {
                             'Access-Control-Allow-Origin': '*',
-                            'Content-Type': 'multipart/form-data',
                         },
                     },
                 );

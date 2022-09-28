@@ -263,9 +263,6 @@ export default function MainPage({callSnackbar}: MainPageProps) {
     }
 
     function addCoref(clusterIdx: number, idxStart: number, idxEnd: number) {
-        console.log(clusterIdx)
-        console.log(idxStart)
-        console.log(idxEnd)
         let mentionIdx: number
         if (clusterIdx >= corefClusters.length) {
             corefClusters.push([])
@@ -274,7 +271,10 @@ export default function MainPage({callSnackbar}: MainPageProps) {
             let cluster: number[][] = corefClusters[clusterIdx]
             mentionIdx = cluster.length
             for (let i = 0; i < cluster.length; i++) {
-                if (cluster[i][0] >= idxStart) {
+                if (cluster[i][0] == idxStart && cluster[i][1] >= idxEnd) {
+                    mentionIdx = i
+                    break
+                } else if (cluster[i][0] > idxStart) {
                     mentionIdx = i
                     break
                 }
@@ -761,7 +761,6 @@ export default function MainPage({callSnackbar}: MainPageProps) {
                 // TODO: the following two arrays need to be manipulated by reapplyChanges, too
                 setAnnotators(result.annotatedBy)
                 convertConfidences(result.probs)
-                console.log()
                 clearCurrentMention()
                 window.history.replaceState(null, "Coref-App", "/project/"+projectname+"/doc/"+result.name)
             }

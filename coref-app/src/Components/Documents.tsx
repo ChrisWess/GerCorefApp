@@ -106,6 +106,7 @@ const Documents: React.FC<DocumentsProps> = ({ sendCorefClusterToParent,
                     allCorefs.current = []
                     sendConfidencesToParent(result.probs)
                     clearCurrentMention()
+                    window.history.replaceState(null, "Coref-App", "/project/"+projectname+"/doc/"+result.name)
                     // TODO: trigger pop-up if changes in current doc should be changed
                 }  // TODO: handle unauthorized and other errors (make button not clickable when not logged in?)
             }

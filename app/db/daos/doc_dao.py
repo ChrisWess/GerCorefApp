@@ -65,7 +65,7 @@ class DocumentDAO(BaseDAO):
         return self.find_by_project(str(project['_id']), projection, generate_response)
 
     def delete_many(self, doc_ids, generate_response=False):
-        result = self.collection.delete_many({"_id": {"$in": doc_ids}})  # FIXME: or if must be ObjectIds: [ObjectId(did) for did in doc_ids]
+        result = self.collection.delete_many({"_id": {"$in": [ObjectId(did) for did in doc_ids]}})
         if generate_response:
             return self.to_response(result, operation=BaseDAO.DELETE)
 

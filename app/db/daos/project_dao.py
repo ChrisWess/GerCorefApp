@@ -59,7 +59,11 @@ class ProjectDAO(BaseDAO):
         if docs:
             from app.db.daos.doc_dao import DocumentDAO
             DocumentDAO().delete_many(docs)
-        self.collection.delete_one({"_id": ObjectId(project_id)})
+        result = self.collection.delete_one({"_id": ObjectId(project_id)})
+        if generate_response:
+            return self.to_response(result, operation=BaseDAO.DELETE)
+        else:
+            return result
 
     def delete_by_projectname(self, name, userid=None, generate_response=False):
         if userid is None:

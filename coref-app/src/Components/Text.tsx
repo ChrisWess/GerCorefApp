@@ -31,6 +31,7 @@ export default function Text(props: any) {
                 props.sendConfidencesToParent(result.probs);
                 props.sendAnnotatorsToParent(result.annotatedBy)
                 props.addDocumentInfo(result._id, result.name);
+                window.history.replaceState(null, "Coref-App", "/project/"+projectname+"/doc/"+result.name)
             }
         }
         catch (error) {
