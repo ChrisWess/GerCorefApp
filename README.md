@@ -1,6 +1,6 @@
 # GerCorefApp
 
-This is a project of the university of hamburg. The GerCorefApp is a coreference visualization and annotation tool.
+This is a project of the University of Hamburg. The GerCorefApp is a coreference visualization and annotation tool.
 
 ## Authors
 
