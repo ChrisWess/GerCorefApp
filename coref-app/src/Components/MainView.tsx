@@ -14,6 +14,7 @@ export type Mention = {
     mentionIdx: number
     autoCreated: boolean
     createdByUser?: string;  // TODO: or id (number)?
+    sentence?: number
 }
 
 interface MainViewProps {
@@ -260,6 +261,12 @@ const MainView: React.FC<MainViewProps> = ({ txt, clust, allCorefs,
     let flattenedClust: number[][] = results[0]
     let deletedCumulated: number[][] = results[1]
 
+    for (let i = 0; i < allCorefs.current.length; i++) {
+        for (let j = 0; j < allCorefs.current[i].length; j++) {
+            let sentIdx = getSentenceIdx(allCorefs.current[i][j].selectionRange[1], sentenceOffsets)!
+            allCorefs.current[i][j].sentence = sentIdx+1;
+        }
+    }
     //for each coref cluster it puts an html element in front of its first word and behind its last word
     //
     // !! overlapping corefs cause many errors, also when trying to make new overlapping corefs !!

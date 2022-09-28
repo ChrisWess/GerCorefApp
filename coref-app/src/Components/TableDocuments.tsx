@@ -6,7 +6,7 @@ import ListItemText from '@mui/material/ListItemText';
 import Divider from '@mui/material/Divider';
 import ListSubheader from '@mui/material/ListSubheader';
 import { FC, ReactNode } from "react";
-import { IconButton } from '@mui/material';
+import {Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton} from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import "./TableDocuments.css";
 import * as React from 'react';
@@ -16,35 +16,57 @@ interface TableDocumentsProps {
     selectDocument: Function
     currDocInfo: string[]
     documentsInfo: [string, string][] | undefined
+    setDocumentsInfo: Function
     clearText: Function
+    changePage: Function
+    clearCurrentMention: Function
+    unsavedChanges: boolean
+    saveChanges: Function
+    clearChanges: Function
+
 }
 
 
 const TableDocuments: FC<TableDocumentsProps> = ({ selectDocument, currDocInfo,
-    documentsInfo, clearText }) => {
+    documentsInfo,setDocumentsInfo, clearText, changePage, clearCurrentMention, unsavedChanges, clearChanges, saveChanges }) => {
 
     const [items, setItems] = React.useState<[string, string][] | undefined>(documentsInfo);
+    const [open, setOpen] = React.useState(false);
+    const [docToDelete, setDocToDelete] = React.useState<[string, string]| undefined>();
+    const [saveOpen, setSaveOpen] = React.useState(false);
 
-    const createClickHandler = (docId: string) => {
-        if (currDocInfo[0] !== docId) {
-            return function handleClick() {
-                // TODO: don't allow change document when there are unsaved changes => show pop-up if user wants to save/discard/cancel
-                return selectDocument(docId)
-            }
-        }
+    const handleOpen = () => {
+        setOpen(true);
+    };
+    const handleClose = () => {
+        setOpen(false);
     };
 
-    const clearButton = async (index: number) => {
-        if (documentsInfo) {
-            let docId = documentsInfo[index][0];
-            documentsInfo = documentsInfo.splice(index, 1)
-            setItems(documentsInfo);
-            if (currDocInfo[0] === docId) {
+    function openSaveDialog(){
+        setSaveOpen(true);
+    }
+    function closeSaveDialog(docId?: string){
+        setSaveOpen(false);
+        if(docId!)
+            selectDocument(docId)
+    }
+
+    const clearButton = async () => {
+        handleClose()
+        if (docToDelete) {
+            if(items && documentsInfo) {
+                setItems(items.filter(item => item[0] != docToDelete[0]));
+                setDocumentsInfo(documentsInfo.filter(item => item[0] != docToDelete[0]))
+            }
+
+            if (currDocInfo[0] === docToDelete[0]) {
                 clearText();
+                changePage(0);
+                clearCurrentMention();
             }
             try {
                 const { data } = await axios.delete(
-                    `http://127.0.0.1:5000/doc/${docId}`,
+                    `http://127.0.0.1:5000/doc/${docToDelete[0]}`,
                     {
                         withCredentials: true,
                         headers: {
@@ -67,17 +89,18 @@ const TableDocuments: FC<TableDocumentsProps> = ({ selectDocument, currDocInfo,
                 }
             }
         }
+        setDocToDelete(undefined)
     }
 
-    if (documentsInfo) {
+    if (items) {
         let currIndex = -1
-        for (let i = 0; i < documentsInfo.length; i++) {
-            if (documentsInfo[i][0] === currDocInfo[0]) {
-                currIndex = i
-                break
+            for (let i = 0; i < items.length; i++) {
+                if (items[i][0] === currDocInfo[0]) {
+                    currIndex = i
+                    break
+                }
             }
-        }
-        const tableBody = documentsInfo.map((item, index) => (
+        const tableBody = items.map((item, index) => (
             <div key={index}>
                 <ListItem style={index === currIndex ? {
                     backgroundColor: 'darkgrey',
@@ -85,12 +108,39 @@ const TableDocuments: FC<TableDocumentsProps> = ({ selectDocument, currDocInfo,
                 } : { height: 40 }}
                     className="toSelect"
                     secondaryAction={
-                        <IconButton aria-label="comment" onClick={() => clearButton(index)}>
+                        <IconButton aria-label="comment" onClick={() => {handleOpen(); setDocToDelete(item); console.log(open)}}>
                             <DeleteIcon />
                         </IconButton>}>
-                    <ListItemText primary={item[1]} onClick={createClickHandler(item[0])} />
+                    <ListItemText primary={item[1]} onClick={unsavedChanges? () => openSaveDialog() : () => selectDocument(item[0])} />
                 </ListItem>
+
+
+                <Dialog open={saveOpen} onClose={() => closeSaveDialog()}>
+                    <DialogTitle sx={{color: 'red'}}>Unsaved changes!</DialogTitle>
+                    <DialogContent>
+                        <DialogContentText>
+                            Please save or discard your changes before you switch to another document.
+                        </DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button variant="outlined" sx={{marginRight: '70%'}} onClick={() => {saveChanges(); closeSaveDialog(item[0])}}>save</Button>
+                        <Button variant="outlined" color="error" onClick={() => {clearChanges(); closeSaveDialog(item[0])}}>discard</Button>
+                    </DialogActions>
+                </Dialog>
                 <Divider />
+
+                <Dialog open={open} onClose={handleClose}>
+                    <DialogTitle sx={{color: 'red'}}>Delete document: {docToDelete? docToDelete[1] : ''}?</DialogTitle>
+                    <DialogContent>
+                        <DialogContentText>
+                            Do you really want to delete this document?
+                        </DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button variant="contained" color="error" sx={{marginRight: '50%'}} onClick={() => clearButton()}>delete</Button>
+                        <Button onClick={handleClose}>Cancel</Button>
+                    </DialogActions>
+                </Dialog>
             </div>
         ));
 

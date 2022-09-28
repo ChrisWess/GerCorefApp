@@ -23,6 +23,8 @@ interface CorefViewProps {
     setAutoAnnotoggle: Function
     unsavedChanges: boolean
     saveChanges: Function
+    changePage: Function
+    setSentenceToHighlight: Function
 }
 
 export const getCluster = function(mention: Mention, allCorefs: Mention[][]) {
@@ -34,11 +36,13 @@ const CorefView: React.FC<CorefViewProps> = ({ selectedCoref, wordArr,
                                                  allCorefs, clusterColor, markedWord, markedWordsPrevColors,
                                                  currentMention, handleSelectCoref, setCurrentMention,
                                                  addCoref, deleteCoref, setHovertoggle, hovertoggle, autoAnnotoggle,
-                                                 setAutoAnnotoggle, unsavedChanges, saveChanges}) => {
+                                                 setAutoAnnotoggle, unsavedChanges, saveChanges, 
+                                                 changePage, setSentenceToHighlight }) => {
     const theme = useTheme();
 
     function deleteC() {
         deleteCoref()
+        setSentenceToHighlight(0)
     }
 
     function saveChange() {
@@ -69,7 +73,8 @@ const CorefView: React.FC<CorefViewProps> = ({ selectedCoref, wordArr,
                 markedWord={markedWord}
                 markedWordsPrevColors={markedWordsPrevColors}
                 handleSelectCoref={handleSelectCoref}
-                setCurrentMention={setCurrentMention}/>
+                setCurrentMention={setCurrentMention}
+                changePage={changePage}/>
 
             <AddCoreference
                 selectedCoref={selectedCoref}

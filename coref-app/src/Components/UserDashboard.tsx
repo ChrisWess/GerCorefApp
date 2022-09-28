@@ -38,10 +38,12 @@ function openProject(project: string) {
 const UserDashboard: React.FC<DashboardProps> = ({}) => {
     const [projectIdNamePairs, setProjectIdNamePairs] = React.useState<[string, string][] | undefined>();
     const [projectname, setProjectname] = React.useState('');
+    const [projectToDelete, setProjectToDelete] = React.useState<[string, string]| undefined>();
     const [userInfo, setUserInfo] = React.useState<JSX.Element | undefined>();
     const [error, setError] = React.useState(false);
     const theme = useTheme();
     const [open, setOpen] = React.useState(false);
+    const [openDelete, setOpenDelete] = React.useState(false);
     let projectList: any;
 
     const handleClickOpen = () => {
@@ -52,6 +54,14 @@ const UserDashboard: React.FC<DashboardProps> = ({}) => {
         setProjectname('');
         setError(false);
         setOpen(false);
+    };
+
+    const handleClickOpenDelete = () => {
+        setOpenDelete(true);
+    };
+
+    const handleCloseDelete = () => {
+        setOpenDelete(false);
     };
 
     function handleChange(event: any) {
@@ -139,8 +149,37 @@ const UserDashboard: React.FC<DashboardProps> = ({}) => {
         }
     }
 
-    async function deleteProject(projectId: string){
-        //todo
+    async function deleteProject(){
+        setOpenDelete(false)
+        if(projectIdNamePairs && projectToDelete) {
+            setProjectIdNamePairs(projectIdNamePairs.filter(item => item[0] != projectToDelete[0]));
+        }
+        try {
+            const { data } = await axios.delete(
+                `http://127.0.0.1:5000/project/${projectToDelete![0]}`,
+                {
+                    withCredentials: true,
+                    headers: {
+                        'Access-Control-Allow-Origin': '*',
+                        'Content-Type': 'multipart/form-data',
+                    },
+                },
+            );
+            if (data.status === 200) {
+                return data.result
+            } else {
+                return "error status: " + data.status
+            }
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                console.log('error message: ', error.message);
+                return error.message;
+            } else {
+                console.log('unexpected error: ', error);
+                return 'An unexpected error occurred';
+            }
+        }
+        setProjectToDelete(undefined)
     }
 
     async function loadProjects() {
@@ -192,7 +231,7 @@ const UserDashboard: React.FC<DashboardProps> = ({}) => {
                         <ListItemText key={index + ".3"}>{d[1]}</ListItemText>
                     </ListItemButton>
                     <ListItemIcon>
-                        <IconButton aria-label="comment" onClick={() => deleteProject(d[0])}>
+                        <IconButton aria-label="comment" onClick={() => {handleClickOpenDelete(); setProjectToDelete(d)}}>
                             <DeleteIcon />
                         </IconButton>
                     </ListItemIcon>
@@ -297,6 +336,19 @@ const UserDashboard: React.FC<DashboardProps> = ({}) => {
                                     {userInfo? userInfo: <><Skeleton variant="rectangular" width={'auto'} height={20}/><Skeleton variant="rectangular" style={{marginTop: '10px'}} width={'auto'} height={20}/><Skeleton variant="rectangular" style={{marginTop: '10px'}} width={'auto'} height={20}/></>}
                                 </Paper>
                             </Grid>
+
+                            <Dialog open={openDelete} onClose={handleCloseDelete}>
+                                <DialogTitle sx={{color: 'red'}}>Delete Project: {projectToDelete? projectToDelete[1]: ''}?</DialogTitle>
+                                <DialogContent>
+                                    <DialogContentText>
+                                        Do you really want to delete this project?
+                                    </DialogContentText>
+                                </DialogContent>
+                                <DialogActions>
+                                    <Button variant="contained" color="error" sx={{marginRight: '50%'}} onClick={deleteProject}>delete</Button>
+                                    <Button onClick={handleCloseDelete}>Cancel</Button>
+                                </DialogActions>
+                            </Dialog>
                         </Grid>
 
                     </Container>

@@ -1,6 +1,6 @@
 import React, { MutableRefObject } from 'react';
 import axios from 'axios';
-import { Button } from "@mui/material";
+import {Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle} from "@mui/material";
 import TableDocuments from "./TableDocuments";
 import { Mention } from "./MainView";
 import "./Documents.css"
@@ -22,8 +22,13 @@ interface DocumentsProps {
     currDocInfo: string[]
     addDocumentInfo: Function
     documentsInfo: [string, string][] | undefined
+    setDocumentsInfo: Function
     renameDocument: Function
     clearText: Function
+    changePage: Function
+    unsavedChanges: boolean
+    saveChanges: Function
+    clearChanges: Function
 }
 
 // Close the dropdown if the user clicks outside of it
@@ -51,19 +56,29 @@ const Documents: React.FC<DocumentsProps> = ({ sendCorefClusterToParent,
     selectDocument,
     currDocInfo,
     addDocumentInfo,
+    setDocumentsInfo,
     documentsInfo,
     renameDocument,
-    clearText }) => {
+    clearText,
+    changePage, saveChanges, clearChanges, unsavedChanges}) => {
 
     const {projectname} = useParams();
     const [selectedFile, setSelectedFile] = React.useState<any | null>(null);
     const supportedDataTypes = ["XML", "CoNLL-2012", "plaintext"];
+    const [saveOpen, setSaveOpen] = React.useState(false);
+
 
     // On file download (click the download button)
     const onFileDownload = (event: any) => {
         document.getElementById("documentsDropDown")!.classList.toggle("show");
     };
 
+    function openSaveDialog(){
+        setSaveOpen(true);
+    }
+    function closeSaveDialog(){
+        setSaveOpen(false);
+    }
 
     // On file select (from the pop up)
     const onFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -130,15 +145,19 @@ const Documents: React.FC<DocumentsProps> = ({ sendCorefClusterToParent,
         <div>
             <input type="file" id="file" onChange={onFileChange} accept=".txt" />
             <Button variant="outlined" style={{ margin: 1, textTransform: "none", width: "97%" }}
-                onClick={onFileUpload} type="submit" disabled={!selectedFile}> Upload </Button>
+                onClick={unsavedChanges? openSaveDialog: onFileUpload} type="submit" disabled={!selectedFile}> Upload </Button>
             <TableDocuments
                 selectDocument={selectDocument}
                 currDocInfo={currDocInfo}
                 documentsInfo={documentsInfo}
-                clearText={clearText}/>
+                setDocumentsInfo={setDocumentsInfo}
+                clearText={clearText}
+                changePage={changePage}
+                clearCurrentMention={clearCurrentMention}
+                saveChanges={saveChanges}
+                clearChanges={clearChanges}
+                unsavedChanges={unsavedChanges}/>
             <ButtonTextfield tfLabel="New Document Name" buttonText="Rename" submitFunc={renameDocument} />
-            <Button variant="outlined" style={{ margin: 5, textTransform: "none", width: "97%" }} disabled>
-                Share selected document</Button>
             <span className="dropdown">
                 <Button disabled={currDocInfo.length === 0} variant="outlined" style={{ margin: 5, textTransform: "none", width: "97%" }}
                     onClick={onFileDownload} className="dropbtn">
@@ -150,7 +169,22 @@ const Documents: React.FC<DocumentsProps> = ({ sendCorefClusterToParent,
                 </div>
             </span>
             <Button variant="outlined" style={{ margin: 5, textTransform: "none", width: "97%" }} disabled>
+                Share selected document</Button>
+            <Button variant="outlined" style={{ margin: 5, textTransform: "none", width: "97%" }} disabled>
                 Submit annotation <br />(Submit for online learning)</Button>
+
+            <Dialog open={saveOpen} onClose={() => closeSaveDialog()}>
+                <DialogTitle sx={{color: 'red'}}>Unsaved changes!</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        Please save or discard your changes before you upload another document.
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button variant="outlined" sx={{marginRight: '70%'}} onClick={() => {saveChanges(); closeSaveDialog()}}>save</Button>
+                    <Button variant="outlined" color="error" onClick={() => {clearChanges(); closeSaveDialog()}}>discard</Button>
+                </DialogActions>
+            </Dialog>
         </div>
     );
 }
