@@ -38,4 +38,6 @@ If the backend is running, the application is ready to be started.
  - For more info, see the `README.md` in `GerCorefApp/coref-app`.
 
 ## Demo
+* [Here is a video](https://cloud.mafiasi.de/s/CXEYqsoni88Zm5k) that shows every feature.
+
 
