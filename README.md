@@ -19,12 +19,15 @@ This Web-App uses a neural network in the backend to annotate german text.
 ## How to run the app
 
 ### Backend
-First you will need to be able to run the backend:
+First you will need to be able to run the `python Flask` backend:
  - Install Python3 dependencies: `pip install -r requirements.txt TODO`.
  - Download the models weights `droc_incremental_no_segment_distance.mar` from [this page](https://github.com/uhh-lt/neural-coref/releases).
  - Extract the `model*.bin`, create a new directory `GerCorefApp/app/coref/base/model_saves` and place the .bin file in that directory.
  - move to the `GerCorefApp`-directory.
  - start the backend with `python3 application.py`.
+ - The application persists its data on a `MongoDB` cluster, which should be started on the default port (27017) during development.
+ - The Flask server will be started on http:localhost:5000 by default, which can be changed by setting the environment variables `SERVER_HOST` and `SERVER_PORT`.
+ - Furthermore, all relevant configurations for the database and Flask backend can be set or found in `GerCorefApp/config.py`.
  - look [here](https://github.com/uhh-lt/neural-coref) if you still have any trouble setting the backend up.
 
 ### Frontend
