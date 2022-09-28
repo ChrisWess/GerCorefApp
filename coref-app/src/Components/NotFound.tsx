@@ -19,7 +19,7 @@ const NotFound: React.FC<{}> = ({}) => {
                 <Box
                     component="main"
                     sx={{
-                        backgroundColor: 'indianred',
+                        backgroundColor: "#e6e6e6",
                         flexGrow: 1,
                         height: '100vh',
                         overflow: 'auto',
@@ -40,10 +40,11 @@ const NotFound: React.FC<{}> = ({}) => {
                                         overflow: 'auto',
                                         float: 'center',
                                         textAlign: 'center',
-                                        fontSize: "16pt"
+                                        fontSize: "16pt", 
+                                        backgroundColor: "#white"
                                     }}>
                                     Nothing over here!
-                                    <Link style={{backgroundColor: "greenyellow", borderRadius: '10px', boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2)', textAlign: 'center'}} to="/dashboard">Send me home</Link>
+                                    <Link style={{backgroundColor: "#1976d2", borderRadius: '10px', boxShadow: '0 4px 8px 0 rgba(0, 0, 0, 0.2)', textAlign: 'center'}} to="/dashboard">Send me home</Link>
                                 </Paper>
                             </Grid>
                         </Grid>

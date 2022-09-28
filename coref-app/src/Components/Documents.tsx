@@ -157,8 +157,6 @@ const Documents: React.FC<DocumentsProps> = ({ sendCorefClusterToParent,
                 clearChanges={clearChanges}
                 unsavedChanges={unsavedChanges}/>
             <ButtonTextfield tfLabel="New Document Name" buttonText="Rename" submitFunc={renameDocument} />
-            <Button variant="outlined" style={{ margin: 5, textTransform: "none", width: "97%" }} disabled>
-                Share selected document</Button>
             <span className="dropdown">
                 <Button disabled={currDocInfo.length === 0} variant="outlined" style={{ margin: 5, textTransform: "none", width: "97%" }}
                     onClick={onFileDownload} className="dropbtn">
@@ -169,6 +167,8 @@ const Documents: React.FC<DocumentsProps> = ({ sendCorefClusterToParent,
                         {supportedDataTypes[index]}</a>))}
                 </div>
             </span>
+            <Button variant="outlined" style={{ margin: 5, textTransform: "none", width: "97%" }} disabled>
+                Share selected document</Button>
             <Button variant="outlined" style={{ margin: 5, textTransform: "none", width: "97%" }} disabled>
                 Submit annotation <br />(Submit for online learning)</Button>
 
