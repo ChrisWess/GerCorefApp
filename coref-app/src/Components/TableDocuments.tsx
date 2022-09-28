@@ -111,7 +111,8 @@ const TableDocuments: FC<TableDocumentsProps> = ({ selectDocument, currDocInfo,
                         <IconButton aria-label="comment" onClick={() => {handleOpen(); setDocToDelete(item); console.log(open)}}>
                             <DeleteIcon />
                         </IconButton>}>
-                    <ListItemText primary={item[1]} onClick={unsavedChanges? () => openSaveDialog() : () => selectDocument(item[0])} />
+                    {index === currIndex ? <ListItemText primary={item[1]} /> :
+                    <ListItemText primary={item[1]} onClick={unsavedChanges? () => openSaveDialog() : () => selectDocument(item[0])} />}
                 </ListItem>
 
 
