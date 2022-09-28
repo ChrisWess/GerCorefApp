@@ -1083,9 +1083,13 @@ export default function MainPage({callSnackbar}: MainPageProps) {
                                                 currDocInfo={currDocInfo}
                                                 addDocumentInfo={addDocumentInfo}
                                                 documentsInfo={documentIdNamePairs}
+                                                setDocumentsInfo={setDocumentIdNamePairs}
                                                 renameDocument={renameDocument}
                                                 clearText={clearText}
                                                 changePage={changePage}
+                                                saveChanges={saveChanges}
+                                                clearChanges={clearChanges}
+                                                unsavedChanges={unsavedChanges}
                                             />
                                         </TabPanel>
                                         <TabPanel value={value} index={2}>
