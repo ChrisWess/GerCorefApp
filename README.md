@@ -20,7 +20,7 @@ This Web-App uses a neural network in the backend to annotate german text.
 
 ### Backend
 First you will need to be able to run the backend:
- - Install Python3 dependencies: `pip Install -r requirements.txt TODO`.
+ - Install Python3 dependencies: `pip install -r requirements.txt TODO`.
  - Download the models weights `droc_incremental_no_segment_distance.mar` from [this page](https://github.com/uhh-lt/neural-coref/releases).
  - Extract the `model*.bin`, create a new directory `GerCorefApp/app/coref/base/model_saves` and place the .bin file in that directory.
  - move to the `GerCorefApp`-directory.
