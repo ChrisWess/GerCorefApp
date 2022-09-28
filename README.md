@@ -18,19 +18,21 @@ This Web-App uses a neural network in the backend to annotate german text.
 
 ## How to run the app
 
-#Backend
+### Backend
 First you will need to be able to run the backend:
-*Install Python3 dependencies: `pip Install -r requirements.txt TODO`
-*Download the models weights `droc_incremental_no_segment_distance.mar` from [this page](https://github.com/uhh-lt/neural-coref/releases)
-*Extract the `model*.bin` and place it in the `TODO`
-*move to the `GerCorefApp`-directory
-*start the backend with `python3 application.py`
-*look [here](https://github.com/uhh-lt/neural-coref) if you still have any trouble setting the backend up
+ - Install Python3 dependencies: `pip Install -r requirements.txt TODO`.
+ - Download the models weights `droc_incremental_no_segment_distance.mar` from [this page](https://github.com/uhh-lt/neural-coref/releases).
+ - Extract the `model*.bin`, create a new directory `GerCorefApp/app/coref/base/model_saves` and place the .bin file in that directory.
+ - move to the `GerCorefApp`-directory.
+ - start the backend with `python3 application.py`.
+ - look [here](https://github.com/uhh-lt/neural-coref) if you still have any trouble setting the backend up.
 
-#Frontend
+### Frontend
 If the backend is running, the application is ready to be started. 
-*Move to the `GerCorefApp/coref-app`-directory
-*Run `TODO`
+ - Move to the `GerCorefApp/coref-app`-directory.
+ - Run `npm install` to install all required packages.
+ - Run `npm start` to start the development server to test out the React Frontend locally.
+ - For more info, see the `README.md` in `GerCorefApp/coref-app`.
 
 ## Demo
 
