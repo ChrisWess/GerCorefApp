@@ -41,6 +41,6 @@ If the backend is running, the application is ready to be started.
 * [Here is a video](https://cloud.mafiasi.de/s/CXEYqsoni88Zm5k) that shows every feature.
 
 ## Presentation
-* Here is our final [presentation][https://github.com/ChrisWess/GerCorefApp/blob/master/Final_presentation_Coreference_Visualization.pdf] for Master Project Web Interfaces for NLP 2022 Seminar.
+* Here is our final [presentation](https://github.com/ChrisWess/GerCorefApp/blob/master/Final_presentation_Coreference_Visualization.pdf) for Master Project Web Interfaces for NLP 2022 Seminar.
 
 
